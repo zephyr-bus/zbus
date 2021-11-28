@@ -1,13 +1,9 @@
-#pragma once
-#include <stdbool.h>
+#ifndef _ZBUS_MESSAGES_H_
+#define _ZBUS_MESSAGES_H_
+#include <zephyr.h>
 
-struct queue {
-    int a[20];
-};
-
-struct queue sub1;
-struct queue sub2;
-struct queue sub3;
+extern struct k_msgq core_queue;
+extern struct k_msgq net_queue;
 
 struct version {
     uint8_t major;
@@ -15,12 +11,14 @@ struct version {
     uint16_t build;
 };
 
-struct machine {
+struct sensor_data {
     int a;
     int b;
 };
 
-struct oven {
+struct net_pkt {
     char x;
     bool y;
 };
+
+#endif  // _ZBUS_MESSAGES_H_
