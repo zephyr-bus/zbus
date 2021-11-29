@@ -8,29 +8,22 @@
 #include "zeta_messages.h"
 
 
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    struct {                                                                             \
-        struct metadata __zt_meta_##name;                                                \
-        type name;                                                                       \
-    };
-struct zt_channels {
-#include "zbus_channels.def"
-} __zt_channels = {0};
+// struct zt_channels __zt_channels = {0};
+struct zt_channels *zt_channels_instance();
 
 int __zt_sem_take(void *semaphore);
 
 int __zt_sem_give(void *semaphore);
 
 
-#define ZT_CHANNEL_GET(chan) &__zt_channels.chan
+#define ZT_CHANNEL_GET(chan) &zt_channels_instance()->chan
 #define ZT_CHANNEL_METADATA_GET(chan) \
-    ((struct metadata *) &__zt_channels.__zt_meta_##chan)
+    ((struct metadata *) &zt_channels_instance()->__zt_meta_##chan)
 
 #define zt_chan_pub(chan, value)                                                         \
     ({                                                                                   \
         {                                                                                \
-            __typeof__(__zt_channels.chan) chan##__aux__;                                \
+            __typeof__(zt_channels_instance()->chan) chan##__aux__;                      \
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
@@ -43,7 +36,7 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size);
 #define zt_chan_read(chan, value)                                         \
     ({                                                                    \
         {                                                                 \
-            __typeof__(__zt_channels.chan) chan##__aux__;                 \
+            __typeof__(zt_channels_instance()->chan) chan##__aux__;       \
             __typeof__(value) value##__aux__;                             \
             (void) (&chan##__aux__ == &value##__aux__);                   \
         }                                                                 \

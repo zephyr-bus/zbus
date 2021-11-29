@@ -6,11 +6,12 @@ using sysbus
 
 include @scripts/single-node/sifive_fe310.resc
 
-sysbus LoadELF @.pio/build/hifive1-revb/firmware.elf 
+#sysbus LoadELF @.pio/build/hifive1-revb/firmware.elf 
+sysbus LoadELF @build/zephyr/zephyr.elf 
 
 emulation CreateUartPtyTerminal "term" "/tmp/uart" True
 connector Connect sysbus.uart0 term
 
-emulation SetGlobalPerformance 1.0
+#emulation SetGlobalPerformance 1.0
 start
-emulation SetGlobalPerformance 1.0
+#emulation SetGlobalPerformance 1.0

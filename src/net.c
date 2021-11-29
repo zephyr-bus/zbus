@@ -22,10 +22,10 @@ void net_thread(void)
 {
     zt_channel_index_t idx = 0;
     while (1) {
-        if (!k_msgq_get(&core_queue, &idx, K_FOREVER)) {
+        if (!k_msgq_get(&net_queue, &idx, K_FOREVER)) {
             struct net_pkt pkt = {0};
             zt_chan_read(net_pkt, pkt);
-            printk("Parity: %c, 3 multiple: %s\n", pkt.x, pkt.y ? "true" : "false");
+            printk("Net: Parity %c, 3 multiple: %s\n", pkt.x, pkt.y ? "true" : "false");
         }
     }
 }

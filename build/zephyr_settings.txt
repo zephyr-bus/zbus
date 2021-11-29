@@ -1,0 +1,2 @@
+"DTS_ROOT":"/home/rodrigo/Cloud/Projects/zephyrproject/modules/hal/stm32"
+"DTS_ROOT":"/home/rodrigo/Cloud/Projects/zephyrproject/modules/hal/nxp"

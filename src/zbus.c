@@ -21,44 +21,27 @@ K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
 #undef ZT_CHANNEL
 #endif
 #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    K_SEM_DEFINE(__zt_sem_##name, 0, 1);
+    K_SEM_DEFINE(__zt_sem_##name, 1, 1);
 #include "zbus_channels.def"
 
-// #undef ZT_CHANNEL
-// #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,
-// init_val) \
-//     extern struct k_sem __zt_sem_##name;
-// #include "zbus_channels.def"
-
-// #undef ZT_CHANNEL
-// #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,
-// init_val) \
-//     struct { \
-//         struct metadata __zt_meta_##name; \
-//         type name; \
-//     };
-// struct zt_channels {
-// #include "zbus_channels.def"
-// } __zt_channels = {
-// #undef ZT_CHANNEL
-// #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,
-// init_val) \
-//     .__zt_meta_##name = \
-//         {#name,               /* Name */ \
-//          .flag = {false,      /* Not defined yet */ \
-//                   on_changed, /* Only changes in the channel will propagate  */ \
-//                   read_only,  /* The channel is only for reading. It must have a
-//                   initial \
-//                                  value. */ \
-//                   false},     /* ISC source flag */ \
-//          zt_index_##name,     /* Lookup table index */ \
-//          sizeof(type),        /* The channel's size */ \
-//          (uint8_t *) &__zt_channels.name, /* The actual channel */ \
-//          &__zt_sem_##name,                /* Channel's semaphore */ \
-//          subscribers},                    /* List of subscribers queues */ \
-//         .name = init_val,
-// #include "zbus_channels.def"
-// };
+static struct zt_channels __zt_channels = {
+#undef ZT_CHANNEL
+#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    .__zt_meta_##name =                                                                  \
+        {#name,               /* Name */                                                 \
+         .flag = {false,      /* Not defined yet */                                      \
+                  on_changed, /* Only changes in the channel will propagate  */          \
+                  read_only,  /* The channel is only for reading. It must have a initial \
+                                 value. */                                               \
+                  false},     /* ISC source flag */                                      \
+         zt_index_##name,     /* Lookup table index */                                   \
+         sizeof(type),        /* The channel's size */                                   \
+         (uint8_t *) &__zt_channels.name, /* The actual channel */                       \
+         &__zt_sem_##name,                /* Channel's semaphore */                      \
+         subscribers},                    /* List of subscribers queues */               \
+        .name = init_val,
+#include "zbus_channels.def"
+};
 
 struct metadata *__zt_channels_lookup_table[] = {
 #undef ZT_CHANNEL
@@ -83,16 +66,6 @@ int __zt_sem_give(void *semaphore)
     return 0;
 }
 
-
-#define zt_chan_pub(chan, value)                                                         \
-    ({                                                                                   \
-        {                                                                                \
-            __typeof__(__zt_channels.chan) chan##__aux__;                                \
-            __typeof__(value) value##__aux__;                                            \
-            (void) (&chan##__aux__ == &value##__aux__);                                  \
-        }                                                                                \
-        __zt_chan_pub(ZT_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, sizeof(value)); \
-    })
 
 int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
 {
@@ -132,17 +105,6 @@ cleanup:
 }
 
 
-#define zt_chan_read(chan, value)                                         \
-    ({                                                                    \
-        {                                                                 \
-            __typeof__(__zt_channels.chan) chan##__aux__;                 \
-            __typeof__(value) value##__aux__;                             \
-            (void) (&chan##__aux__ == &value##__aux__);                   \
-        }                                                                 \
-        __zt_chan_read(ZT_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, \
-                       sizeof(value));                                    \
-    })
-
 int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     if ((meta->channel == NULL) || (data == NULL) || (data_size == 0)) {
@@ -151,37 +113,18 @@ int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
     if (meta->channel_size != data_size) {
         return -2;
     }
-    // ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
-    //          "Could not read the channel. Channel is busy");
+    ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
+             "Could not read the channel. Channel is busy");
     memcpy(data, meta->channel, meta->channel_size);
+    k_sem_give(meta->semaphore);
     return 0;
 }
 static void __zt_monitor_thread(void)
 {
-    /* Initialization scope */ {
-        struct zt_channels tmp__zt_channels = {
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    .__zt_meta_##name =                                                                  \
-        {#name,               /* Name */                                                 \
-         .flag = {false,      /* Not defined yet */                                      \
-                  on_changed, /* Only changes in the channel will propagate  */          \
-                  read_only,  /* The channel is only for reading. It must have a initial \
-                                 value. */                                               \
-                  false},     /* ISC source flag */                                      \
-         zt_index_##name,     /* Lookup table index */                                   \
-         sizeof(type),        /* The channel's size */                                   \
-         (uint8_t *) &__zt_channels.name, /* The actual channel */                       \
-         &__zt_sem_##name,                /* Channel's semaphore */                      \
-         subscribers},                    /* List of subscribers queues */               \
-        .name = init_val,
-#include "zbus_channels.def"
-        };
-        memcpy(&__zt_channels, &tmp__zt_channels, sizeof(struct zt_channels));
-    }
     zt_channel_index_t idx = 0;
     while (1) {
         k_msgq_get(&__zt_channels_changed_msgq, &idx, K_FOREVER);
+        printk("idx %d\n", idx);
         if (idx < ZT_CHANNEL_COUNT) {
             struct metadata *meta = __zt_channels_lookup_table[idx];
             if (meta->flag.pend_callback) {

@@ -1,0 +1,30 @@
+# Available runners configured by board.cmake.
+runners:
+- jlink
+
+# Default flash runner if --runner is not given.
+flash-runner: jlink
+
+# Default debug runner if --runner is not given.
+debug-runner: jlink
+
+# Common runner configuration values.
+config:
+  board_dir: /home/rodrigo/Cloud/Projects/zephyrproject/zephyr/boards/riscv/hifive1_revb
+  # Build outputs:
+  elf_file: zephyr.elf
+  bin_file: zephyr.bin
+  # Host tools:
+  gdb: /home/rodrigo/.local/zephyr-sdk-0.13.2/riscv64-zephyr-elf/bin/riscv64-zephyr-elf-gdb
+  openocd: /home/rodrigo/.local/zephyr-sdk-0.13.2/sysroots/x86_64-pokysdk-linux/usr/bin/openocd
+  openocd_search: /home/rodrigo/.local/zephyr-sdk-0.13.2/sysroots/x86_64-pokysdk-linux/usr/share/openocd/scripts
+
+# Runner specific arguments
+args:
+  jlink:
+    - --dt-flash=y
+    - --device=FE310
+    - --iface=JTAG
+    - --speed=4000
+    - --tool-opt=-jtagconf -1,-1
+    - --tool-opt=-autoconnect 1

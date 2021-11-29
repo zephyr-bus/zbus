@@ -10,7 +10,7 @@ ZT_CHANNEL(version,                   /* Name */
 
 ZT_CHANNEL(sensor_data,                                /* Name */
            true,                                       /* Persistent */
-           false,                                      /* On change only */
+           true,                                      /* On change only */
            false,                                      /* Read only */
            struct sensor_data,                         /* Message type */
            ZT_CHANNEL_SUBSCRIBERS_QUEUES(&core_queue), /* Subscribers */

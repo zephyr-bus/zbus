@@ -1,0 +1,42 @@
+menu "hal_nordic (/home/rodrigo/Cloud/Projects/zephyrproject/modules/hal/nordic)"
+osource "$(ZEPHYR_HAL_NORDIC_KCONFIG)"
+config ZEPHYR_HAL_NORDIC_MODULE
+	bool
+	default y
+endmenu
+menu "mbedtls (/home/rodrigo/Cloud/Projects/zephyrproject/modules/crypto/mbedtls)"
+osource "$(ZEPHYR_MBEDTLS_KCONFIG)"
+config ZEPHYR_MBEDTLS_MODULE
+	bool
+	default y
+endmenu
+menu "sof (/home/rodrigo/Cloud/Projects/zephyrproject/modules/audio/sof)"
+osource "/home/rodrigo/Cloud/Projects/zephyrproject/modules/audio/sof/zephyr/Kconfig"
+config ZEPHYR_SOF_MODULE
+	bool
+	default y
+endmenu
+menu "TraceRecorder (/home/rodrigo/Cloud/Projects/zephyrproject/modules/debug/TraceRecorder)"
+osource "/home/rodrigo/Cloud/Projects/zephyrproject/modules/debug/TraceRecorder/kernelports/Zephyr/Kconfig"
+config ZEPHYR_TRACERECORDER_MODULE
+	bool
+	default y
+endmenu
+menu "trusted-firmware-m (/home/rodrigo/Cloud/Projects/zephyrproject/modules/tee/tfm)"
+osource "$(ZEPHYR_TRUSTED_FIRMWARE_M_KCONFIG)"
+config ZEPHYR_TRUSTED_FIRMWARE_M_MODULE
+	bool
+	default y
+endmenu
+menu "nanopb (/home/rodrigo/Cloud/Projects/zephyrproject/modules/lib/nanopb)"
+osource "$(ZEPHYR_NANOPB_KCONFIG)"
+config ZEPHYR_NANOPB_MODULE
+	bool
+	default y
+endmenu
+menu "tensorflow (/home/rodrigo/Cloud/Projects/zephyrproject/modules/lib/tensorflow)"
+osource "$(ZEPHYR_TENSORFLOW_KCONFIG)"
+config ZEPHYR_TENSORFLOW_MODULE
+	bool
+	default y
+endmenu

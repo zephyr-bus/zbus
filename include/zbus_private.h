@@ -11,7 +11,7 @@
 #ifndef _ZBUS_PRIVATE_H_
 #define _ZBUS_PRIVATE_H_
 #include <zephyr.h>
-
+#include "zeta_messages.h"
 typedef enum {
 #ifdef ZT_CHANNEL
 #undef ZT_CHANNEL
@@ -88,5 +88,14 @@ struct metadata {
     struct k_msgq **subscribers;
 };
 
+#undef ZT_CHANNEL
+#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    struct {                                                                             \
+        struct metadata __zt_meta_##name;                                                \
+        type name;                                                                       \
+    };
+struct zt_channels {
+#include "zbus_channels.def"
+};  // __zt_channels = {0};
 
 #endif  // _ZBUS_PRIVATE_H_

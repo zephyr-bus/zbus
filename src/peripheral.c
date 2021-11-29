@@ -8,9 +8,13 @@ void peripheral_thread(void)
     int b                 = 3;
     struct sensor_data sd = {0, 0};
     while (1) {
-        k_msleep(50000000);
-        sd.a = ++a;
-        sd.b = ++b;
+        k_msleep(5000000);
+        ++a;
+        sd.a = a;
+        ++b;
+        sd.b = b;
+        printk("Peripheral: sending sensor data\n");
+        zt_chan_pub(sensor_data, sd);
         zt_chan_pub(sensor_data, sd);
     }
 }
