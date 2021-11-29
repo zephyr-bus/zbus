@@ -13,7 +13,7 @@
 #include <sys/printk.h>
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(zbus);
+LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
 
 
@@ -23,6 +23,31 @@ K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
 #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     K_SEM_DEFINE(__zt_sem_##name, 1, 1);
 #include "zbus_channels.def"
+
+#define ZT_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
+    extern struct k_msgq sub_ref, ##__VA_ARGS__
+
+#define ZT_CHANNEL_NO_SUBSCRIBERS
+#undef ZT_CHANNEL
+#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    subscribers;
+
+#include "zbus_channels.def"
+
+#define ZT_REF(a) &a
+
+#undef ZT_CHANNEL_SUBSCRIBERS_QUEUES
+#define ZT_CHANNEL_SUBSCRIBERS_QUEUES(...)        \
+    (struct k_msgq **) (struct k_msgq *[])        \
+    {                                             \
+        FOR_EACH(ZT_REF, (, ), __VA_ARGS__), NULL \
+    }
+#undef ZT_CHANNEL_NO_SUBSCRIBERS
+#define ZT_CHANNEL_NO_SUBSCRIBERS          \
+    (struct k_msgq **) (struct k_msgq *[]) \
+    {                                      \
+        NULL                               \
+    }
 
 static struct zt_channels __zt_channels = {
 #undef ZT_CHANNEL
@@ -50,22 +75,15 @@ struct metadata *__zt_channels_lookup_table[] = {
 #include "zbus_channels.def"
 };
 
-
-struct zt_channels *zt_channels_instance()
+/**
+ * @brief This function returns the __zt_channels instance reference.
+ * @details Do not use this directly! It is being used by the auxilary functions.
+ * @return A pointer of struct zt_channels.
+ */
+struct zt_channels *__zt_channels_instance()
 {
     return &__zt_channels;
 }
-
-int __zt_sem_take(void *semaphore)
-{
-    return 0;
-}
-
-int __zt_sem_give(void *semaphore)
-{
-    return 0;
-}
-
 
 int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
 {
@@ -124,7 +142,8 @@ static void __zt_monitor_thread(void)
     zt_channel_index_t idx = 0;
     while (1) {
         k_msgq_get(&__zt_channels_changed_msgq, &idx, K_FOREVER);
-        printk("idx %d\n", idx);
+        LOG_DBG("[Monitor] notifying subscribers of %s channel",
+                __zt_channels_lookup_table[idx]->name);
         if (idx < ZT_CHANNEL_COUNT) {
             struct metadata *meta = __zt_channels_lookup_table[idx];
             if (meta->flag.pend_callback) {

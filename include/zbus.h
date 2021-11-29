@@ -4,26 +4,95 @@
 #include <string.h>
 #include <zephyr.h>
 
-#include "zbus_private.h"
-#include "zeta_messages.h"
+#include "zbus_messages.h"
 
 
-// struct zt_channels __zt_channels = {0};
-struct zt_channels *zt_channels_instance();
+typedef enum {
+#ifdef ZT_CHANNEL
+#undef ZT_CHANNEL
+#endif
+#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    zt_index_##name,
+#include "zbus_channels.def"
+    ZT_CHANNEL_COUNT
+} __attribute__((packed)) zt_channel_index_t;
 
-int __zt_sem_take(void *semaphore);
 
-int __zt_sem_give(void *semaphore);
+/**
+ * @brief Check if _v value is equal to _c, otherwise _err will be
+ * returned and a message will be sent to LOG.
+ *
+ * @param _v Value
+ * @param _c Condition
+ * @param _err Error code
+ *
+ */
+#define ZT_CHECK_VAL(_p, _e, _err, ...) \
+    if (_p == _e) {                     \
+        LOG_INF(__VA_ARGS__);           \
+        return _err;                    \
+    }
 
+/**
+ * @brief Check if _v is true, otherwise _err will be returned and a
+ * message will be sent to LOG.
+ *
+ * @param _v Value
+ * @param _err Error code
+ *
+ * @return
+ */
+#define ZT_CHECK(_p, _err, ...) \
+    if (_p) {                   \
+        LOG_INF(__VA_ARGS__);   \
+        return _err;            \
+    }
 
-#define ZT_CHANNEL_GET(chan) &zt_channels_instance()->chan
+#define ZT_CHANNEL_INIT_VAL_DEFAULT \
+    {                               \
+        0                           \
+    }
+
+#define ZT_CHANNEL_INIT_VAL(val, ...) \
+    {                                 \
+        val, ##__VA_ARGS__            \
+    }
+
+struct metadata {
+    char *name;
+    struct {
+        bool pend_callback;
+        bool on_changed;
+        bool read_only;
+        bool source_serial_isc;
+    } flag;
+    uint16_t lookup_table_index;
+    uint16_t channel_size;
+    uint8_t *channel;
+    struct k_sem *semaphore;
+    struct k_msgq **subscribers;
+};
+
+#undef ZT_CHANNEL
+#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    struct {                                                                             \
+        struct metadata __zt_meta_##name;                                                \
+        type name;                                                                       \
+    };
+struct zt_channels {
+#include "zbus_channels.def"
+};
+
+struct zt_channels *__zt_channels_instance();
+
+#define ZT_CHANNEL_GET(chan) &__zt_channels_instance()->chan
 #define ZT_CHANNEL_METADATA_GET(chan) \
-    ((struct metadata *) &zt_channels_instance()->__zt_meta_##chan)
+    ((struct metadata *) &__zt_channels_instance()->__zt_meta_##chan)
 
 #define zt_chan_pub(chan, value)                                                         \
     ({                                                                                   \
         {                                                                                \
-            __typeof__(zt_channels_instance()->chan) chan##__aux__;                      \
+            __typeof__(__zt_channels_instance()->chan) chan##__aux__;                    \
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
@@ -36,7 +105,7 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size);
 #define zt_chan_read(chan, value)                                         \
     ({                                                                    \
         {                                                                 \
-            __typeof__(zt_channels_instance()->chan) chan##__aux__;       \
+            __typeof__(__zt_channels_instance()->chan) chan##__aux__;     \
             __typeof__(value) value##__aux__;                             \
             (void) (&chan##__aux__ == &value##__aux__);                   \
         }                                                                 \

@@ -8,9 +8,9 @@
  * This module
  */
 
-#include <kernel.h>
-#include <sys/printk.h>
+#include <logging/log.h>
 #include "zbus.h"
+LOG_MODULE_REGISTER(net, CONFIG_ZBUS_LOG_LEVEL);
 
 K_MSGQ_DEFINE(net_queue, sizeof(zt_channel_index_t), 10, 2);
 /**
@@ -25,7 +25,7 @@ void net_thread(void)
         if (!k_msgq_get(&net_queue, &idx, K_FOREVER)) {
             struct net_pkt pkt = {0};
             zt_chan_read(net_pkt, pkt);
-            printk("Net: Parity %c, 3 multiple: %s\n", pkt.x, pkt.y ? "true" : "false");
+            LOG_DBG("[Net] Parity %c, 3 multiple: %s", pkt.x, pkt.y ? "true" : "false");
         }
     }
 }
