@@ -20,20 +20,33 @@ K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
 #ifdef ZT_CHANNEL
 #undef ZT_CHANNEL
 #endif
+
+/**
+ * @def ZT_CHANNEL
+ * Description
+ */
 #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     K_SEM_DEFINE(__zt_sem_##name, 1, 1);
 #include "zbus_channels.def"
 
+/**
+ * @def ZT_CHANNEL_SUBSCRIBERS_QUEUES
+ * Description
+ */
 #define ZT_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
     extern struct k_msgq sub_ref, ##__VA_ARGS__
 
-#define ZT_CHANNEL_NO_SUBSCRIBERS
+#define ZT_CHANNEL_HAS_NO_SUBSCRIBERS
 #undef ZT_CHANNEL
 #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     subscribers;
 
 #include "zbus_channels.def"
 
+/**
+ * @def ZT_REF
+ * Description
+ */
 #define ZT_REF(a) &a
 
 #undef ZT_CHANNEL_SUBSCRIBERS_QUEUES
@@ -42,8 +55,8 @@ K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
     {                                             \
         FOR_EACH(ZT_REF, (, ), __VA_ARGS__), NULL \
     }
-#undef ZT_CHANNEL_NO_SUBSCRIBERS
-#define ZT_CHANNEL_NO_SUBSCRIBERS          \
+#undef ZT_CHANNEL_HAS_NO_SUBSCRIBERS
+#define ZT_CHANNEL_HAS_NO_SUBSCRIBERS      \
     (struct k_msgq **) (struct k_msgq *[]) \
     {                                      \
         NULL                               \
@@ -93,6 +106,9 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
     }
     if (meta->channel_size != data_size) {
         return -2;
+    }
+    if (meta->flag.read_only) {
+        return -3;
     }
     ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
              "Could not publish the channel. Channel is busy");

@@ -1,3 +1,13 @@
+/**
+ * @file      zbus.h
+ * @brief     Header of
+ * @date      Tue Dec 14 14:19:05 2021
+ * @author    Rodrigo Peixoto
+ * @copyright BSD-3-Clause
+ *
+ * This module
+ */
+
 #ifndef _ZBUS_H_
 #define _ZBUS_H_
 
@@ -48,14 +58,33 @@ typedef enum {
         return _err;            \
     }
 
-#define ZT_CHANNEL_INIT_VAL_DEFAULT \
-    {                               \
-        0                           \
+
+/**
+ * @def ZT_CHANNEL_INIT_DEFAULT_COMPLEX
+ * This must be used to initialize structs with other structs or union inside itself.
+ */
+#define ZT_CHANNEL_INIT_DEFAULT_COMPLEX \
+    {                                   \
+        {                               \
+            0                           \
+        }                               \
     }
 
-#define ZT_CHANNEL_INIT_VAL(val, ...) \
-    {                                 \
-        val, ##__VA_ARGS__            \
+
+/**
+ * @def ZT_CHANNEL_INIT_DEFAULT
+ * This must be used to initialize structs with only scalar values inside.
+ */
+#define ZT_CHANNEL_INIT_DEFAULT \
+    {                           \
+        0                       \
+    }
+
+#define ZT_CHANNEL_INIT_VAL(init) init
+
+#define ZT_INIT(val, ...)  \
+    {                      \
+        val, ##__VA_ARGS__ \
     }
 
 struct metadata {
@@ -75,10 +104,9 @@ struct metadata {
 
 #undef ZT_CHANNEL
 #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    struct {                                                                             \
-        struct metadata __zt_meta_##name;                                                \
-        type name;                                                                       \
-    };
+    struct metadata __zt_meta_##name;                                                    \
+    type name;
+
 struct zt_channels {
 #include "zbus_channels.def"
 };
