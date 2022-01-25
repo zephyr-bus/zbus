@@ -4,3 +4,5 @@
 build/
 .#*
 **/twister-out*/**
+**/results-test.robot.xml
+**/snapshots/**
