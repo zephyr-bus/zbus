@@ -16,6 +16,20 @@
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
 
+/**
+ * @brief Check if _v is true, otherwise _err will be returned and a
+ * message will be sent to LOG.
+ *
+ * @param _v Value
+ * @param _err Error code
+ *
+ * @return
+ */
+#define ZT_CHECK(_p, _err, ...) \
+    if (_p) {                   \
+        LOG_INF(__VA_ARGS__);   \
+        return _err;            \
+    }
 
 #ifdef ZT_CHANNEL
 #undef ZT_CHANNEL
@@ -153,6 +167,11 @@ int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
     k_sem_give(meta->semaphore);
     return 0;
 }
+
+#if defined(CONFIG_ZBUS_SERIAL_IPC)
+K_MSGQ_DEFINE(__zt_bridge_queue, sizeof(zt_channel_index_t), 16, 2);
+#endif
+
 static void __zt_monitor_thread(void)
 {
     zt_channel_index_t idx = 0;
@@ -170,11 +189,7 @@ static void __zt_monitor_thread(void)
                 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-                if (meta->flag.source_serial_isc == 1) {
-                    meta->flag.source_serial_isc = 0;
-                } else {
-                    zt_serial_ipc_send_update_to_host(idx);
-                }
+                k_msgq_put(&__zt_bridge_queue, &idx, K_MSEC(50));
 #endif
                 meta->flag.pend_callback = false;
 
@@ -192,3 +207,25 @@ static void __zt_monitor_thread(void)
 K_THREAD_DEFINE(zt_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
                 __zt_monitor_thread, NULL, NULL, NULL,
                 CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
+
+#if defined(CONFIG_ZBUS_SERIAL_IPC)
+void __zt_bridge_thread(void)
+{
+    zt_channel_index_t idx = 0;
+    while (1) {
+        if (!k_msgq_get(&__zt_bridge_queue, &idx, K_FOREVER)) {
+            struct metadata *meta = __zt_channels_lookup_table[idx];
+            ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
+                     "Could not read the channel. Channel is busy");
+            memcpy(data, meta->channel, meta->channel_size);
+            k_sem_give(meta->semaphore);
+            return 0;
+            // zt_chan_read(net_pkt, pkt);
+        }
+    }
+}
+
+K_THREAD_DEFINE(zt_bridge_thread, 2048, __zt_bridge_thread, NULL, NULL, NULL,
+                (CONFIG_ZBUS_MONITOR_THREAD_PRIORITY + 1), 0, 0);
+
+#endif
