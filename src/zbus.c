@@ -16,21 +16,6 @@
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
 
-/**
- * @brief Check if _v is true, otherwise _err will be returned and a
- * message will be sent to LOG.
- *
- * @param _v Value
- * @param _err Error code
- *
- * @return
- */
-#define ZT_CHECK(_p, _err, ...) \
-    if (_p) {                   \
-        LOG_INF(__VA_ARGS__);   \
-        return _err;            \
-    }
-
 #ifdef ZT_CHANNEL
 #undef ZT_CHANNEL
 #endif
@@ -115,17 +100,16 @@ struct zt_channels *__zt_channels_instance()
 int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     __label__ cleanup;
-    if ((meta->channel == NULL) || (data == NULL) || (data_size == 0)) {
-        return -1;
+    int ret = 0;
+    __ASSERT_NO_MSG(meta->channel != NULL);
+    __ASSERT_NO_MSG(data != NULL);
+    __ASSERT_NO_MSG(data_size > 0);
+    __ASSERT_NO_MSG(meta->channel_size == data_size);
+    __ASSERT_NO_MSG(!meta->flag.read_only);
+    if (k_sem_take(meta->semaphore, K_MSEC(200))) {
+        ret = -1;
+        goto cleanup;
     }
-    if (meta->channel_size != data_size) {
-        return -2;
-    }
-    if (meta->flag.read_only) {
-        return -3;
-    }
-    ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
-             "Could not publish the channel. Channel is busy");
     if (meta->flag.on_changed) {  // CHANGE
         if (memcmp(meta->channel, data, data_size) == 0) {
             /* This data is not different from the channel's. No changes here. */
@@ -133,39 +117,34 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
             goto cleanup;
         }
     }
-#if defined(CONFIG_ZETA_SERIAL_IPC)
-    if (k_current_get() == zt_serial_ipc_thread()) {
-        meta->flag.field.source_serial_isc = 1;
-    }
-#endif
     memcpy(meta->channel, data, data_size);
     meta->flag.pend_callback = true;
-    int error                = k_msgq_put(&__zt_channels_changed_msgq,
-                           (uint8_t *) &meta->lookup_table_index, K_MSEC(500));
-    if (error != 0) {
-        LOG_INF("[Channel #%d] Error sending channels change message to ZT "
-                "thread!",
-                meta->lookup_table_index);
+    if (k_msgq_put(&__zt_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
+                   K_MSEC(500))) {
+        ret = -1;
     }
 cleanup:
     k_sem_give(meta->semaphore);
-    return 0;
+    return ret;
 }
 
 
 int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
 {
-    if ((meta->channel == NULL) || (data == NULL) || (data_size == 0)) {
-        return -1;
+    __label__ cleanup;
+    int ret = 0;
+    __ASSERT_NO_MSG(meta->channel != NULL);
+    __ASSERT_NO_MSG(data != NULL);
+    __ASSERT_NO_MSG(data_size > 0);
+    __ASSERT_NO_MSG(meta->channel_size == data_size);
+    if (k_sem_take(meta->semaphore, K_MSEC(200)) == 0) {
+        ret = -1;
+        goto cleanup;
     }
-    if (meta->channel_size != data_size) {
-        return -2;
-    }
-    ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
-             "Could not read the channel. Channel is busy");
     memcpy(data, meta->channel, meta->channel_size);
+cleanup:
     k_sem_give(meta->semaphore);
-    return 0;
+    return ret;
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
@@ -177,30 +156,17 @@ static void __zt_monitor_thread(void)
     zt_channel_index_t idx = 0;
     while (1) {
         k_msgq_get(&__zt_channels_changed_msgq, &idx, K_FOREVER);
-        LOG_DBG("[Monitor] notifying subscribers of %s channel",
-                __zt_channels_lookup_table[idx]->name);
-        if (idx < ZT_CHANNEL_COUNT) {
-            struct metadata *meta = __zt_channels_lookup_table[idx];
-            if (meta->flag.pend_callback) {
-                struct k_msgq **cursor = meta->subscribers;
-                for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
-                    k_msgq_put(s, &idx, K_MSEC(50));
-                    // (*s)->cb(idx);
-                }
-
+        __ASSERT_NO_MSG(idx < ZT_CHANNEL_COUNT);
+        struct metadata *meta = __zt_channels_lookup_table[idx];
+        __ASSERT_NO_MSG(meta->flag.pend_callback);
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-                k_msgq_put(&__zt_bridge_queue, &idx, K_MSEC(50));
+        k_msgq_put(&__zt_bridge_queue, &idx, K_MSEC(50));
 #endif
-                meta->flag.pend_callback = false;
-
-            } else {
-                LOG_INF("[ZT-THREAD]: Received pend_callback from a channel(#%d) "
-                        "without changes!",
-                        idx);
-            }
-        } else {
-            LOG_INF("[ZT-THREAD]: Received an invalid ID channel #%d", idx);
+        struct k_msgq **cursor = meta->subscribers;
+        for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
+            k_msgq_put(s, &idx, K_MSEC(50));
         }
+        meta->flag.pend_callback = false;
     }
 }
 
@@ -211,21 +177,21 @@ K_THREAD_DEFINE(zt_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
 void __zt_bridge_thread(void)
 {
-    zt_channel_index_t idx = 0;
+    zt_channel_index_t idx                              = 0;
+    uint8_t data[CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN] = {0};
     while (1) {
         if (!k_msgq_get(&__zt_bridge_queue, &idx, K_FOREVER)) {
             struct metadata *meta = __zt_channels_lookup_table[idx];
-            ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
-                     "Could not read the channel. Channel is busy");
-            memcpy(data, meta->channel, meta->channel_size);
-            k_sem_give(meta->semaphore);
-            return 0;
-            // zt_chan_read(net_pkt, pkt);
+            if (k_sem_take(meta->semaphore, K_MSEC(200)) == 0) {
+                memcpy(data, meta->channel, meta->channel_size);
+                k_sem_give(meta->semaphore);
+                // do what to do with the data
+                memset(data, 0, CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN);
+            }
         }
     }
 }
 
 K_THREAD_DEFINE(zt_bridge_thread, 2048, __zt_bridge_thread, NULL, NULL, NULL,
                 (CONFIG_ZBUS_MONITOR_THREAD_PRIORITY + 1), 0, 0);
-
 #endif

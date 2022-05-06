@@ -2,9 +2,18 @@ module = ZBUS
 module-str = zbus
 source "subsys/logging/Kconfig.template.log_config"
 
-config ZBUS_SERIAL_IPC
-  bool "Enable the  zeta IPC over serial"
+config ZBUS_IPC_BRIDGE
+  bool "Enable the IPC bridge"
   default n
+
+menu "IPC bridge"
+visible if ZBUS_IPC_BRIDGE
+
+config ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN
+  int "The maximum channel size"
+  default 256
+
+endmenu
 
 config ZBUS_MONITOR_THREAD_STACK_SIZE
   int "Size of the monitor thead stack"
