@@ -15,6 +15,10 @@ config ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN
 
 endmenu
 
+config ZBUS_ASSERTS
+  bool "Enable asserts for zbus implementation"
+  default y
+
 config ZBUS_MONITOR_THREAD_STACK_SIZE
   int "Size of the monitor thead stack"
   default 2048

@@ -16,6 +16,18 @@
 
 #include "zbus_messages.h"
 
+#if defined(CONFIG_ZBUS_ASSERTS)
+#define ZB_ASSERT(cond)                                                                  \
+    do {                                                                                 \
+        if (!(cond)) {                                                                   \
+            printk("Assertion failed %s:%d(%s): %s\n", __FILE__, __LINE__, __FUNCTION__, \
+                   #cond);                                                               \
+            k_oops();                                                                    \
+        }                                                                                \
+    } while (0)
+#else
+#define ZB_ASSERT(cond)
+#endif
 
 typedef enum {
 #ifdef ZT_CHANNEL
@@ -88,7 +100,6 @@ typedef enum {
     }
 
 struct metadata {
-    char *name;
     struct {
         bool pend_callback;
         bool on_changed;

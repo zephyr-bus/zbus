@@ -65,8 +65,7 @@ static struct zt_channels __zt_channels = {
 #undef ZT_CHANNEL
 #define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     .__zt_meta_##name =                                                                  \
-        {#name,               /* Name */                                                 \
-         .flag = {false,      /* Not defined yet */                                      \
+        {.flag = {false,      /* Not defined yet */                                      \
                   on_changed, /* Only changes in the channel will propagate  */          \
                   read_only,  /* The channel is only for reading. It must have a initial \
                                  value. */                                               \
@@ -101,11 +100,11 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     __label__ cleanup;
     int ret = 0;
-    __ASSERT_NO_MSG(meta->channel != NULL);
-    __ASSERT_NO_MSG(data != NULL);
-    __ASSERT_NO_MSG(data_size > 0);
-    __ASSERT_NO_MSG(meta->channel_size == data_size);
-    __ASSERT_NO_MSG(!meta->flag.read_only);
+    ZB_ASSERT(meta->channel != NULL);
+    ZB_ASSERT(data != NULL);
+    ZB_ASSERT(data_size > 0);
+    ZB_ASSERT(meta->channel_size == data_size);
+    ZB_ASSERT(!meta->flag.read_only);
     if (k_sem_take(meta->semaphore, K_MSEC(200))) {
         ret = -1;
         goto cleanup;
@@ -121,7 +120,7 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
     meta->flag.pend_callback = true;
     if (k_msgq_put(&__zt_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
                    K_MSEC(500))) {
-        ret = -1;
+        ret = -2;
     }
 cleanup:
     k_sem_give(meta->semaphore);
@@ -133,11 +132,11 @@ int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     __label__ cleanup;
     int ret = 0;
-    __ASSERT_NO_MSG(meta->channel != NULL);
-    __ASSERT_NO_MSG(data != NULL);
-    __ASSERT_NO_MSG(data_size > 0);
-    __ASSERT_NO_MSG(meta->channel_size == data_size);
-    if (k_sem_take(meta->semaphore, K_MSEC(200)) == 0) {
+    ZB_ASSERT(meta->channel != NULL);
+    ZB_ASSERT(data != NULL);
+    ZB_ASSERT(data_size > 0);
+    ZB_ASSERT(meta->channel_size == data_size);
+    if (k_sem_take(meta->semaphore, K_MSEC(200))) {
         ret = -1;
         goto cleanup;
     }
@@ -156,9 +155,9 @@ static void __zt_monitor_thread(void)
     zt_channel_index_t idx = 0;
     while (1) {
         k_msgq_get(&__zt_channels_changed_msgq, &idx, K_FOREVER);
-        __ASSERT_NO_MSG(idx < ZT_CHANNEL_COUNT);
+        ZB_ASSERT(idx < ZT_CHANNEL_COUNT);
         struct metadata *meta = __zt_channels_lookup_table[idx];
-        __ASSERT_NO_MSG(meta->flag.pend_callback);
+        ZB_ASSERT(meta->flag.pend_callback);
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
         k_msgq_put(&__zt_bridge_queue, &idx, K_MSEC(50));
 #endif
