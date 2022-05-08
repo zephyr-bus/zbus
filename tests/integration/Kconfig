@@ -1,1 +1,2 @@
-rsource "../../Kconfig"
+rsource "../../Kconfig.zbus"
+source "Kconfig.zephyr"
