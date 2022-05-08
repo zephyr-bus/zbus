@@ -14,89 +14,89 @@
 
 #include <logging/log.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
-K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
 
-#ifdef ZT_CHANNEL
-#undef ZT_CHANNEL
+#ifdef ZB_CHANNEL
+#undef ZB_CHANNEL
 #endif
 
 /**
- * @def ZT_CHANNEL
+ * @def ZB_CHANNEL
  * Description
  */
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    K_SEM_DEFINE(__zt_sem_##name, 1, 1);
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    K_SEM_DEFINE(__zb_sem_##name, 1, 1);
 #include "zbus_channels.def"
 
 /**
- * @def ZT_CHANNEL_SUBSCRIBERS_QUEUES
+ * @def ZB_CHANNEL_SUBSCRIBERS_QUEUES
  * Description
  */
-#define ZT_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
     extern struct k_msgq sub_ref, ##__VA_ARGS__
 
-#define ZT_CHANNEL_HAS_NO_SUBSCRIBERS
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+#define ZB_CHANNEL_HAS_NO_SUBSCRIBERS
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     subscribers;
 
 #include "zbus_channels.def"
 
 /**
- * @def ZT_REF
+ * @def ZB_REF
  * Description
  */
-#define ZT_REF(a) &a
+#define ZB_REF(a) &a
 
-#undef ZT_CHANNEL_SUBSCRIBERS_QUEUES
-#define ZT_CHANNEL_SUBSCRIBERS_QUEUES(...)        \
+#undef ZB_CHANNEL_SUBSCRIBERS_QUEUES
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES(...)        \
     (struct k_msgq **) (struct k_msgq *[])        \
     {                                             \
-        FOR_EACH(ZT_REF, (, ), __VA_ARGS__), NULL \
+        FOR_EACH(ZB_REF, (, ), __VA_ARGS__), NULL \
     }
-#undef ZT_CHANNEL_HAS_NO_SUBSCRIBERS
-#define ZT_CHANNEL_HAS_NO_SUBSCRIBERS      \
+#undef ZB_CHANNEL_HAS_NO_SUBSCRIBERS
+#define ZB_CHANNEL_HAS_NO_SUBSCRIBERS      \
     (struct k_msgq **) (struct k_msgq *[]) \
     {                                      \
         NULL                               \
     }
 
-static struct zt_channels __zt_channels = {
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    .__zt_meta_##name =                                                                  \
+static struct zb_channels __zb_channels = {
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    .__zb_meta_##name =                                                                  \
         {.flag = {false,      /* Not defined yet */                                      \
                   on_changed, /* Only changes in the channel will propagate  */          \
                   read_only,  /* The channel is only for reading. It must have a initial \
                                  value. */                                               \
                   false},     /* ISC source flag */                                      \
-         zt_index_##name,     /* Lookup table index */                                   \
+         zb_index_##name,     /* Lookup table index */                                   \
          sizeof(type),        /* The channel's size */                                   \
-         (uint8_t *) &__zt_channels.name, /* The actual channel */                       \
-         &__zt_sem_##name,                /* Channel's semaphore */                      \
+         (uint8_t *) &__zb_channels.name, /* The actual channel */                       \
+         &__zb_sem_##name,                /* Channel's semaphore */                      \
          subscribers},                    /* List of subscribers queues */               \
         .name = init_val,
 #include "zbus_channels.def"
 };
 
-struct metadata *__zt_channels_lookup_table[] = {
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    &__zt_channels.__zt_meta_##name,
+struct metadata *__zb_channels_lookup_table[] = {
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    &__zb_channels.__zb_meta_##name,
 #include "zbus_channels.def"
 };
 
 /**
- * @brief This function returns the __zt_channels instance reference.
+ * @brief This function returns the __zb_channels instance reference.
  * @details Do not use this directly! It is being used by the auxilary functions.
- * @return A pointer of struct zt_channels.
+ * @return A pointer of struct zb_channels.
  */
-struct zt_channels *__zt_channels_instance()
+struct zb_channels *__zb_channels_instance()
 {
-    return &__zt_channels;
+    return &__zb_channels;
 }
 
-int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
+int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     __label__ cleanup;
     int ret = 0;
@@ -118,7 +118,7 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
     }
     memcpy(meta->channel, data, data_size);
     meta->flag.pend_callback = true;
-    if (k_msgq_put(&__zt_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
+    if (k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
                    K_MSEC(500))) {
         ret = -2;
     }
@@ -128,7 +128,7 @@ cleanup:
 }
 
 
-int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
+int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     __label__ cleanup;
     int ret = 0;
@@ -147,19 +147,19 @@ cleanup:
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-K_MSGQ_DEFINE(__zt_bridge_queue, sizeof(zt_channel_index_t), 16, 2);
+K_MSGQ_DEFINE(__zb_bridge_queue, sizeof(zb_channel_index_t), 16, 2);
 #endif
 
-static void __zt_monitor_thread(void)
+static void __zb_monitor_thread(void)
 {
-    zt_channel_index_t idx = 0;
+    zb_channel_index_t idx = 0;
     while (1) {
-        k_msgq_get(&__zt_channels_changed_msgq, &idx, K_FOREVER);
-        ZB_ASSERT(idx < ZT_CHANNEL_COUNT);
-        struct metadata *meta = __zt_channels_lookup_table[idx];
+        k_msgq_get(&__zb_channels_changed_msgq, &idx, K_FOREVER);
+        ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
+        struct metadata *meta = __zb_channels_lookup_table[idx];
         ZB_ASSERT(meta->flag.pend_callback);
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-        k_msgq_put(&__zt_bridge_queue, &idx, K_MSEC(50));
+        k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
 #endif
         struct k_msgq **cursor = meta->subscribers;
         for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
@@ -169,18 +169,18 @@ static void __zt_monitor_thread(void)
     }
 }
 
-K_THREAD_DEFINE(zt_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                __zt_monitor_thread, NULL, NULL, NULL,
+K_THREAD_DEFINE(zb_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
+                __zb_monitor_thread, NULL, NULL, NULL,
                 CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-void __zt_bridge_thread(void)
+void __zb_bridge_thread(void)
 {
-    zt_channel_index_t idx                              = 0;
+    zb_channel_index_t idx                              = 0;
     uint8_t data[CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN] = {0};
     while (1) {
-        if (!k_msgq_get(&__zt_bridge_queue, &idx, K_FOREVER)) {
-            struct metadata *meta = __zt_channels_lookup_table[idx];
+        if (!k_msgq_get(&__zb_bridge_queue, &idx, K_FOREVER)) {
+            struct metadata *meta = __zb_channels_lookup_table[idx];
             if (k_sem_take(meta->semaphore, K_MSEC(200)) == 0) {
                 memcpy(data, meta->channel, meta->channel_size);
                 k_sem_give(meta->semaphore);
@@ -191,6 +191,6 @@ void __zt_bridge_thread(void)
     }
 }
 
-K_THREAD_DEFINE(zt_bridge_thread, 2048, __zt_bridge_thread, NULL, NULL, NULL,
+K_THREAD_DEFINE(zb_bridge_thread, 2048, __zb_bridge_thread, NULL, NULL, NULL,
                 (CONFIG_ZBUS_MONITOR_THREAD_PRIORITY + 1), 0, 0);
 #endif

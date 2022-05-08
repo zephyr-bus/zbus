@@ -20,11 +20,11 @@
 static void test_readonly_channel(void)
 {
     struct version v = {0};
-    zt_chan_read(version, v);
+    zb_chan_read(version, v);
     zassert_equal(v.major, 0, "Major must be 0");
     zassert_equal(v.minor, 1, "Minor must be 1");
     zassert_equal(v.build, 1023, "Build must be 1023");
-    struct metadata *version_metadata = ZT_CHANNEL_METADATA_GET(version);
+    struct metadata *version_metadata = ZB_CHANNEL_METADATA_GET(version);
     zassert_equal(version_metadata->flag.read_only, true, "It must be true");
     zassert_equal(version_metadata->channel_size, sizeof(struct version),
                   "Channel size is wrong");

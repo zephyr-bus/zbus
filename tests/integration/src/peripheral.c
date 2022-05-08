@@ -13,7 +13,7 @@
 #include "zbus.h"
 LOG_MODULE_REGISTER(peripheral, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(peripheral_queue, sizeof(zt_channel_index_t), 10, 2);
+K_MSGQ_DEFINE(peripheral_queue, sizeof(zb_channel_index_t), 10, 2);
 
 
 void peripheral_thread(void)
@@ -23,7 +23,7 @@ void peripheral_thread(void)
     struct sensor_data sd = {0, 0};
 
 
-    zt_channel_index_t idx = 0;
+    zb_channel_index_t idx = 0;
     while (!k_msgq_get(&peripheral_queue, &idx, K_FOREVER)) {
         LOG_DBG("[Peripheral] starting measurement");
         ++a;
@@ -31,7 +31,7 @@ void peripheral_thread(void)
         ++b;
         sd.b = b;
         LOG_DBG("[Peripheral] sending sensor data");
-        zt_chan_pub(sensor_data, sd);
+        zb_chan_pub(sensor_data, sd);
     }
 }
 
