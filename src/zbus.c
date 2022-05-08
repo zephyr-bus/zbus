@@ -35,7 +35,7 @@ K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
 #define ZB_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
     extern struct k_msgq sub_ref, ##__VA_ARGS__
 
-#define ZB_CHANNEL_HAS_NO_SUBSCRIBERS
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY
 #undef ZB_CHANNEL
 #define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     subscribers;
@@ -54,11 +54,11 @@ K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
     {                                             \
         FOR_EACH(ZB_REF, (, ), __VA_ARGS__), NULL \
     }
-#undef ZB_CHANNEL_HAS_NO_SUBSCRIBERS
-#define ZB_CHANNEL_HAS_NO_SUBSCRIBERS      \
-    (struct k_msgq **) (struct k_msgq *[]) \
-    {                                      \
-        NULL                               \
+#undef ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY \
+    (struct k_msgq **) (struct k_msgq *[])  \
+    {                                       \
+        NULL                                \
     }
 
 static struct zb_channels __zb_channels = {
