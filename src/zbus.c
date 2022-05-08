@@ -26,7 +26,7 @@ K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
  */
 #define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     K_SEM_DEFINE(__zb_sem_##name, 1, 1);
-#include "zbus_channels.def"
+#include "zbus_channels.h"
 
 /**
  * @def ZB_CHANNEL_SUBSCRIBERS_QUEUES
@@ -40,7 +40,7 @@ K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
 #define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     subscribers;
 
-#include "zbus_channels.def"
+#include "zbus_channels.h"
 
 /**
  * @def ZB_REF
@@ -76,14 +76,14 @@ static struct zb_channels __zb_channels = {
          &__zb_sem_##name,                /* Channel's semaphore */                      \
          subscribers},                    /* List of subscribers queues */               \
         .name = init_val,
-#include "zbus_channels.def"
+#include "zbus_channels.h"
 };
 
 struct metadata *__zb_channels_lookup_table[] = {
 #undef ZB_CHANNEL
 #define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     &__zb_channels.__zb_meta_##name,
-#include "zbus_channels.def"
+#include "zbus_channels.h"
 };
 
 /**

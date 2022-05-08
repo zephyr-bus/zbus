@@ -35,7 +35,7 @@ typedef enum {
 #endif
 #define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     zb_index_##name,
-#include "zbus_channels.def"
+#include "zbus_channels.h"
     ZB_CHANNEL_COUNT
 } __attribute__((packed)) zb_channel_index_t;
 
@@ -119,7 +119,7 @@ struct metadata {
     type name;
 
 struct zb_channels {
-#include "zbus_channels.def"
+#include "zbus_channels.h"
 };
 
 struct zb_channels *__zb_channels_instance();
