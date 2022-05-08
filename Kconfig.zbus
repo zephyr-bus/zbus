@@ -27,4 +27,3 @@ config ZBUS_MONITOR_THREAD_PRIORITY
   int "Size of the monitor thead stack"
   default 0
 
-source "Kconfig.zephyr"
