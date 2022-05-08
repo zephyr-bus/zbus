@@ -14,88 +14,101 @@
 
 #include <logging/log.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
-K_MSGQ_DEFINE(__zt_channels_changed_msgq, sizeof(zt_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
 
-
-#ifdef ZT_CHANNEL
-#undef ZT_CHANNEL
+#ifdef ZB_CHANNEL
+#undef ZB_CHANNEL
 #endif
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    K_SEM_DEFINE(__zt_sem_##name, 1, 1);
+
+/**
+ * @def ZB_CHANNEL
+ * Description
+ */
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    K_SEM_DEFINE(__zb_sem_##name, 1, 1);
 #include "zbus_channels.def"
 
-#define ZT_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
+/**
+ * @def ZB_CHANNEL_SUBSCRIBERS_QUEUES
+ * Description
+ */
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
     extern struct k_msgq sub_ref, ##__VA_ARGS__
 
-#define ZT_CHANNEL_NO_SUBSCRIBERS
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     subscribers;
 
 #include "zbus_channels.def"
 
-#define ZT_REF(a) &a
+/**
+ * @def ZB_REF
+ * Description
+ */
+#define ZB_REF(a) &a
 
-#undef ZT_CHANNEL_SUBSCRIBERS_QUEUES
-#define ZT_CHANNEL_SUBSCRIBERS_QUEUES(...)        \
+#undef ZB_CHANNEL_SUBSCRIBERS_QUEUES
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES(...)        \
     (struct k_msgq **) (struct k_msgq *[])        \
     {                                             \
-        FOR_EACH(ZT_REF, (, ), __VA_ARGS__), NULL \
+        FOR_EACH(ZB_REF, (, ), __VA_ARGS__), NULL \
     }
-#undef ZT_CHANNEL_NO_SUBSCRIBERS
-#define ZT_CHANNEL_NO_SUBSCRIBERS          \
-    (struct k_msgq **) (struct k_msgq *[]) \
-    {                                      \
-        NULL                               \
+#undef ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY
+#define ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY \
+    (struct k_msgq **) (struct k_msgq *[])  \
+    {                                       \
+        NULL                                \
     }
 
-static struct zt_channels __zt_channels = {
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    .__zt_meta_##name =                                                                  \
-        {#name,               /* Name */                                                 \
-         .flag = {false,      /* Not defined yet */                                      \
+static struct zb_channels __zb_channels = {
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    .__zb_meta_##name =                                                                  \
+        {.flag = {false,      /* Not defined yet */                                      \
                   on_changed, /* Only changes in the channel will propagate  */          \
                   read_only,  /* The channel is only for reading. It must have a initial \
                                  value. */                                               \
                   false},     /* ISC source flag */                                      \
-         zt_index_##name,     /* Lookup table index */                                   \
+         zb_index_##name,     /* Lookup table index */                                   \
          sizeof(type),        /* The channel's size */                                   \
-         (uint8_t *) &__zt_channels.name, /* The actual channel */                       \
-         &__zt_sem_##name,                /* Channel's semaphore */                      \
+         (uint8_t *) &__zb_channels.name, /* The actual channel */                       \
+         &__zb_sem_##name,                /* Channel's semaphore */                      \
          subscribers},                    /* List of subscribers queues */               \
         .name = init_val,
 #include "zbus_channels.def"
 };
 
-struct metadata *__zt_channels_lookup_table[] = {
-#undef ZT_CHANNEL
-#define ZT_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    &__zt_channels.__zt_meta_##name,
+struct metadata *__zb_channels_lookup_table[] = {
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    &__zb_channels.__zb_meta_##name,
 #include "zbus_channels.def"
 };
 
 /**
- * @brief This function returns the __zt_channels instance reference.
+ * @brief This function returns the __zb_channels instance reference.
  * @details Do not use this directly! It is being used by the auxilary functions.
- * @return A pointer of struct zt_channels.
+ * @return A pointer of struct zb_channels.
  */
-struct zt_channels *__zt_channels_instance()
+struct zb_channels *__zb_channels_instance()
 {
-    return &__zt_channels;
+    return &__zb_channels;
 }
 
-int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
+int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
 {
     __label__ cleanup;
-    if ((meta->channel == NULL) || (data == NULL) || (data_size == 0)) {
-        return -1;
+    int ret = 0;
+    ZB_ASSERT(meta->channel != NULL);
+    ZB_ASSERT(data != NULL);
+    ZB_ASSERT(data_size > 0);
+    ZB_ASSERT(meta->channel_size == data_size);
+    ZB_ASSERT(!meta->flag.read_only);
+    if (k_sem_take(meta->semaphore, K_MSEC(200))) {
+        ret = -1;
+        goto cleanup;
     }
-    if (meta->channel_size != data_size) {
-        return -2;
-    }
-    ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
-             "Could not publish the channel. Channel is busy");
     if (meta->flag.on_changed) {  // CHANGE
         if (memcmp(meta->channel, data, data_size) == 0) {
             /* This data is not different from the channel's. No changes here. */
@@ -103,76 +116,81 @@ int __zt_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
             goto cleanup;
         }
     }
-#if defined(CONFIG_ZETA_SERIAL_IPC)
-    if (k_current_get() == zt_serial_ipc_thread()) {
-        meta->flag.field.source_serial_isc = 1;
-    }
-#endif
     memcpy(meta->channel, data, data_size);
     meta->flag.pend_callback = true;
-    int error                = k_msgq_put(&__zt_channels_changed_msgq,
-                           (uint8_t *) &meta->lookup_table_index, K_MSEC(500));
-    if (error != 0) {
-        LOG_INF("[Channel #%d] Error sending channels change message to ZT "
-                "thread!",
-                meta->lookup_table_index);
+    if (k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
+                   K_MSEC(500))) {
+        ret = -2;
     }
 cleanup:
     k_sem_give(meta->semaphore);
-    return 0;
+    return ret;
 }
 
 
-int __zt_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
+int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
 {
-    if ((meta->channel == NULL) || (data == NULL) || (data_size == 0)) {
-        return -1;
+    __label__ cleanup;
+    int ret = 0;
+    ZB_ASSERT(meta->channel != NULL);
+    ZB_ASSERT(data != NULL);
+    ZB_ASSERT(data_size > 0);
+    ZB_ASSERT(meta->channel_size == data_size);
+    if (k_sem_take(meta->semaphore, K_MSEC(200))) {
+        ret = -1;
+        goto cleanup;
     }
-    if (meta->channel_size != data_size) {
-        return -2;
-    }
-    ZT_CHECK(k_sem_take(meta->semaphore, K_MSEC(200)) != 0, -EBUSY,
-             "Could not read the channel. Channel is busy");
     memcpy(data, meta->channel, meta->channel_size);
+cleanup:
     k_sem_give(meta->semaphore);
-    return 0;
+    return ret;
 }
-static void __zt_monitor_thread(void)
-{
-    zt_channel_index_t idx = 0;
-    while (1) {
-        k_msgq_get(&__zt_channels_changed_msgq, &idx, K_FOREVER);
-        LOG_DBG("[Monitor] notifying subscribers of %s channel",
-                __zt_channels_lookup_table[idx]->name);
-        if (idx < ZT_CHANNEL_COUNT) {
-            struct metadata *meta = __zt_channels_lookup_table[idx];
-            if (meta->flag.pend_callback) {
-                struct k_msgq **cursor = meta->subscribers;
-                for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
-                    k_msgq_put(s, &idx, K_MSEC(50));
-                    // (*s)->cb(idx);
-                }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-                if (meta->flag.source_serial_isc == 1) {
-                    meta->flag.source_serial_isc = 0;
-                } else {
-                    zt_serial_ipc_send_update_to_host(idx);
-                }
+K_MSGQ_DEFINE(__zb_bridge_queue, sizeof(zb_channel_index_t), 16, 2);
 #endif
-                meta->flag.pend_callback = false;
 
-            } else {
-                LOG_INF("[ZT-THREAD]: Received pend_callback from a channel(#%d) "
-                        "without changes!",
-                        idx);
+static void __zb_monitor_thread(void)
+{
+    zb_channel_index_t idx = 0;
+    while (1) {
+        k_msgq_get(&__zb_channels_changed_msgq, &idx, K_FOREVER);
+        ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
+        struct metadata *meta = __zb_channels_lookup_table[idx];
+        ZB_ASSERT(meta->flag.pend_callback);
+#if defined(CONFIG_ZBUS_SERIAL_IPC)
+        k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
+#endif
+        struct k_msgq **cursor = meta->subscribers;
+        for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
+            k_msgq_put(s, &idx, K_MSEC(50));
+        }
+        meta->flag.pend_callback = false;
+    }
+}
+
+K_THREAD_DEFINE(zb_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
+                __zb_monitor_thread, NULL, NULL, NULL,
+                CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
+
+#if defined(CONFIG_ZBUS_SERIAL_IPC)
+void __zb_bridge_thread(void)
+{
+    zb_channel_index_t idx                              = 0;
+    uint8_t data[CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN] = {0};
+    while (1) {
+        if (!k_msgq_get(&__zb_bridge_queue, &idx, K_FOREVER)) {
+            struct metadata *meta = __zb_channels_lookup_table[idx];
+            if (k_sem_take(meta->semaphore, K_MSEC(200)) == 0) {
+                memcpy(data, meta->channel, meta->channel_size);
+                k_sem_give(meta->semaphore);
+                // do what to do with the data
+                memset(data, 0, CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN);
             }
-        } else {
-            LOG_INF("[ZT-THREAD]: Received an invalid ID channel #%d", idx);
         }
     }
 }
 
-K_THREAD_DEFINE(zt_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                __zt_monitor_thread, NULL, NULL, NULL,
-                CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
+K_THREAD_DEFINE(zb_bridge_thread, 2048, __zb_bridge_thread, NULL, NULL, NULL,
+                (CONFIG_ZBUS_MONITOR_THREAD_PRIORITY + 1), 0, 0);
+#endif

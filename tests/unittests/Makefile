@@ -29,7 +29,7 @@ run_posix: clean
 
 
 tests_unit:
-	${ZEPHYR_BASE}/scripts/twister -O ./build/twister-out -T tests
+	$(ZEPHYR_BASE)/scripts/twister -O ./build/twister-out -T tests/unittests
 
 menuconfig:
 	west build -b hifive1_revb -t menuconfig  $(ARGS)

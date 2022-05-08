@@ -1,0 +1,6 @@
+tests:
+  # section.subsection
+  integration.module_interaction_no_error:
+    build_only: false
+    platform_allow: native_posix qemu_cortex_m3
+    tags: testing

@@ -10,9 +10,13 @@
 
 #include <logging/log.h>
 #include "zbus.h"
+#include "zbus_messages.h"
 LOG_MODULE_REGISTER(net, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(net_queue, sizeof(zt_channel_index_t), 10, 2);
+K_MSGQ_DEFINE(net_queue, sizeof(zb_channel_index_t), 10, 2);
+
+struct net_pkt pkt = {0};
+
 /**
  * @brief Summary
  * @details Description
@@ -20,11 +24,10 @@ K_MSGQ_DEFINE(net_queue, sizeof(zt_channel_index_t), 10, 2);
 
 void net_thread(void)
 {
-    zt_channel_index_t idx = 0;
+    zb_channel_index_t idx = 0;
     while (1) {
         if (!k_msgq_get(&net_queue, &idx, K_FOREVER)) {
-            struct net_pkt pkt = {0};
-            zt_chan_read(net_pkt, pkt);
+            zb_chan_read(net_pkt, pkt);
             LOG_DBG("[Net] Parity %c, 3 multiple: %s", pkt.x, pkt.y ? "true" : "false");
         }
     }

@@ -1,6 +1,7 @@
-ARGS := -- -G'Unix Makefiles' -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
-ARGS_PRODUCTION := -- -G'Unix Makefiles' -Wno-dev
-BOARD := hifive1_revb
+# ARGS := -- -G'Unix Makefiles' -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
+ARGS := -- -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
+ARGS_PRODUCTION := -- -Wno-dev
+BOARD ?= hifive1_revb
 
 all: run
 
@@ -27,9 +28,5 @@ run_posix: clean
 	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
 	./build/zephyr/zephyr.exe
 
-
-tests_unit:
-	${ZEPHYR_BASE}/scripts/twister -O ./build/twister-out -T tests
-
-menuconfig:
-	west build -b hifive1_revb -t menuconfig  $(ARGS)
+menuconfig: rebuild
+	west build -b $(BOARD) -t menuconfig  $(ARGS)
