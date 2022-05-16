@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr.h>
 #include <ztest.h>
 #include "zbus.h"
 
+#include <logging/log.h>
+LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 /*
  * @brief Systematic analyses of inputs
  name = str[0,1,>1]

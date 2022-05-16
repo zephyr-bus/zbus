@@ -11,7 +11,7 @@
 
 #include <logging/log.h>
 #include "zbus.h"
-LOG_MODULE_REGISTER(peripheral, CONFIG_ZBUS_LOG_LEVEL);
+LOG_MODULE_DECLARE(peripheral, CONFIG_ZBUS_LOG_LEVEL);
 
 K_MSGQ_DEFINE(peripheral_queue, sizeof(zb_channel_index_t), 10, 2);
 
