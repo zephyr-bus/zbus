@@ -15,6 +15,11 @@ config ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN
 
 endmenu
 
+config ZBUS_LOG
+  bool "Enable log for zbus usage"
+  depends on LOG
+  default n
+
 config ZBUS_ASSERTS
   bool "Enable asserts for zbus implementation"
   default y

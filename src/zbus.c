@@ -97,7 +97,22 @@ struct zb_channels *__zb_channels_instance()
     return &__zb_channels;
 }
 
-int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
+
+/**
+ * @brief Channel publish function.
+ * This function publishes data to a channel. This function must not be called directly.
+ *
+ * @param meta Channel's metadata.
+ * @param data The message data to be written to the channel. This must be the same type
+ * as the channel.
+ * @param data_size The size of the type.
+ * @param timeout The timeout for the operation to fail. If you are calling this from a
+ * ISR it will force timeout to be K_NO_WAIT. The pub function can use the timeout twice,
+ * once for taking the semaphore and another to put the idx at the monitor's queue.
+ * @return 0 if succes and a negative number if error.
+ */
+int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
+                  k_timeout_t timeout)
 {
     __label__ cleanup;
     int ret = 0;
@@ -106,7 +121,11 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
     ZB_ASSERT(data_size > 0);
     ZB_ASSERT(meta->channel_size == data_size);
     ZB_ASSERT(!meta->flag.read_only);
-    if (k_sem_take(meta->semaphore, K_MSEC(200))) {
+    /* Force to not use timeout inside ISR */
+    if (k_is_in_isr()) {
+        timeout = K_NO_WAIT;
+    }
+    if (k_sem_take(meta->semaphore, timeout)) {
         ret = -1;
         goto cleanup;
     }
@@ -119,7 +138,7 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
     memcpy(meta->channel, data, data_size);
     meta->flag.pend_callback = true;
     if (k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
-                   K_MSEC(500))) {
+                   timeout)) {
         ret = -2;
     }
 cleanup:
@@ -128,15 +147,33 @@ cleanup:
 }
 
 
-int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size)
+/**
+ * @brief Channel read function.
+ * This function enables the reading of a channel message. This function must not be
+ * called directly.
+ *
+ * @param meta Channel's metadata.
+ * @param data The message data to be read from the channel. This must be the same type
+ * as the channel.
+ * @param data_size The size of the type.
+ * @param timeout The timeout for the operation to fail. If you are calling this from a
+ * ISR it will force the timeout to be K_NO_WAIT.
+ * @return 0 if succes and a negative number if error.
+ */
+int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size,
+                   k_timeout_t timeout)
 {
     __label__ cleanup;
+    /* Force to not use timeout inside ISR */
+    if (k_is_in_isr()) {
+        timeout = K_NO_WAIT;
+    }
     int ret = 0;
     ZB_ASSERT(meta->channel != NULL);
     ZB_ASSERT(data != NULL);
     ZB_ASSERT(data_size > 0);
     ZB_ASSERT(meta->channel_size == data_size);
-    if (k_sem_take(meta->semaphore, K_MSEC(200))) {
+    if (k_sem_take(meta->semaphore, timeout) < 0) {
         ret = -1;
         goto cleanup;
     }
@@ -160,7 +197,7 @@ static void __zb_monitor_thread(void)
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
         if (meta->flag.pend_callback) {
-            LOG_DBG("[ZBUS] notify!");
+            __ZB_LOG_DBG("[ZBUS] notify!");
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
             k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
 #endif

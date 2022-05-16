@@ -27,7 +27,7 @@ void net_thread(void)
     zb_channel_index_t idx = 0;
     while (1) {
         if (!k_msgq_get(&net_queue, &idx, K_FOREVER)) {
-            zb_chan_read(net_pkt, pkt);
+            zb_chan_read(net_pkt, pkt, K_NO_WAIT);
             LOG_DBG("[Net] Parity %c, 3 multiple: %s", pkt.x, pkt.y ? "true" : "false");
         }
     }
