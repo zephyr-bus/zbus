@@ -18,15 +18,15 @@ void core_thread(void)
 {
     zb_channel_index_t idx = 0;
     struct action start    = {true};
-    zb_chan_pub(start_measurement, start);
+    zb_chan_pub(start_measurement, start, K_FOREVER);
     while (1) {
         if (!k_msgq_get(&core_queue, &idx, K_FOREVER)) {
             struct sensor_data data = {0};
-            zb_chan_read(sensor_data, data);
+            zb_chan_read(sensor_data, data, K_NO_WAIT);
             LOG_DBG("[Core] sensor {a = %d, b = %d}. Sending pkt", data.a, data.b);
             struct net_pkt pkt = {.x = !(data.a % 2) ? 'P' : 'I',
                                   .y = !(data.b % 3) ? true : false};
-            zb_chan_pub(net_pkt, pkt);
+            zb_chan_pub(net_pkt, pkt, K_MSEC(200));
         }
     }
 }

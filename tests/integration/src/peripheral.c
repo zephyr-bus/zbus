@@ -31,7 +31,7 @@ void peripheral_thread(void)
         ++b;
         sd.b = b;
         LOG_DBG("[Peripheral] sending sensor data");
-        zb_chan_pub(sensor_data, sd);
+        zb_chan_pub(sensor_data, sd, K_MSEC(250));
     }
 }
 
