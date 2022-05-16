@@ -12,6 +12,7 @@
 #include <kernel.h>
 #include <sys/printk.h>
 
+
 #include <logging/log.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
