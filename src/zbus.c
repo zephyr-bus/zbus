@@ -112,7 +112,6 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size)
     if (meta->flag.on_changed) {  // CHANGE
         if (memcmp(meta->channel, data, data_size) == 0) {
             /* This data is not different from the channel's. No changes here. */
-            meta->flag.pend_callback = false;
             goto cleanup;
         }
     }
@@ -157,15 +156,19 @@ static void __zb_monitor_thread(void)
         k_msgq_get(&__zb_channels_changed_msgq, &idx, K_FOREVER);
         ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
         struct metadata *meta = __zb_channels_lookup_table[idx];
-        ZB_ASSERT(meta->flag.pend_callback);
+        /*! If there are more than one change of the same channel, only the last one is
+         * applied. */
+        if (meta->flag.pend_callback) {
+            LOG_INF("[ZBUS] notify!");
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-        k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
+            k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
 #endif
-        struct k_msgq **cursor = meta->subscribers;
-        for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
-            k_msgq_put(s, &idx, K_MSEC(50));
+            struct k_msgq **cursor = meta->subscribers;
+            for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
+                k_msgq_put(s, &idx, K_MSEC(50));
+            }
+            meta->flag.pend_callback = false;
         }
-        meta->flag.pend_callback = false;
     }
 }
 
