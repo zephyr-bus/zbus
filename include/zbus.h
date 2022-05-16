@@ -135,7 +135,7 @@ struct zb_channels *__zb_channels_instance();
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
-        LOG_INF("[ZBUS] pub " #chan " at %s:%d", __FILE__, __LINE__);                    \
+        LOG_DBG("[ZBUS] pub " #chan " at %s:%d", __FILE__, __LINE__);                    \
         __zb_chan_pub(ZB_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, sizeof(value)); \
     })
 
@@ -149,7 +149,7 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size);
             __typeof__(value) value##__aux__;                             \
             (void) (&chan##__aux__ == &value##__aux__);                   \
         }                                                                 \
-        LOG_INF("[ZBUS] read " #chan " at %s:%d", __FILE__, __LINE__);    \
+        LOG_DBG("[ZBUS] read " #chan " at %s:%d", __FILE__, __LINE__);    \
         __zb_chan_read(ZB_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, \
                        sizeof(value));                                    \
     })

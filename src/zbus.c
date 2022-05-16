@@ -160,7 +160,7 @@ static void __zb_monitor_thread(void)
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
         if (meta->flag.pend_callback) {
-            LOG_INF("[ZBUS] notify!");
+            LOG_DBG("[ZBUS] notify!");
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
             k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
 #endif
