@@ -107,8 +107,8 @@ struct zb_channels *__zb_channels_instance()
  * as the channel.
  * @param data_size The size of the type.
  * @param timeout The timeout for the operation to fail. If you are calling this from a
- * ISR it must be a K_NO_WAIT. The pub function can use the timeout twice, once for taking
- * the semaphore and another to put the idx at the monitor's queue.
+ * ISR it will force timeout to be K_NO_WAIT. The pub function can use the timeout twice,
+ * once for taking the semaphore and another to put the idx at the monitor's queue.
  * @return 0 if succes and a negative number if error.
  */
 int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
@@ -121,6 +121,10 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
     ZB_ASSERT(data_size > 0);
     ZB_ASSERT(meta->channel_size == data_size);
     ZB_ASSERT(!meta->flag.read_only);
+    /* Force to not use timeout inside ISR */
+    if (k_is_in_isr()) {
+        timeout = K_NO_WAIT;
+    }
     if (k_sem_take(meta->semaphore, timeout)) {
         ret = -1;
         goto cleanup;
@@ -153,13 +157,17 @@ cleanup:
  * as the channel.
  * @param data_size The size of the type.
  * @param timeout The timeout for the operation to fail. If you are calling this from a
- * ISR it must be a K_NO_WAIT.
+ * ISR it will force the timeout to be K_NO_WAIT.
  * @return 0 if succes and a negative number if error.
  */
 int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size,
                    k_timeout_t timeout)
 {
     __label__ cleanup;
+    /* Force to not use timeout inside ISR */
+    if (k_is_in_isr()) {
+        timeout = K_NO_WAIT;
+    }
     int ret = 0;
     ZB_ASSERT(meta->channel != NULL);
     ZB_ASSERT(data != NULL);

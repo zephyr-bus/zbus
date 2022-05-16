@@ -142,12 +142,11 @@ struct zb_channels *__zb_channels_instance();
             __typeof__(value) value##__aux__;                                           \
             (void) (&chan##__aux__ == &value##__aux__);                                 \
         }                                                                               \
-        __ZB_LOG_DBG("[ZBUS] pub " #chan " at %s:%d", __FILE__, __LINE__);              \
+        __ZB_LOG_DBG("[ZBUS] %s pub " #chan " at %s:%d", (k_is_in_isr() ? "ISR" : ""),  \
+                     __FILE__, __LINE__);                                               \
         __zb_chan_pub(ZB_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, sizeof(value), \
                       timeout);                                                         \
     })
-
-#define zb_chan_pub_from_isr(chan, value) zb_chan_pub(chan, value, K_NO_WAIT)
 
 int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
                   k_timeout_t timeout);
@@ -160,12 +159,11 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
-        __ZB_LOG_DBG("[ZBUS] read " #chan " at %s:%d", __FILE__, __LINE__);              \
+        __ZB_LOG_DBG("[ZBUS] %s read " #chan " at %s:%d", (k_is_in_isr() ? "ISR" : ""),  \
+                     __FILE__, __LINE__);                                                \
         __zb_chan_read(ZB_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, sizeof(value), \
                        timeout);                                                         \
     })
-
-#define zb_chan_read_from_isr(chan, value) zb_chan_read(chan, value, K_NO_WAIT)
 
 int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size,
                    k_timeout_t timeout);
