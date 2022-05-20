@@ -29,8 +29,8 @@ static void test_readonly_channel(void)
     zassert_equal(v.build, 1023, "Build must be 1023");
     struct metadata *version_metadata = ZB_CHANNEL_METADATA_GET(version);
     zassert_equal(version_metadata->flag.read_only, true, "It must be true");
-    zassert_equal(version_metadata->channel_size, sizeof(struct version),
-                  "Channel size is wrong");
+    zassert_equal(version_metadata->message_size, sizeof(struct version),
+                  "Message size is wrong");
     zassert_equal(version_metadata->flag.on_changed, false, NULL);
     zassert_equal(version_metadata->flag.read_only, true, NULL);
     zassert_equal(version_metadata->flag.on_changed, false, NULL);
