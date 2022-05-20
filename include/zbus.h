@@ -3,9 +3,8 @@
  * @brief     Header of
  * @date      Tue Dec 14 14:19:05 2021
  * @author    Rodrigo Peixoto
- * @copyright BSD-3-Clause
+ * @copyright MIT
  *
- * This module
  */
 
 #ifndef _ZBUS_H_
@@ -29,7 +28,7 @@
 #define ZB_ASSERT(cond)
 #endif
 
-typedef enum {
+typedef enum __attribute__((packed)) {
 #ifdef ZB_CHANNEL
 #undef ZB_CHANNEL
 #endif
@@ -37,7 +36,7 @@ typedef enum {
     zb_index_##name,
 #include "zbus_channels.h"
     ZB_CHANNEL_COUNT
-} __attribute__((packed)) zb_channel_index_t;
+} zb_channel_index_t;
 
 
 /**
@@ -107,8 +106,8 @@ struct metadata {
         bool source_serial_isc;
     } flag;
     uint16_t lookup_table_index;
-    uint16_t channel_size;
-    uint8_t *channel;
+    uint16_t message_size;
+    uint8_t *message;
     struct k_sem *semaphore;
     struct k_msgq **subscribers;
 };
@@ -148,7 +147,7 @@ struct zb_channels *__zb_channels_instance();
                       timeout);                                                         \
     })
 
-int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
+int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
                   k_timeout_t timeout);
 
 
@@ -165,7 +164,7 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
                        timeout);                                                         \
     })
 
-int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size,
+int __zb_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                    k_timeout_t timeout);
 
 #endif  // _ZBUS_H_

@@ -5,13 +5,10 @@
  * @author    Rodrigo Peixoto
  * @copyright MIT
  *
- * This module
  */
-
 #include "zbus.h"
 #include <kernel.h>
 #include <sys/printk.h>
-
 
 #include <logging/log.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
@@ -111,15 +108,15 @@ struct zb_channels *__zb_channels_instance()
  * once for taking the semaphore and another to put the idx at the monitor's queue.
  * @return 0 if succes and a negative number if error.
  */
-int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
+int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
                   k_timeout_t timeout)
 {
     __label__ cleanup;
     int ret = 0;
-    ZB_ASSERT(meta->channel != NULL);
-    ZB_ASSERT(data != NULL);
-    ZB_ASSERT(data_size > 0);
-    ZB_ASSERT(meta->channel_size == data_size);
+    ZB_ASSERT(meta->message != NULL);
+    ZB_ASSERT(msg != NULL);
+    ZB_ASSERT(msg_size > 0);
+    ZB_ASSERT(meta->message_size == msg_size);
     ZB_ASSERT(!meta->flag.read_only);
     /* Force to not use timeout inside ISR */
     if (k_is_in_isr()) {
@@ -130,12 +127,12 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *data, size_t data_size,
         goto cleanup;
     }
     if (meta->flag.on_changed) {  // CHANGE
-        if (memcmp(meta->channel, data, data_size) == 0) {
+        if (memcmp(meta->message, msg, msg_size) == 0) {
             /* This data is not different from the channel's. No changes here. */
             goto cleanup;
         }
     }
-    memcpy(meta->channel, data, data_size);
+    memcpy(meta->message, msg, msg_size);
     meta->flag.pend_callback = true;
     if (k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
                    timeout)) {
@@ -160,7 +157,7 @@ cleanup:
  * ISR it will force the timeout to be K_NO_WAIT.
  * @return 0 if succes and a negative number if error.
  */
-int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size,
+int __zb_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                    k_timeout_t timeout)
 {
     __label__ cleanup;
@@ -169,15 +166,15 @@ int __zb_chan_read(struct metadata *meta, uint8_t *data, size_t data_size,
         timeout = K_NO_WAIT;
     }
     int ret = 0;
-    ZB_ASSERT(meta->channel != NULL);
-    ZB_ASSERT(data != NULL);
-    ZB_ASSERT(data_size > 0);
-    ZB_ASSERT(meta->channel_size == data_size);
+    ZB_ASSERT(meta->message != NULL);
+    ZB_ASSERT(msg != NULL);
+    ZB_ASSERT(msg_size > 0);
+    ZB_ASSERT(meta->message_size == msg_size);
     if (k_sem_take(meta->semaphore, timeout) < 0) {
         ret = -1;
         goto cleanup;
     }
-    memcpy(data, meta->channel, meta->channel_size);
+    memcpy(msg, meta->message, meta->message_size);
 cleanup:
     k_sem_give(meta->semaphore);
     return ret;
