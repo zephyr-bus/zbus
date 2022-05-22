@@ -2,19 +2,6 @@ module = ZBUS
 module-str = zbus
 source "subsys/logging/Kconfig.template.log_config"
 
-config ZBUS_IPC_BRIDGE
-  bool "Enable the IPC bridge"
-  default n
-
-menu "IPC bridge"
-visible if ZBUS_IPC_BRIDGE
-
-config ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN
-  int "The maximum channel size"
-  default 256
-
-endmenu
-
 config ZBUS_LOG
   bool "Enable log for zbus usage"
   depends on LOG
@@ -32,3 +19,18 @@ config ZBUS_MONITOR_THREAD_PRIORITY
   int "Size of the monitor thead stack"
   default 0
 
+config ZBUS_EXT
+  bool "Enable the Zbus extension"
+  default n
+
+if ZBUS_EXT
+
+config ZBUS_EXT_THREAD_STACK_SIZE
+  int "Size of the monitor thead stack"
+  default 2048
+
+config ZBUS_EXT_THREAD_PRIORITY
+  int "Size of the monitor thead stack"
+  default 1
+
+endif # ZBUS_EXT

@@ -14,6 +14,10 @@
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
 
+#if defined(CONFIG_ZBUS_EXT)
+K_MSGQ_DEFINE(__zb_ext_msgq, sizeof(zb_channel_index_t), 32, 2);
+#endif
+
 #ifdef ZB_CHANNEL
 #undef ZB_CHANNEL
 #endif
@@ -95,6 +99,11 @@ struct zb_channels *__zb_channels_instance()
 }
 
 
+struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx)
+{
+    ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
+    return __zb_channels_lookup_table[idx];
+}
 /**
  * @brief Channel publish function.
  * This function publishes data to a channel. This function must not be called directly.
@@ -109,7 +118,7 @@ struct zb_channels *__zb_channels_instance()
  * @return 0 if succes and a negative number if error.
  */
 int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                  k_timeout_t timeout)
+                  k_timeout_t timeout, bool from_ext)
 {
     __label__ cleanup;
     int ret = 0;
@@ -134,6 +143,7 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
     }
     memcpy(meta->message, msg, msg_size);
     meta->flag.pend_callback = true;
+    meta->flag.from_ext      = from_ext;
     if (k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
                    timeout)) {
         ret = -2;
@@ -194,15 +204,18 @@ static void __zb_monitor_thread(void)
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
         if (meta->flag.pend_callback) {
-            __ZB_LOG_DBG("[ZBUS] notify!");
-#if defined(CONFIG_ZBUS_SERIAL_IPC)
-            k_msgq_put(&__zb_bridge_queue, &idx, K_MSEC(50));
+#if defined(CONFIG_ZBUS_EXT)
+            if (meta->flag.from_ext == false) {
+                k_msgq_put(&__zb_ext_msgq, &idx, K_MSEC(50));
+            }
 #endif
             struct k_msgq **cursor = meta->subscribers;
             for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
                 k_msgq_put(s, &idx, K_MSEC(50));
             }
             meta->flag.pend_callback = false;
+            meta->flag.from_ext      = false;
+            __ZB_LOG_DBG("[ZBUS] notify!");
         }
     }
 }
@@ -210,25 +223,3 @@ static void __zb_monitor_thread(void)
 K_THREAD_DEFINE(zb_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
                 __zb_monitor_thread, NULL, NULL, NULL,
                 CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
-
-#if defined(CONFIG_ZBUS_SERIAL_IPC)
-void __zb_bridge_thread(void)
-{
-    zb_channel_index_t idx                              = 0;
-    uint8_t data[CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN] = {0};
-    while (1) {
-        if (!k_msgq_get(&__zb_bridge_queue, &idx, K_FOREVER)) {
-            struct metadata *meta = __zb_channels_lookup_table[idx];
-            if (k_sem_take(meta->semaphore, K_MSEC(200)) == 0) {
-                memcpy(data, meta->channel, meta->channel_size);
-                k_sem_give(meta->semaphore);
-                // do what to do with the data
-                memset(data, 0, CONFIG_ZBUS_IPC_BRIDGE_MAX_BUFFER_LEN);
-            }
-        }
-    }
-}
-
-K_THREAD_DEFINE(zb_bridge_thread, 2048, __zb_bridge_thread, NULL, NULL, NULL,
-                (CONFIG_ZBUS_MONITOR_THREAD_PRIORITY + 1), 0, 0);
-#endif
