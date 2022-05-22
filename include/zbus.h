@@ -103,7 +103,7 @@ struct metadata {
         bool pend_callback;
         bool on_changed;
         bool read_only;
-        bool source_serial_isc;
+        bool from_ext;
     } flag;
     uint16_t lookup_table_index;
     uint16_t message_size;
@@ -121,7 +121,16 @@ struct zb_channels {
 #include "zbus_channels.h"
 };
 
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    type name;
+
+typedef union {
+#include "zbus_channels.h"
+} zb_channel_variant_t;
+
 struct zb_channels *__zb_channels_instance();
+struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx);
 
 // /* To avoid error when not using LOG */
 #if defined(CONFIG_ZBUS_LOG)
@@ -141,14 +150,14 @@ struct zb_channels *__zb_channels_instance();
             __typeof__(value) value##__aux__;                                           \
             (void) (&chan##__aux__ == &value##__aux__);                                 \
         }                                                                               \
-        __ZB_LOG_DBG("[ZBUS] %s pub " #chan " at %s:%d", (k_is_in_isr() ? "ISR" : ""),  \
+        __ZB_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""),  \
                      __FILE__, __LINE__);                                               \
         __zb_chan_pub(ZB_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, sizeof(value), \
-                      timeout);                                                         \
+                      timeout, false);                                                  \
     })
 
 int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                  k_timeout_t timeout);
+                  k_timeout_t timeout, bool from_ext);
 
 
 #define zb_chan_read(chan, value, timeout)                                               \
@@ -158,7 +167,7 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
-        __ZB_LOG_DBG("[ZBUS] %s read " #chan " at %s:%d", (k_is_in_isr() ? "ISR" : ""),  \
+        __ZB_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""),  \
                      __FILE__, __LINE__);                                                \
         __zb_chan_read(ZB_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, sizeof(value), \
                        timeout);                                                         \
