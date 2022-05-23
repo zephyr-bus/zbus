@@ -26,6 +26,7 @@ void bridge_thread(void)
     if (ct_uart_open(&bridge_uart)) {
         return;
     }
+    zb_info_dump();
     ct_uart_write_str(&bridge_uart, "Hello world!\n");
     LOG_DBG("[Bridge] Started.");
     while (1) {
