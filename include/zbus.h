@@ -143,6 +143,8 @@ struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx);
 #define ZB_CHANNEL_METADATA_GET(chan) \
     ((struct metadata *) &__zb_channels_instance()->__zb_meta_##chan)
 
+void zb_info_dump(void);
+
 #define zb_chan_pub(chan, value, timeout)                                               \
     ({                                                                                  \
         {                                                                               \

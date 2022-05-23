@@ -99,11 +99,37 @@ struct zb_channels *__zb_channels_instance()
 }
 
 
+/**
+ * @brief Retreives the channel's metada by a given index
+ *
+ * @param idx channel's index based on the generated enum.
+ * @return the metada struct of the channel 
+ */
 struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx)
 {
     ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
     return __zb_channels_lookup_table[idx];
 }
+
+
+/**
+ * @brief This function prints the channels information in json format. I would help if
+ * the developer needs to decode information. Take a look at the uart_bridge sample to get
+ * the idea.
+ */
+void zb_info_dump(void)
+{
+    printk("[\n");
+#undef ZB_CHANNEL
+#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+    printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": "  \
+           "%u},\n",                                                                     \
+           #name, on_changed ? "true" : "false", read_only ? "true" : "false",           \
+           sizeof(type));
+#include "zbus_channels.h"
+    printk("\n]\n");
+}
+
 /**
  * @brief Channel publish function.
  * This function publishes data to a channel. This function must not be called directly.
