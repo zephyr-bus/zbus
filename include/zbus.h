@@ -102,20 +102,25 @@ typedef enum __attribute__((packed)) {
     K_MSGQ_DEFINE(name##_queue, sizeof(zb_channel_index_t), queue_size, \
                   sizeof(zb_channel_index_t));                          \
     struct zb_subscriber name = {                                       \
+        .enabled  = true,                                               \
         .queue    = &name##_queue,                                      \
         .callback = NULL,                                               \
     }
 
 #define ZB_SUBSCRIBER_REGISTER_CALLBACK(name, cb) \
     struct zb_subscriber name = {                 \
+        .enabled  = true,                         \
         .queue    = NULL,                         \
         .callback = cb,                           \
     }
 
 struct zb_subscriber {
+    bool enabled;
     struct k_msgq *queue;
-    void (*callback)(void);
+    void (*callback)(zb_channel_index_t idx);
 };
+
+void zb_subscriber_set_enable(struct zb_subscriber *sub, bool enabled);
 
 struct metadata {
     struct {
