@@ -13,7 +13,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(core, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(core_queue, sizeof(zb_channel_index_t), 10, sizeof(zb_channel_index_t));
+ZB_SUBSCRIBER_REGISTER(core, 8);
 
 void core_thread(void)
 {
@@ -21,7 +21,7 @@ void core_thread(void)
     struct action start    = {true};
     zb_chan_pub(start_measurement, start, K_FOREVER);
     while (1) {
-        if (!k_msgq_get(&core_queue, &idx, K_FOREVER)) {
+        if (!k_msgq_get(core.queue, &idx, K_FOREVER)) {
             struct sensor_data data = {0};
             zb_chan_read(sensor_data, data, K_NO_WAIT);
             LOG_DBG("[Core] sensor {a = %d, b = %d}. Sending pkt", data.a, data.b);

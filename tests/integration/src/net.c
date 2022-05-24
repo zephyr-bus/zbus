@@ -13,7 +13,7 @@
 #include "zbus_messages.h"
 LOG_MODULE_REGISTER(net, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(net_queue, sizeof(zb_channel_index_t), 10, 2);
+ZB_SUBSCRIBER_REGISTER(net, 4);
 
 struct net_pkt pkt = {0};
 
@@ -26,7 +26,7 @@ void net_thread(void)
 {
     zb_channel_index_t idx = 0;
     while (1) {
-        if (!k_msgq_get(&net_queue, &idx, K_FOREVER)) {
+        if (!k_msgq_get(net.queue, &idx, K_FOREVER)) {
             zb_chan_read(net_pkt, pkt, K_NO_WAIT);
             LOG_DBG("[Net] Parity %c, 3 multiple: %s", pkt.x, pkt.y ? "true" : "false");
         }

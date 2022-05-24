@@ -13,7 +13,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(core, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(core_queue, sizeof(zb_channel_index_t), 10, sizeof(zb_channel_index_t));
+ZB_SUBSCRIBER_REGISTER(core, 10);
 
 void core_thread(void)
 {

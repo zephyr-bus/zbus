@@ -98,6 +98,25 @@ typedef enum __attribute__((packed)) {
         val, ##__VA_ARGS__ \
     }
 
+#define ZB_SUBSCRIBER_REGISTER(name, queue_size)                        \
+    K_MSGQ_DEFINE(name##_queue, sizeof(zb_channel_index_t), queue_size, \
+                  sizeof(zb_channel_index_t));                          \
+    struct zb_subscriber name = {                                       \
+        .queue    = &name##_queue,                                      \
+        .callback = NULL,                                               \
+    }
+
+#define ZB_SUBSCRIBER_REGISTER_CALLBACK(name, cb) \
+    struct zb_subscriber name = {                 \
+        .queue    = NULL,                         \
+        .callback = cb,                           \
+    }
+
+struct zb_subscriber {
+    struct k_msgq *queue;
+    void (*callback)(void);
+};
+
 struct metadata {
     struct {
         bool pend_callback;
@@ -109,7 +128,7 @@ struct metadata {
     uint16_t message_size;
     uint8_t *message;
     struct k_sem *semaphore;
-    struct k_msgq **subscribers;
+    struct zb_subscriber **subscribers;
 };
 
 #undef ZB_CHANNEL
