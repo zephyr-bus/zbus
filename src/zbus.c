@@ -88,6 +88,21 @@ struct metadata *__zb_channels_lookup_table[] = {
 #include "zbus_channels.h"
 };
 
+
+/**
+ * @brief Change the enable flag of the subscriber.
+ *
+ * @param sub the subscriber to changed
+ * @param enabled if true, the Event notifier will send notification for this subscribe.
+ * If false the Event dispatcher won't send notifications to this subscriber.
+ */
+void zb_subscriber_set_enable(struct zb_subscriber *sub, bool enabled)
+{
+    if (sub != NULL) {
+        sub->enabled = enabled;
+    }
+}
+
 /**
  * @brief This function returns the __zb_channels instance reference.
  * @details Do not use this directly! It is being used by the auxilary functions.
@@ -235,12 +250,13 @@ static void __zb_monitor_thread(void)
                 k_msgq_put(&__zb_ext_msgq, &idx, K_MSEC(50));
             }
 #endif
-            for (struct zb_subscriber **cursor = meta->subscribers; *cursor != NULL;
-                 ++cursor) {
-                if ((*cursor)->queue != NULL) {
-                    k_msgq_put((*cursor)->queue, &idx, K_MSEC(50));
-                } else if ((*cursor)->callback != NULL) {
-                    (*cursor)->callback();
+            for (struct zb_subscriber **sub = meta->subscribers; *sub != NULL; ++sub) {
+                if ((*sub)->enabled) {
+                    if ((*sub)->queue != NULL) {
+                        k_msgq_put((*sub)->queue, &idx, K_MSEC(50));
+                    } else if ((*sub)->callback != NULL) {
+                        (*sub)->callback(idx);
+                    }
                 }
             }
             meta->flag.pend_callback = false;
