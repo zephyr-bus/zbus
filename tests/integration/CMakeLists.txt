@@ -15,7 +15,6 @@ list(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/net.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/peripheral.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/critical.c"
   )
 
 include_directories(${HEADERS})
