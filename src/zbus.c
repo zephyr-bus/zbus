@@ -31,13 +31,13 @@ K_MSGQ_DEFINE(__zb_ext_msgq, sizeof(zb_channel_index_t), 32, 2);
 #include "zbus_channels.h"
 
 /**
- * @def ZB_CHANNEL_SUBSCRIBERS_QUEUES
+ * @def ZB_CHANNEL_SUBSCRIBERS
  * Description
  */
-#define ZB_CHANNEL_SUBSCRIBERS_QUEUES(sub_ref, ...) \
-    extern struct k_msgq sub_ref, ##__VA_ARGS__
+#define ZB_CHANNEL_SUBSCRIBERS(sub_ref, ...) \
+    extern struct zb_subscriber sub_ref, ##__VA_ARGS__
 
-#define ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY
+#define ZB_CHANNEL_SUBSCRIBERS_EMPTY
 #undef ZB_CHANNEL
 #define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
     subscribers;
@@ -50,17 +50,17 @@ K_MSGQ_DEFINE(__zb_ext_msgq, sizeof(zb_channel_index_t), 32, 2);
  */
 #define ZB_REF(a) &a
 
-#undef ZB_CHANNEL_SUBSCRIBERS_QUEUES
-#define ZB_CHANNEL_SUBSCRIBERS_QUEUES(...)        \
-    (struct k_msgq **) (struct k_msgq *[])        \
-    {                                             \
-        FOR_EACH(ZB_REF, (, ), __VA_ARGS__), NULL \
+#undef ZB_CHANNEL_SUBSCRIBERS
+#define ZB_CHANNEL_SUBSCRIBERS(...)                      \
+    (struct zb_subscriber **) (struct zb_subscriber *[]) \
+    {                                                    \
+        FOR_EACH(ZB_REF, (, ), __VA_ARGS__), NULL        \
     }
-#undef ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY
-#define ZB_CHANNEL_SUBSCRIBERS_QUEUES_EMPTY \
-    (struct k_msgq **) (struct k_msgq *[])  \
-    {                                       \
-        NULL                                \
+#undef ZB_CHANNEL_SUBSCRIBERS_EMPTY
+#define ZB_CHANNEL_SUBSCRIBERS_EMPTY                     \
+    (struct zb_subscriber **) (struct zb_subscriber *[]) \
+    {                                                    \
+        NULL                                             \
     }
 
 static struct zb_channels __zb_channels = {
@@ -103,7 +103,7 @@ struct zb_channels *__zb_channels_instance()
  * @brief Retreives the channel's metada by a given index
  *
  * @param idx channel's index based on the generated enum.
- * @return the metada struct of the channel 
+ * @return the metada struct of the channel
  */
 struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx)
 {
@@ -235,9 +235,13 @@ static void __zb_monitor_thread(void)
                 k_msgq_put(&__zb_ext_msgq, &idx, K_MSEC(50));
             }
 #endif
-            struct k_msgq **cursor = meta->subscribers;
-            for (struct k_msgq *s = *cursor; s != NULL; ++cursor, s = *cursor) {
-                k_msgq_put(s, &idx, K_MSEC(50));
+            for (struct zb_subscriber **cursor = meta->subscribers; *cursor != NULL;
+                 ++cursor) {
+                if ((*cursor)->queue != NULL) {
+                    k_msgq_put((*cursor)->queue, &idx, K_MSEC(50));
+                } else if ((*cursor)->callback != NULL) {
+                    (*cursor)->callback();
+                }
             }
             meta->flag.pend_callback = false;
             meta->flag.from_ext      = false;

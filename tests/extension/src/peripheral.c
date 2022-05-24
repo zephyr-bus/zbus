@@ -13,14 +13,14 @@
 #include "zbus.h"
 LOG_MODULE_DECLARE(peripheral, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(peripheral_queue, sizeof(zb_channel_index_t), 10, 2);
+ZB_SUBSCRIBER_REGISTER(peripheral, 16);
 
 
 void peripheral_thread(void)
 {
     struct sensor_data sd  = {0, 0};
     zb_channel_index_t idx = 0;
-    while (!k_msgq_get(&peripheral_queue, &idx, K_FOREVER)) {
+    while (!k_msgq_get(peripheral.queue, &idx, K_FOREVER)) {
         sd.a += 1;
         sd.b += 10;
         LOG_DBG("[Peripheral] sending sensor data");
