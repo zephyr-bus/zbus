@@ -13,7 +13,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(core_queue, sizeof(zb_channel_index_t), 10, sizeof(zb_channel_index_t));
+K_MSGQ_DEFINE(core_queue, sizeof(zbus_channel_index_t), 10, sizeof(zbus_channel_index_t));
 
 void core_thread(void)
 {
@@ -21,7 +21,7 @@ void core_thread(void)
     while (1) {
         LOG_DBG("[Core] sending start measurement with status %d", start.status);
         start.status = !start.status;
-        zb_chan_pub(start_measurement, start, K_MSEC(500));
+        zbus_chan_pub(start_measurement, start, K_MSEC(500));
         k_msleep(1000000);
     }
 }
