@@ -161,37 +161,35 @@ void zb_info_dump(void)
 int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
                   k_timeout_t timeout, bool from_ext)
 {
-    __label__ cleanup;
-    int ret = 0;
+    ZB_ASSERT(meta != NULL);
     ZB_ASSERT(meta->message != NULL);
     ZB_ASSERT(msg != NULL);
     ZB_ASSERT(msg_size > 0);
     ZB_ASSERT(meta->message_size == msg_size);
     ZB_ASSERT(!meta->flag.read_only);
+
     /* Force to not use timeout inside ISR */
     if (k_is_in_isr()) {
         timeout = K_NO_WAIT;
     }
-    if (k_sem_take(meta->semaphore, timeout)) {
-        ret = -1;
-        goto cleanup;
+
+    int err = k_sem_take(meta->semaphore, timeout);
+    if (err < 0) {
+        return err;
     }
     if (meta->flag.on_changed) {  // CHANGE
-        if (memcmp(meta->message, msg, msg_size) == 0) {
+        if (memcmp(meta->message, msg, meta->message_size) == 0) {
             /* This data is not different from the channel's. No changes here. */
-            goto cleanup;
+            k_sem_give(meta->semaphore);
+            return 0;
         }
     }
-    memcpy(meta->message, msg, msg_size);
+    memcpy(meta->message, msg, meta->message_size);
     meta->flag.pend_callback = true;
     meta->flag.from_ext      = from_ext;
-    if (k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
-                   timeout)) {
-        ret = -2;
-    }
-cleanup:
     k_sem_give(meta->semaphore);
-    return ret;
+    return k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
+                      timeout);
 }
 
 
@@ -211,24 +209,24 @@ cleanup:
 int __zb_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                    k_timeout_t timeout)
 {
-    __label__ cleanup;
-    /* Force to not use timeout inside ISR */
-    if (k_is_in_isr()) {
-        timeout = K_NO_WAIT;
-    }
-    int ret = 0;
+    ZB_ASSERT(meta != NULL);
     ZB_ASSERT(meta->message != NULL);
     ZB_ASSERT(msg != NULL);
     ZB_ASSERT(msg_size > 0);
     ZB_ASSERT(meta->message_size == msg_size);
-    if (k_sem_take(meta->semaphore, timeout) < 0) {
-        ret = -1;
-        goto cleanup;
+
+    /* Force to not use timeout inside ISR */
+    if (k_is_in_isr()) {
+        timeout = K_NO_WAIT;
+    }
+
+    int err = k_sem_take(meta->semaphore, timeout);
+    if (err < 0) {
+        return err;
     }
     memcpy(msg, meta->message, meta->message_size);
-cleanup:
     k_sem_give(meta->semaphore);
-    return ret;
+    return err;
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
@@ -244,23 +242,37 @@ static void __zb_monitor_thread(void)
         struct metadata *meta = __zb_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
-        if (meta->flag.pend_callback) {
+
+        int err = k_sem_take(meta->semaphore,
+                             K_MSEC(50)); /* Take control of meta, lock A lifetime */
+        ZB_ASSERT(err >= 0);              /* A'*/
+        if (meta->flag.pend_callback) {   /* A'*/
 #if defined(CONFIG_ZBUS_EXT)
-            if (meta->flag.from_ext == false) {
-                k_msgq_put(&__zb_ext_msgq, &idx, K_MSEC(50));
-            }
+            if (meta->flag.from_ext == false) {               /* A'*/
+                k_msgq_put(&__zb_ext_msgq, &idx, K_MSEC(50)); /* A'*/
+            }                                                 /* A'*/
 #endif
+
             for (struct zb_subscriber **sub = meta->subscribers; *sub != NULL; ++sub) {
                 if ((*sub)->enabled) {
                     if ((*sub)->queue != NULL) {
                         k_msgq_put((*sub)->queue, &idx, K_MSEC(50));
                     } else if ((*sub)->callback != NULL) {
+                        k_sem_give(meta->semaphore); /* Give control of meta, from lock A
+                                                        lifetime */
                         (*sub)->callback(idx);
+                        err = k_sem_take(
+                            meta->semaphore,
+                            K_MSEC(50)); /* Take control of meta, lock B lifetime */
                     }
                 }
             }
-            meta->flag.pend_callback = false;
-            meta->flag.from_ext      = false;
+
+            ZB_ASSERT(err >= 0);              /* B'*/
+            meta->flag.pend_callback = false; /* B'*/
+            meta->flag.from_ext      = false; /* B'*/
+            k_sem_give(meta->semaphore); /* Give control of meta, from lock B lifetime */
+
             __ZB_LOG_DBG("[ZBUS] notify!");
         }
     }

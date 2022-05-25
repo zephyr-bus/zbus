@@ -199,6 +199,14 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
                        timeout);                                                         \
     })
 
+#define zb_chan_read_by_index_unsafe(idx, value, timeout)                               \
+    ({                                                                                  \
+        __ZB_LOG_DBG("[ZBUS] %sread " #idx " at %s:%d", (k_is_in_isr() ? "ISR " : ""),  \
+                     __FILE__, __LINE__);                                               \
+        __zb_chan_read(__zb_metadata_get_by_id(idx), (uint8_t *) &value, sizeof(value), \
+                       timeout);                                                        \
+    })
+
 int __zb_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                    k_timeout_t timeout);
 
