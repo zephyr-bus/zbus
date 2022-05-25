@@ -1,7 +1,7 @@
 ## Uart bridge sample 
-This sample show the extension feature of the bus.
+This sample shows the extension feature of the bus.
 
-It uses the RISCV hifive1_revb board inside the Renode environment and shows the bus exchange data information with a Python script that uses the Pyserial module. To run that, you'll need to have the Renode framework, a Python version 3.6 or newer, and the pyserial module properly installed.
+It uses the RISCV hifive1_revb board inside the Renode environment and shows the bus exchange data information with a Python script that uses the Pyserial module. To run that, you'll need to have the Renode framework, a Python version 3.6 or newer, and the Pyserial module properly installed.
 
 ### Running the sample
 Run the command `make run` in one terminal to start the Renode execution. After that, run the command `make serial_monitor` in another terminal to enable the serial decoder.
