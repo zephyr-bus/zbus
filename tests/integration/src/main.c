@@ -13,16 +13,16 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(core, CONFIG_ZBUS_LOG_LEVEL);
 
-void urgent_callback(zb_channel_index_t idx);
+void urgent_callback(zbus_channel_index_t idx);
 
-ZB_SUBSCRIBER_REGISTER_CALLBACK(critical, urgent_callback);
+ZBUS_SUBSCRIBER_REGISTER_CALLBACK(critical, urgent_callback);
 
 int count = 0;
-void urgent_callback(zb_channel_index_t idx)
+void urgent_callback(zbus_channel_index_t idx)
 {
     printk(" *** ONLY ONE CRITICAL CALL for channel %d ***\n", idx);
     ++count;
-    zb_subscriber_set_enable(&critical, false);
+    zbus_subscriber_set_enable(&critical, false);
 }
 extern struct net_pkt pkt;
 /**
@@ -34,7 +34,7 @@ extern struct net_pkt pkt;
 static void test_01(void)
 {
     struct action start = {true};
-    zb_chan_pub(start_measurement, start, K_MSEC(200));
+    zbus_chan_pub(start_measurement, start, K_MSEC(200));
     k_msleep(1000);
     zassert_equal(pkt.x, 'I', "1 was not equal to 1");
     zassert_equal(pkt.y, false, "1 was not equal to 1");

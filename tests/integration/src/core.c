@@ -13,21 +13,21 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(core, CONFIG_ZBUS_LOG_LEVEL);
 
-ZB_SUBSCRIBER_REGISTER(core, 8);
+ZBUS_SUBSCRIBER_REGISTER(core, 8);
 
 void core_thread(void)
 {
-    zb_channel_index_t idx = 0;
+    zbus_channel_index_t idx = 0;
     struct action start    = {true};
-    zb_chan_pub(start_measurement, start, K_FOREVER);
+    zbus_chan_pub(start_measurement, start, K_FOREVER);
     while (1) {
         if (!k_msgq_get(core.queue, &idx, K_FOREVER)) {
             struct sensor_data data = {0};
-            zb_chan_read(sensor_data, data, K_NO_WAIT);
+            zbus_chan_read(sensor_data, data, K_NO_WAIT);
             LOG_DBG("[Core] sensor {a = %d, b = %d}. Sending pkt", data.a, data.b);
             struct net_pkt pkt = {.x = !(data.a % 2) ? 'P' : 'I',
                                   .y = !(data.b % 3) ? true : false};
-            zb_chan_pub(net_pkt, pkt, K_MSEC(200));
+            zbus_chan_pub(net_pkt, pkt, K_MSEC(200));
         }
     }
 }

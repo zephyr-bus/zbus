@@ -12,79 +12,83 @@
 
 #include <logging/log.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
-K_MSGQ_DEFINE(__zb_channels_changed_msgq, sizeof(zb_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(__zbus_channels_changed_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 #if defined(CONFIG_ZBUS_EXT)
-K_MSGQ_DEFINE(__zb_ext_msgq, sizeof(zb_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #endif
 
-#ifdef ZB_CHANNEL
-#undef ZB_CHANNEL
+#ifdef ZBUS_CHANNEL
+#undef ZBUS_CHANNEL
 #endif
 
 /**
- * @def ZB_CHANNEL
+ * @def ZBUS_CHANNEL
  * Description
  */
-#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    K_SEM_DEFINE(__zb_sem_##name, 1, 1);
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+                     init_val)                                                   \
+    K_SEM_DEFINE(__zbus_sem_##name, 1, 1);
 #include "zbus_channels.h"
 
 /**
- * @def ZB_CHANNEL_SUBSCRIBERS
+ * @def ZBUS_CHANNEL_SUBSCRIBERS
  * Description
  */
-#define ZB_CHANNEL_SUBSCRIBERS(sub_ref, ...) \
-    extern struct zb_subscriber sub_ref, ##__VA_ARGS__
+#define ZBUS_CHANNEL_SUBSCRIBERS(sub_ref, ...) \
+    extern struct zbus_subscriber sub_ref, ##__VA_ARGS__
 
-#define ZB_CHANNEL_SUBSCRIBERS_EMPTY
-#undef ZB_CHANNEL
-#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
+#define ZBUS_CHANNEL_SUBSCRIBERS_EMPTY
+#undef ZBUS_CHANNEL
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+                     init_val)                                                   \
     subscribers;
 
 #include "zbus_channels.h"
 
 /**
- * @def ZB_REF
+ * @def ZBUS_REF
  * Description
  */
-#define ZB_REF(a) &a
+#define ZBUS_REF(a) &a
 
-#undef ZB_CHANNEL_SUBSCRIBERS
-#define ZB_CHANNEL_SUBSCRIBERS(...)                      \
-    (struct zb_subscriber **) (struct zb_subscriber *[]) \
-    {                                                    \
-        FOR_EACH(ZB_REF, (, ), __VA_ARGS__), NULL        \
+#undef ZBUS_CHANNEL_SUBSCRIBERS
+#define ZBUS_CHANNEL_SUBSCRIBERS(...)                        \
+    (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
+    {                                                        \
+        FOR_EACH(ZBUS_REF, (, ), __VA_ARGS__), NULL          \
     }
-#undef ZB_CHANNEL_SUBSCRIBERS_EMPTY
-#define ZB_CHANNEL_SUBSCRIBERS_EMPTY                     \
-    (struct zb_subscriber **) (struct zb_subscriber *[]) \
-    {                                                    \
-        NULL                                             \
+#undef ZBUS_CHANNEL_SUBSCRIBERS_EMPTY
+#define ZBUS_CHANNEL_SUBSCRIBERS_EMPTY                       \
+    (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
+    {                                                        \
+        NULL                                                 \
     }
 
-static struct zb_channels __zb_channels = {
-#undef ZB_CHANNEL
-#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    .__zb_meta_##name =                                                                  \
+static struct zbus_channels __zbus_channels = {
+#undef ZBUS_CHANNEL
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,         \
+                     init_val)                                                           \
+    .__zbus_meta_##name =                                                                \
         {.flag = {false,      /* Not defined yet */                                      \
                   on_changed, /* Only changes in the channel will propagate  */          \
                   read_only,  /* The channel is only for reading. It must have a initial \
                                  value. */                                               \
                   false},     /* ISC source flag */                                      \
-         zb_index_##name,     /* Lookup table index */                                   \
+         zbus_index_##name,   /* Lookup table index */                                   \
          sizeof(type),        /* The channel's size */                                   \
-         (uint8_t *) &__zb_channels.name, /* The actual channel */                       \
-         &__zb_sem_##name,                /* Channel's semaphore */                      \
-         subscribers},                    /* List of subscribers queues */               \
+         (uint8_t *) &__zbus_channels.name, /* The actual channel */                     \
+         &__zbus_sem_##name,                /* Channel's semaphore */                    \
+         subscribers},                      /* List of subscribers queues */             \
         .name = init_val,
 #include "zbus_channels.h"
 };
 
-struct metadata *__zb_channels_lookup_table[] = {
-#undef ZB_CHANNEL
-#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    &__zb_channels.__zb_meta_##name,
+struct metadata *__zbus_channels_lookup_table[] = {
+#undef ZBUS_CHANNEL
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+                     init_val)                                                   \
+    &__zbus_channels.__zbus_meta_##name,
 #include "zbus_channels.h"
 };
 
@@ -96,7 +100,7 @@ struct metadata *__zb_channels_lookup_table[] = {
  * @param enabled if true, the Event notifier will send notification for this subscribe.
  * If false the Event dispatcher won't send notifications to this subscriber.
  */
-void zb_subscriber_set_enable(struct zb_subscriber *sub, bool enabled)
+void zbus_subscriber_set_enable(struct zbus_subscriber *sub, bool enabled)
 {
     if (sub != NULL) {
         sub->enabled = enabled;
@@ -104,13 +108,13 @@ void zb_subscriber_set_enable(struct zb_subscriber *sub, bool enabled)
 }
 
 /**
- * @brief This function returns the __zb_channels instance reference.
+ * @brief This function returns the __zbus_channels instance reference.
  * @details Do not use this directly! It is being used by the auxilary functions.
- * @return A pointer of struct zb_channels.
+ * @return A pointer of struct zbus_channels.
  */
-struct zb_channels *__zb_channels_instance()
+struct zbus_channels *__zbus_channels_instance()
 {
-    return &__zb_channels;
+    return &__zbus_channels;
 }
 
 
@@ -120,10 +124,10 @@ struct zb_channels *__zb_channels_instance()
  * @param idx channel's index based on the generated enum.
  * @return the metada struct of the channel
  */
-struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx)
+struct metadata *__zbus_metadata_get_by_id(zbus_channel_index_t idx)
 {
-    ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
-    return __zb_channels_lookup_table[idx];
+    ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
+    return __zbus_channels_lookup_table[idx];
 }
 
 
@@ -132,14 +136,15 @@ struct metadata *__zb_metadata_get_by_id(zb_channel_index_t idx)
  * the developer needs to decode information. Take a look at the uart_bridge sample to get
  * the idea.
  */
-void zb_info_dump(void)
+void zbus_info_dump(void)
 {
     printk("[\n");
-#undef ZB_CHANNEL
-#define ZB_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val) \
-    printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": "  \
-           "%u},\n",                                                                     \
-           #name, on_changed ? "true" : "false", read_only ? "true" : "false",           \
+#undef ZBUS_CHANNEL
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,        \
+                     init_val)                                                          \
+    printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
+           "%u},\n",                                                                    \
+           #name, on_changed ? "true" : "false", read_only ? "true" : "false",          \
            sizeof(type));
 #include "zbus_channels.h"
     printk("\n]\n");
@@ -158,15 +163,15 @@ void zb_info_dump(void)
  * once for taking the semaphore and another to put the idx at the monitor's queue.
  * @return 0 if succes and a negative number if error.
  */
-int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                  k_timeout_t timeout, bool from_ext)
+int __zbus_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
+                    k_timeout_t timeout, bool from_ext)
 {
-    ZB_ASSERT(meta != NULL);
-    ZB_ASSERT(meta->message != NULL);
-    ZB_ASSERT(msg != NULL);
-    ZB_ASSERT(msg_size > 0);
-    ZB_ASSERT(meta->message_size == msg_size);
-    ZB_ASSERT(!meta->flag.read_only);
+    ZBUS_ASSERT(meta != NULL);
+    ZBUS_ASSERT(meta->message != NULL);
+    ZBUS_ASSERT(msg != NULL);
+    ZBUS_ASSERT(msg_size > 0);
+    ZBUS_ASSERT(meta->message_size == msg_size);
+    ZBUS_ASSERT(!meta->flag.read_only);
 
     /* Force to not use timeout inside ISR */
     if (k_is_in_isr()) {
@@ -188,8 +193,8 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
     meta->flag.pend_callback = true;
     meta->flag.from_ext      = from_ext;
     k_sem_give(meta->semaphore);
-    return k_msgq_put(&__zb_channels_changed_msgq, (uint8_t *) &meta->lookup_table_index,
-                      timeout);
+    return k_msgq_put(&__zbus_channels_changed_msgq,
+                      (uint8_t *) &meta->lookup_table_index, timeout);
 }
 
 
@@ -206,14 +211,14 @@ int __zb_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
  * ISR it will force the timeout to be K_NO_WAIT.
  * @return 0 if succes and a negative number if error.
  */
-int __zb_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                   k_timeout_t timeout)
+int __zbus_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
+                     k_timeout_t timeout)
 {
-    ZB_ASSERT(meta != NULL);
-    ZB_ASSERT(meta->message != NULL);
-    ZB_ASSERT(msg != NULL);
-    ZB_ASSERT(msg_size > 0);
-    ZB_ASSERT(meta->message_size == msg_size);
+    ZBUS_ASSERT(meta != NULL);
+    ZBUS_ASSERT(meta->message != NULL);
+    ZBUS_ASSERT(msg != NULL);
+    ZBUS_ASSERT(msg_size > 0);
+    ZBUS_ASSERT(meta->message_size == msg_size);
 
     /* Force to not use timeout inside ISR */
     if (k_is_in_isr()) {
@@ -230,30 +235,30 @@ int __zb_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-K_MSGQ_DEFINE(__zb_bridge_queue, sizeof(zb_channel_index_t), 16, 2);
+K_MSGQ_DEFINE(__zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
 #endif
 
-static void __zb_monitor_thread(void)
+static void __zbus_monitor_thread(void)
 {
-    zb_channel_index_t idx = 0;
+    zbus_channel_index_t idx = 0;
     while (1) {
-        k_msgq_get(&__zb_channels_changed_msgq, &idx, K_FOREVER);
-        ZB_ASSERT(idx < ZB_CHANNEL_COUNT);
-        struct metadata *meta = __zb_channels_lookup_table[idx];
+        k_msgq_get(&__zbus_channels_changed_msgq, &idx, K_FOREVER);
+        ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
+        struct metadata *meta = __zbus_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
 
         int err = k_sem_take(meta->semaphore,
                              K_MSEC(50)); /* Take control of meta, lock A lifetime */
-        ZB_ASSERT(err >= 0);              /* A'*/
+        ZBUS_ASSERT(err >= 0);            /* A'*/
         if (meta->flag.pend_callback) {   /* A'*/
 #if defined(CONFIG_ZBUS_EXT)
-            if (meta->flag.from_ext == false) {               /* A'*/
-                k_msgq_put(&__zb_ext_msgq, &idx, K_MSEC(50)); /* A'*/
-            }                                                 /* A'*/
+            if (meta->flag.from_ext == false) {                 /* A'*/
+                k_msgq_put(&__zbus_ext_msgq, &idx, K_MSEC(50)); /* A'*/
+            }                                                   /* A'*/
 #endif
 
-            for (struct zb_subscriber **sub = meta->subscribers; *sub != NULL; ++sub) {
+            for (struct zbus_subscriber **sub = meta->subscribers; *sub != NULL; ++sub) {
                 if ((*sub)->enabled) {
                     if ((*sub)->queue != NULL) {
                         k_msgq_put((*sub)->queue, &idx, K_MSEC(50));
@@ -268,16 +273,16 @@ static void __zb_monitor_thread(void)
                 }
             }
 
-            ZB_ASSERT(err >= 0);              /* B'*/
+            ZBUS_ASSERT(err >= 0);            /* B'*/
             meta->flag.pend_callback = false; /* B'*/
             meta->flag.from_ext      = false; /* B'*/
             k_sem_give(meta->semaphore); /* Give control of meta, from lock B lifetime */
 
-            __ZB_LOG_DBG("[ZBUS] notify!");
+            __ZBUS_LOG_DBG("[ZBUS] notify!");
         }
     }
 }
 
-K_THREAD_DEFINE(zb_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                __zb_monitor_thread, NULL, NULL, NULL,
+K_THREAD_DEFINE(zbus_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
+                __zbus_monitor_thread, NULL, NULL, NULL,
                 CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
