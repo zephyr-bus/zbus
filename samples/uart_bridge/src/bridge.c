@@ -21,7 +21,7 @@ void bridge_thread(void)
 {
     zbus_channel_index_t idx        = 0;
     zbus_channel_variant_t msg_data = {0};
-    uint8_t tokens[]              = "$\r\n";
+    uint8_t tokens[]                = "$\r\n";
 
     if (ct_uart_open(&bridge_uart)) {
         return;
@@ -35,7 +35,7 @@ void bridge_thread(void)
 
             LOG_DBG("[Bridge] send data %d",
                     __zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
-                                   K_MSEC(500)));
+                                     K_MSEC(500)));
             ct_uart_write_byte(&bridge_uart, tokens);
             ct_uart_write_byte(&bridge_uart, (uint8_t *) &idx);
             ct_uart_write(&bridge_uart, (uint8_t *) &msg_data, meta->message_size);
@@ -45,23 +45,3 @@ void bridge_thread(void)
 }
 
 K_THREAD_DEFINE(bridge_thread_tid, 2048, bridge_thread, NULL, NULL, NULL, 1, 0, 500);
-
-void bridge_rx_thread(void)
-{
-    // zbus_channel_index_t idx = 0;
-    // uint8_t start_frame           = '$';
-    // uint8_t end_frame             = '\n';
-
-    LOG_DBG("[Bridge RX] Started.");
-    uint8_t byte = 0;
-    while (1) {
-        if (!k_msgq_get(&_bridge_input_msgq, &byte, K_FOREVER)) {
-            // struct metadata *meta = __zbus_metadata_get_by_id(idx);
-
-            LOG_DBG("[Bridge RX]: %c", byte);
-        }
-    }
-}
-
-K_THREAD_DEFINE(bridge_rx_thread_tid, 2048, bridge_rx_thread, NULL, NULL, NULL, 1, 0,
-                1500);
