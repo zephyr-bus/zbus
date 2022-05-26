@@ -8,7 +8,6 @@ struct ct_uart_device {
     const struct device *dev;
     struct k_msgq *input_msgq;
     struct k_msgq *output_msgq;
-    bool ready;
 };
 
 int ct_uart_open(struct ct_uart_device *uart);
