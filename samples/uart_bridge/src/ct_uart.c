@@ -43,12 +43,13 @@ int ct_uart_open(struct ct_uart_device *uart)
     uart_irq_callback_user_data_set(uart->dev, uart_fifo_callback, uart);
     uart_irq_rx_enable(uart->dev);
 
+    uart->ready = true;
     return 0;
 }
 
 int ct_uart_write(struct ct_uart_device *uart, uint8_t *data, size_t size)
 {
-    if (uart == NULL || uart->dev == NULL) {
+    if (uart == NULL || uart->dev == NULL || uart->ready == false) {
         return -ENODEV;
     }
     int err            = 0;
@@ -65,7 +66,7 @@ int ct_uart_write(struct ct_uart_device *uart, uint8_t *data, size_t size)
 
 int ct_uart_write_str(struct ct_uart_device *uart, char *str)
 {
-    if (uart == NULL || uart->dev == NULL) {
+    if (uart == NULL || uart->dev == NULL || uart->ready == false) {
         return -ENODEV;
     }
     int err         = 0;
