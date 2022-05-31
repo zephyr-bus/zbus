@@ -12,7 +12,7 @@
 #include "ztest_assert.h"
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(core, CONFIG_ZBUS_LOG_LEVEL);
+LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 extern struct k_msgq __zbus_ext_msgq;
 

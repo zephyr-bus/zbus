@@ -11,7 +11,7 @@
 #include "ztest_assert.h"
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(core, CONFIG_ZBUS_LOG_LEVEL);
+LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 void urgent_callback(zbus_channel_index_t idx);
 

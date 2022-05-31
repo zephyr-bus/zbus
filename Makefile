@@ -28,7 +28,7 @@ run_posix: clean
 	./build/zephyr/zephyr.exe
 
 
-tests_unit:
+tests_all:
 	${ZEPHYR_BASE}/scripts/twister -O ./build/twister-out -T tests
 
 menuconfig:
