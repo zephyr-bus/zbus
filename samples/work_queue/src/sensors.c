@@ -22,7 +22,7 @@ void peripheral_thread(void)
         sm.humidity += 100;
         LOG_DBG("Sending sensor data...");
         zbus_chan_pub(sensor_data, sm, K_MSEC(250));
-        // k_msleep(10);
+        k_msleep(1000); /* Fix this for the target. */
     }
 }
 

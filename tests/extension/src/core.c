@@ -11,7 +11,7 @@
 #include "zbus.h"
 
 #include <logging/log.h>
-LOG_MODULE_DECLARE(core, CONFIG_ZBUS_LOG_LEVEL);
+LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 ZBUS_SUBSCRIBER_REGISTER(core, 10);
 

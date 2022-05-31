@@ -1,0 +1,4 @@
+name: zbus
+build:
+  cmake: .
+  kconfig: ./Kconfig.zbus
