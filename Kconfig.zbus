@@ -2,6 +2,16 @@ module = ZBUS
 module-str = zbus
 source "subsys/logging/Kconfig.template.log_config"
 
+config ZEPHYR_ZBUS_MODULE
+	bool
+
+config ZBUS
+	bool "Zbus messaging bus"
+	help
+	  Zbus messaging bus
+
+if ZBUS 
+
 config ZBUS_LOG
   bool "Enable log for zbus usage"
   depends on LOG
@@ -25,12 +35,13 @@ config ZBUS_EXT
 
 if ZBUS_EXT
 
-config ZBUS_EXT_THREAD_STACK_SIZE
-  int "Size of the monitor thead stack"
-  default 2048
+    config ZBUS_EXT_THREAD_STACK_SIZE
+      int "Size of the monitor thead stack"
+      default 2048
 
-config ZBUS_EXT_THREAD_PRIORITY
-  int "Size of the monitor thead stack"
-  default 1
+    config ZBUS_EXT_THREAD_PRIORITY
+      int "Size of the monitor thead stack"
+      default 1
 
 endif # ZBUS_EXT
+endif # ZBUS
