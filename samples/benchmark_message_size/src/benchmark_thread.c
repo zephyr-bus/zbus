@@ -18,7 +18,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
  * data variation from 1 to 256 bytes (1,2,4,8,16,32,64,128,256)
  * callback based first
  */
-#define BYTES_TO_BE_SENT (256LL * 1000)
+#define BYTES_TO_BE_SENT (256LL * 1024)
 void fh1_cb(zbus_channel_index_t idx);
 
 
