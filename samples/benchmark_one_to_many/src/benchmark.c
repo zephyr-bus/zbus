@@ -127,7 +127,8 @@ void s_cb(zbus_channel_index_t idx)
 
 void main(void)
 {
-    printk(" -> Benchmark 1 to %lld, with message size %u\n", BM_ONE_TO, BM_MESSAGE_SIZE);
+    printk(" Benchmark 1 to %lld: %sSYNC transmission and message size %u\n", BM_ONE_TO,
+           BM_ASYNC ? "A" : "", BM_MESSAGE_SIZE);
 }
 
 void producer_thread(void)
@@ -151,9 +152,10 @@ void producer_thread(void)
     }
     uint64_t i = (BYTES_TO_BE_SENT * 1000) / duration;
     uint64_t f = ((BYTES_TO_BE_SENT * 100000) / duration) % 100;
-    printk("\n *** Bytes sent = %lld, received = %llu in %ums\n     Average data rate: "
-           "%llu.%lluB/s\n\n\n",
-           BYTES_TO_BE_SENT, count, duration, i, f);
+    printk(" - Bytes sent = %lld, received = %llu \n - Average data rate: "
+           "%llu.%lluB/s\n - Duration: %ums\n",
+           BYTES_TO_BE_SENT, count, i, f, duration);
+    printk("\n@%u", duration);
 }
 
 K_THREAD_DEFINE(producer_thread_id, 1024, producer_thread, NULL, NULL, NULL, 5, 0, 5000);
