@@ -5,7 +5,7 @@ To run the benchmark, you must execute the following command: `make benchmark MS
 
 Notice we have the following parameters:
 
-* **MSG_SIZE**: size of the message to be transferred;
+* **MSG_SIZE**: the size of the message to be transferred;
 * **ONE_TO**: number of consumers to send;
 * **ASYNC**: if the execution must be asynchronous or synchronous. Use 1 to async e 0 to sync;
 * **BOARD**: the board name you want to use.
@@ -20,3 +20,12 @@ The result would be something like:
 
 @468
 ```
+
+### Running the benchmark automatically
+
+There is a Python script called `run.py` which runs all the interesting combinations of inputs for the benchmark.
+The result file called `benchmark.csv` is generated in the project root folder. At the CSV file we have:
+
+| Style | Number of consumers | Message size | Duration |
+| ------------------ | ------------------- | ------------ | -------- |
+| SYNC/ASYNC | 1,2,4,8 | 1,2,4,8,16,32,64,128,256 | float |

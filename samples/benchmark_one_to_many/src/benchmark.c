@@ -155,7 +155,7 @@ void producer_thread(void)
     printk(" - Bytes sent = %lld, received = %llu \n - Average data rate: "
            "%llu.%lluB/s\n - Duration: %ums\n",
            BYTES_TO_BE_SENT, count, i, f, duration);
-    printk("\n@%u", duration);
+    printk("\n@%u\n", duration);
 }
 
 K_THREAD_DEFINE(producer_thread_id, 1024, producer_thread, NULL, NULL, NULL, 5, 0, 5000);
