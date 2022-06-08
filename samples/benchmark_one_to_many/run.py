@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 results = []
         for consumers in [2, 4, 8]:
             for sync in [0, 1]:
-                for msg_size in [32, 64, 128, 256]:
+                for msg_size in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
                     exec_benchmark_for(consumers, msg_size, sync)
             with open(os.path.join('benchmark.csv'), 'a') as f:
                 f.writelines(results)
