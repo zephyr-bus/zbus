@@ -141,11 +141,11 @@ void zbus_subscriber_set_enable(struct zbus_subscriber *sub, bool enabled);
 
 struct metadata {
     struct {
-        bool pend_callback : 1;
-        bool on_changed : 1;
-        bool read_only : 1;
-        bool from_ext : 1;
-        bool dynamic : 1;
+        uint8_t pend_callback : 1;
+        uint8_t on_changed : 1;
+        uint8_t read_only : 1;
+        uint8_t from_ext : 1;
+        uint8_t dynamic : 1;
     } flag;
     uint16_t lookup_table_index;
     uint16_t message_size;
@@ -168,6 +168,8 @@ struct zbus_channels {
 #include "zbus_channels.h"
 };
 
+#undef ZBUS_DYN_CHANNEL
+#define ZBUS_DYN_CHANNEL(name, subscribers) struct zbus_dyn_message name;
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
@@ -249,8 +251,12 @@ int zbus_dyn_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
 int zbus_dyn_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                        k_timeout_t timeout);
 
+int zbus_dyn_chan_notify(struct metadata *meta, k_timeout_t timeout);
+
 int zbus_dyn_chan_alloc(struct metadata *meta, void *user_allocated_data,
                         size_t user_allocated_data_size, k_timeout_t timeout);
+
+int zbus_dyn_chan_size(struct metadata *meta, size_t *size, k_timeout_t timeout);
 
 int zbus_dyn_chan_dealloc(struct metadata *meta, void **reference, k_timeout_t timeout);
 
