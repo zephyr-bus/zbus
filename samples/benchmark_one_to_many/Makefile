@@ -32,9 +32,9 @@ benchmark: rebuild
 serial_monitor:
 	@python3 decoder.py
 
-run: rebuild
+renode: rebuild
 	@echo "\n *** Run project:"
-	renode renode_setup.resc --console
+	renode-test renode_profile.robot -r build/robot # --enable-xwt	
 
 run_posix: clean
 	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y
