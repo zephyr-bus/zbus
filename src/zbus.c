@@ -320,6 +320,7 @@ int zbus_dyn_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
     struct zbus_dyn_message *dyn_msg = (struct zbus_dyn_message *) meta->message;
     ZBUS_ASSERT(dyn_msg->ref != NULL);
     ZBUS_ASSERT(dyn_msg->size > 0);
+    ZBUS_ASSERT(dyn_msg->size == msg_size);
     memcpy(msg, dyn_msg->ref, msg_size);
     k_sem_give(meta->semaphore);
     return err;
