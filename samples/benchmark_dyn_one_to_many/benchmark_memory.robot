@@ -1,7 +1,3 @@
-*** Comments ***
-#!/usr/bin/env robot
-
-
 *** Settings ***
 Library             Process
 Library             String
@@ -15,7 +11,7 @@ Suite Teardown      Terminate All Processes    kill=True
 ${csv_file}     zbus_dyn_benchmark_256kb.csv
 
 
-*** Test Cases ***
+*** Tasks ***
 Clear Old CSV File
     Empty Csv File    ${csv_file}
 
