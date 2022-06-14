@@ -28,25 +28,10 @@
 #define ZBUS_ASSERT(cond)
 #endif
 
-struct zbus_dyn_message {
-    void *ref;
-    size_t size;
-};
-
-#ifndef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers)
-#endif
-
-#ifndef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val)
-#endif
-
 typedef enum __attribute__((packed)) {
 #ifdef ZBUS_CHANNEL
 #undef ZBUS_CHANNEL
 #endif
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers) zbus_index_##name,
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
     zbus_index_##name,
@@ -130,7 +115,6 @@ typedef enum __attribute__((packed)) {
         .callback = cb,                             \
     }
 
-
 struct zbus_subscriber {
     bool enabled;
     struct k_msgq *queue;
@@ -141,11 +125,10 @@ void zbus_subscriber_set_enable(struct zbus_subscriber *sub, bool enabled);
 
 struct metadata {
     struct {
-        bool pend_callback : 1;
-        bool on_changed : 1;
-        bool read_only : 1;
-        bool from_ext : 1;
-        bool dynamic : 1;
+        bool pend_callback;
+        bool on_changed;
+        bool read_only;
+        bool from_ext;
     } flag;
     uint16_t lookup_table_index;
     uint16_t message_size;
@@ -154,10 +137,6 @@ struct metadata {
     struct zbus_subscriber **subscribers;
 };
 
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers) \
-    struct metadata __zbus_meta_##name;     \
-    struct zbus_dyn_message name;
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
@@ -241,23 +220,5 @@ int __zbus_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
 
 int __zbus_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                      k_timeout_t timeout);
-
-#if defined(CONFIG_ZBUS_DYNAMIC_CHANNELS)
-int zbus_dyn_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                      k_timeout_t timeout, bool from_ext);
-
-int zbus_dyn_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                       k_timeout_t timeout);
-
-int zbus_dyn_chan_alloc(struct metadata *meta, void *user_allocated_data,
-                        size_t user_allocated_data_size, k_timeout_t timeout);
-
-int zbus_dyn_chan_dealloc(struct metadata *meta, void **reference, k_timeout_t timeout);
-
-int zbus_dyn_chan_borrow(struct metadata *meta, void **reference, k_timeout_t timeout);
-
-void zbus_dyn_chan_give_back(struct metadata *meta, k_timeout_t timeout);
-
-#endif  // defined(CONFIG_ZBUS_DYNAMIC_CHANNELS)
 
 #endif  // _ZBUS_H_
