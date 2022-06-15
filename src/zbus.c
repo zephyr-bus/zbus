@@ -32,13 +32,13 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #include "zbus_channels.h"
 
 /**
- * @def ZBUS_CHANNEL_SUBSCRIBERS
+ * @def ZBUS_OBSERVERS
  * Description
  */
-#define ZBUS_CHANNEL_SUBSCRIBERS(sub_ref, ...) \
+#define ZBUS_OBSERVERS(sub_ref, ...) \
     extern struct zbus_subscriber sub_ref, ##__VA_ARGS__
 
-#define ZBUS_CHANNEL_SUBSCRIBERS_EMPTY
+#define ZBUS_OBSERVERS_EMPTY
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
@@ -52,14 +52,14 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
  */
 #define ZBUS_REF(a) &a
 
-#undef ZBUS_CHANNEL_SUBSCRIBERS
-#define ZBUS_CHANNEL_SUBSCRIBERS(...)                        \
+#undef ZBUS_OBSERVERS
+#define ZBUS_OBSERVERS(...)                        \
     (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
     {                                                        \
         FOR_EACH(ZBUS_REF, (, ), __VA_ARGS__), NULL          \
     }
-#undef ZBUS_CHANNEL_SUBSCRIBERS_EMPTY
-#define ZBUS_CHANNEL_SUBSCRIBERS_EMPTY                       \
+#undef ZBUS_OBSERVERS_EMPTY
+#define ZBUS_OBSERVERS_EMPTY                       \
     (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
     {                                                        \
         NULL                                                 \

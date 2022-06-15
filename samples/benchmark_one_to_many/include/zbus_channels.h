@@ -3,7 +3,7 @@ ZBUS_CHANNEL(bm_channel,    /* Name */
              false,         /* On changes only */
              false,         /* Read only */
              struct bm_msg, /* Message type */
-             ZBUS_CHANNEL_SUBSCRIBERS(s1
+             ZBUS_OBSERVERS(s1
 
 #if (BM_ONE_TO >= 2LLU)
                                       ,
@@ -22,5 +22,5 @@ ZBUS_CHANNEL(bm_channel,    /* Name */
 #endif
 #endif
                                       ), /* Subscribers */
-             ZBUS_INIT({0})              /* Initial value {0} */
+             ZBUS_MSG_INIT({0})              /* Initial value {0} */
 )

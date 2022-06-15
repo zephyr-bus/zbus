@@ -103,7 +103,7 @@ typedef enum __attribute__((packed)) {
 
 #define ZBUS_CHANNEL_INIT_VAL(init) init
 
-#define ZBUS_INIT(val, ...) \
+#define ZBUS_MSG_INIT(val, ...) \
     {                       \
         val, ##__VA_ARGS__  \
     }
