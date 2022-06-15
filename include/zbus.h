@@ -104,8 +104,8 @@ typedef enum __attribute__((packed)) {
 #define ZBUS_CHANNEL_INIT_VAL(init) init
 
 #define ZBUS_MSG_INIT(val, ...) \
-    {                       \
-        val, ##__VA_ARGS__  \
+    {                           \
+        val, ##__VA_ARGS__      \
     }
 
 #define ZBUS_SUBSCRIBER_REGISTER(name, queue_size)                        \
@@ -145,6 +145,15 @@ struct zbus_channel {
     uint8_t *message;
     struct k_sem *semaphore;
     struct zbus_subscriber **subscribers;
+};
+
+#undef ZBUS_CHANNEL
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+                     init_val)                                                   \
+    type name;
+
+struct zbus_messages {
+#include "zbus_channels.h"
 };
 
 #undef ZBUS_CHANNEL

@@ -35,8 +35,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
  * @def ZBUS_OBSERVERS
  * Description
  */
-#define ZBUS_OBSERVERS(sub_ref, ...) \
-    extern struct zbus_subscriber sub_ref, ##__VA_ARGS__
+#define ZBUS_OBSERVERS(sub_ref, ...) extern struct zbus_subscriber sub_ref, ##__VA_ARGS__
 
 #define ZBUS_OBSERVERS_EMPTY
 #undef ZBUS_CHANNEL
@@ -53,17 +52,26 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #define ZBUS_REF(a) &a
 
 #undef ZBUS_OBSERVERS
-#define ZBUS_OBSERVERS(...)                        \
+#define ZBUS_OBSERVERS(...)                                  \
     (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
     {                                                        \
         FOR_EACH(ZBUS_REF, (, ), __VA_ARGS__), NULL          \
     }
 #undef ZBUS_OBSERVERS_EMPTY
-#define ZBUS_OBSERVERS_EMPTY                       \
+#define ZBUS_OBSERVERS_EMPTY                                 \
     (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
     {                                                        \
         NULL                                                 \
     }
+
+static struct zbus_messages __zbus_messages = {
+
+#undef ZBUS_CHANNEL
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+                     init_val)                                                   \
+    .name = init_val,
+#include "zbus_channels.h"
+};
 
 static struct zbus_channels __zbus_channels = {
 
@@ -81,7 +89,7 @@ static struct zbus_channels __zbus_channels = {
              },              /* ISC source flag */                                      \
          zbus_index_##name,  /* Lookup table index */                                   \
          sizeof(type),       /* The channel's size */                                   \
-         (uint8_t *) &__zbus_channels.name, /* The actual channel */                    \
+         (uint8_t *) &__zbus_messages.name, /* The actual channel */                    \
          &__zbus_sem_##name,                /* Channel's semaphore */                   \
          subscribers},                      /* List of subscribers queues */            \
         .name = init_val,
@@ -217,7 +225,7 @@ int __zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
  * @return 0 if succes and a negative number if error.
  */
 int zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
-                     k_timeout_t timeout)
+                   k_timeout_t timeout)
 {
     ZBUS_ASSERT(chan != NULL);
     ZBUS_ASSERT(chan->message != NULL);
