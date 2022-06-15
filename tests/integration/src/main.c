@@ -22,7 +22,7 @@ void urgent_callback(zbus_channel_index_t idx)
 {
     printk(" *** ONLY ONE CRITICAL CALL for channel %d ***\n", idx);
     ++count;
-    zbus_subscriber_set_enable(&critical, false);
+    zbus_observer_set_enable(&critical, false);
 }
 extern struct net_pkt pkt;
 /**

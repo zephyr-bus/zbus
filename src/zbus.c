@@ -35,7 +35,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
  * @def ZBUS_OBSERVERS
  * Description
  */
-#define ZBUS_OBSERVERS(sub_ref, ...) extern struct zbus_subscriber sub_ref, ##__VA_ARGS__
+#define ZBUS_OBSERVERS(sub_ref, ...) extern struct zbus_observer sub_ref, ##__VA_ARGS__
 
 #define ZBUS_OBSERVERS_EMPTY
 #undef ZBUS_CHANNEL
@@ -53,13 +53,13 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 #undef ZBUS_OBSERVERS
 #define ZBUS_OBSERVERS(...)                                  \
-    (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
+    (struct zbus_observer **) (struct zbus_observer *[]) \
     {                                                        \
         FOR_EACH(ZBUS_REF, (, ), __VA_ARGS__), NULL          \
     }
 #undef ZBUS_OBSERVERS_EMPTY
 #define ZBUS_OBSERVERS_EMPTY                                 \
-    (struct zbus_subscriber **) (struct zbus_subscriber *[]) \
+    (struct zbus_observer **) (struct zbus_observer *[]) \
     {                                                        \
         NULL                                                 \
     }
@@ -113,7 +113,7 @@ struct zbus_channel *__zbus_channels_lookup_table[] = {
  * @param enabled if true, the Event notifier will send notification for this subscribe.
  * If false the Event dispatcher won't send notifications to this subscriber.
  */
-void zbus_subscriber_set_enable(struct zbus_subscriber *sub, bool enabled)
+void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
 {
     if (sub != NULL) {
         sub->enabled = enabled;
@@ -311,7 +311,7 @@ static void __zbus_monitor_thread(void)
 
             k_sem_give(chan->semaphore); /* Give control of chan, from lock A
                                                         lifetime */
-            for (struct zbus_subscriber **sub = chan->subscribers; *sub != NULL; ++sub) {
+            for (struct zbus_observer **sub = chan->subscribers; *sub != NULL; ++sub) {
                 if ((*sub)->enabled) {
                     if ((*sub)->queue != NULL) {
                         k_msgq_put((*sub)->queue, &idx, K_MSEC(50));

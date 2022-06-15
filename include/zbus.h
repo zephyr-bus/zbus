@@ -111,27 +111,27 @@ typedef enum __attribute__((packed)) {
 #define ZBUS_SUBSCRIBER_REGISTER(name, queue_size)                        \
     K_MSGQ_DEFINE(name##_queue, sizeof(zbus_channel_index_t), queue_size, \
                   sizeof(zbus_channel_index_t));                          \
-    struct zbus_subscriber name = {                                       \
+    struct zbus_observer name = {                                         \
         .enabled  = true,                                                 \
         .queue    = &name##_queue,                                        \
         .callback = NULL,                                                 \
     }
 
 #define ZBUS_LISTENER_REGISTER(name, cb) \
-    struct zbus_subscriber name = {      \
+    struct zbus_observer name = {        \
         .enabled  = true,                \
         .queue    = NULL,                \
         .callback = cb,                  \
     }
 
 
-struct zbus_subscriber {
+struct zbus_observer {
     bool enabled;
     struct k_msgq *queue;
     void (*callback)(zbus_channel_index_t idx);
 };
 
-void zbus_subscriber_set_enable(struct zbus_subscriber *sub, bool enabled);
+void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
 
 struct zbus_channel {
     struct {
@@ -144,7 +144,7 @@ struct zbus_channel {
     uint16_t message_size;
     uint8_t *message;
     struct k_sem *semaphore;
-    struct zbus_subscriber **subscribers;
+    struct zbus_observer **subscribers;
 };
 
 #undef ZBUS_CHANNEL
