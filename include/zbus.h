@@ -34,14 +34,14 @@ struct zbus_dyn_message {
 };
 
 #ifndef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, init_val)
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val)
 #endif
 
 typedef enum __attribute__((packed)) {
 #ifdef ZBUS_CHANNEL
 #undef ZBUS_CHANNEL
 #endif
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     zbus_index_##name,
 #include "zbus_channels.h"
@@ -144,11 +144,11 @@ struct zbus_channel {
     uint16_t message_size;
     uint8_t *message;
     struct k_sem *semaphore;
-    struct zbus_observer **subscribers;
+    struct zbus_observer **observers;
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     type name;
 
@@ -157,7 +157,7 @@ struct zbus_messages {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     struct zbus_channel __zbus_chan_##name;                                      \
     type name;
@@ -167,7 +167,7 @@ struct zbus_channels {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     type name;
 

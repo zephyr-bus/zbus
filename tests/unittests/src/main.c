@@ -15,7 +15,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
  name = str[0,1,>1]
  read_only, on_change = bool [false, true]
  message_type = [struct, union]
- subscribers = null ended array [0,1,>1]
+ observers = null ended array [0,1,>1]
  initial_value = [0, some, all]
  */
 
@@ -34,7 +34,7 @@ static void test_readonly_channel(void)
     zassert_equal(version_metadata->flag.on_changed, false, NULL);
     zassert_equal(version_metadata->flag.read_only, true, NULL);
     zassert_equal(version_metadata->flag.on_changed, false, NULL);
-    zassert_is_null(version_metadata->subscribers[0],
+    zassert_is_null(version_metadata->observers[0],
                     "There is no subscriber, it must be NULL");
 }
 

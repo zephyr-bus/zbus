@@ -26,7 +26,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
  * @def ZBUS_CHANNEL
  * Description
  */
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     K_SEM_DEFINE(__zbus_sem_##name, 1, 1);
 #include "zbus_channels.h"
@@ -39,9 +39,9 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 #define ZBUS_OBSERVERS_EMPTY
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
-    subscribers;
+    observers;
 
 #include "zbus_channels.h"
 
@@ -52,22 +52,22 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #define ZBUS_REF(a) &a
 
 #undef ZBUS_OBSERVERS
-#define ZBUS_OBSERVERS(...)                                  \
+#define ZBUS_OBSERVERS(...)                              \
     (struct zbus_observer **) (struct zbus_observer *[]) \
-    {                                                        \
-        FOR_EACH(ZBUS_REF, (, ), __VA_ARGS__), NULL          \
+    {                                                    \
+        FOR_EACH(ZBUS_REF, (, ), __VA_ARGS__), NULL      \
     }
 #undef ZBUS_OBSERVERS_EMPTY
-#define ZBUS_OBSERVERS_EMPTY                                 \
+#define ZBUS_OBSERVERS_EMPTY                             \
     (struct zbus_observer **) (struct zbus_observer *[]) \
-    {                                                        \
-        NULL                                                 \
+    {                                                    \
+        NULL                                             \
     }
 
 static struct zbus_messages __zbus_messages = {
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     .name = init_val,
 #include "zbus_channels.h"
@@ -76,7 +76,7 @@ static struct zbus_messages __zbus_messages = {
 static struct zbus_channels __zbus_channels = {
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,        \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers,        \
                      init_val)                                                          \
     .__zbus_chan_##name =                                                               \
         {.flag =                                                                        \
@@ -91,7 +91,7 @@ static struct zbus_channels __zbus_channels = {
          sizeof(type),       /* The channel's size */                                   \
          (uint8_t *) &__zbus_messages.name, /* The actual channel */                    \
          &__zbus_sem_##name,                /* Channel's semaphore */                   \
-         subscribers},                      /* List of subscribers queues */            \
+         observers},                      /* List of observers queues */            \
         .name = init_val,
 
 #include "zbus_channels.h"
@@ -99,7 +99,7 @@ static struct zbus_channels __zbus_channels = {
 
 struct zbus_channel *__zbus_channels_lookup_table[] = {
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
                      init_val)                                                   \
     &__zbus_channels.__zbus_chan_##name,
 #include "zbus_channels.h"
@@ -153,7 +153,7 @@ void zbus_info_dump(void)
 {
     printk("[\n");
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,        \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers,        \
                      init_val)                                                          \
     printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
            "%u},\n",                                                                    \
@@ -311,7 +311,7 @@ static void __zbus_monitor_thread(void)
 
             k_sem_give(chan->semaphore); /* Give control of chan, from lock A
                                                         lifetime */
-            for (struct zbus_observer **sub = chan->subscribers; *sub != NULL; ++sub) {
+            for (struct zbus_observer **sub = chan->observers; *sub != NULL; ++sub) {
                 if ((*sub)->enabled) {
                     if ((*sub)->queue != NULL) {
                         k_msgq_put((*sub)->queue, &idx, K_MSEC(50));

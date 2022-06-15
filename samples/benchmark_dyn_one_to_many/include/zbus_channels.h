@@ -6,21 +6,21 @@ ZBUS_CHANNEL(bm_channel,               /* Name */
              ZBUS_OBSERVERS(s1
 
 #if (BM_ONE_TO >= 2LLU)
-                                      ,
-                                      s2
+                            ,
+                            s2
 #if (BM_ONE_TO > 2LLU)
-                                      ,
-                                      s3, s4
+                            ,
+                            s3, s4
 #if (BM_ONE_TO > 4LLU)
-                                      ,
-                                      s5, s6, s7, s8
+                            ,
+                            s5, s6, s7, s8
 #if (BM_ONE_TO > 8LLU)
-                                      ,
-                                      s9, s10, s11, s12, s13, s14, s15, s16
+                            ,
+                            s9, s10, s11, s12, s13, s14, s15, s16
 #endif
 #endif
 #endif
 #endif
-                                      ), /* Subscribers */
-             ZBUS_MSG_INIT(0)                /* Initial value {0} */
+                            ), /* observers */
+             ZBUS_MSG_INIT(0)  /* Initial value {0} */
 )
