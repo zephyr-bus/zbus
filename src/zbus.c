@@ -3,7 +3,7 @@
  * @brief     Header of
  * @date      Sun Nov 28 18:08:41 2021
  * @author    Rodrigo Peixoto
- * @copyright MIT
+ * SPDX-License-Identifier: Apache-2.0
  *
  */
 #include "zbus.h"

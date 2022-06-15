@@ -3,7 +3,7 @@
  * @brief     Header of
  * @date      Tue Dec 14 14:19:05 2021
  * @author    Rodrigo Peixoto
- * @copyright MIT
+ * SPDX-License-Identifier: Apache-2.0
  *
  */
 
