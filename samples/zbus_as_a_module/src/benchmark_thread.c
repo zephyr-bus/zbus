@@ -34,7 +34,7 @@ void thread_handler1_task()
 {
     zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
     while (!k_msgq_get(fast_handler1.queue, &idx, K_FOREVER)) {
-        if (!zbus_chan_read_by_index_unsafe(idx, msg_received, K_NO_WAIT)) {
+        if (!zbus_chan_read_by_index(idx, msg_received, K_NO_WAIT)) {
             count += current_message_size;
         }
     }
@@ -57,11 +57,11 @@ void producer_thread(void)
     for (uint8_t i = 255; i > 0; --i) {
         msg_sent.chan_256b.bytes[i] = i;
     }
-    current_message_size = __zbus_metadata_get_by_id(current_idx)->message_size;
+    current_message_size = zbus_channel_get_by_index(current_idx)->message_size;
     uint32_t start       = k_uptime_get_32();
     for (uint64_t internal_count = BYTES_TO_BE_SENT; internal_count > 0;
          internal_count -= current_message_size) {
-        zbus_chan_pub_by_index_unsafe(current_idx, msg_sent, K_MSEC(250));
+        zbus_chan_pub_by_index(current_idx, msg_sent, K_MSEC(250));
     }
     uint32_t duration = (k_uptime_get_32() - start);
     uint64_t i        = (BYTES_TO_BE_SENT * 1000LLU) / duration;

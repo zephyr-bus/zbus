@@ -28,10 +28,10 @@ struct {
 void s1_cb(zbus_channel_index_t idx)
 {
     struct external_data_msg *chan_message = NULL;
-    zbus_chan_claim(__zbus_metadata_get_by_id(idx), (void *) &chan_message, K_NO_WAIT);
+    zbus_chan_claim(zbus_channel_get_by_index(idx), (void *) &chan_message, K_NO_WAIT);
     memcpy(&my_random_data_expected, chan_message->reference,
            sizeof(my_random_data_expected));
-    zbus_chan_finish(__zbus_metadata_get_by_id(idx), K_NO_WAIT);
+    zbus_chan_finish(zbus_channel_get_by_index(idx), K_NO_WAIT);
 }
 
 /**
@@ -52,7 +52,7 @@ static void test_static(void)
     } my_random_data = {.a = 10, .b = 200000};
     memcpy(static_memory, &my_random_data, sizeof(my_random_data));
 
-    int err = zbus_chan_pub(dyn_chan, static_external_data, K_NO_WAIT);
+    int err = ZBUS_CHAN_PUB(dyn_chan, static_external_data, K_NO_WAIT);
     zassert_false(err, "Allocation could not be performed");
 
     k_msleep(100);
@@ -81,14 +81,14 @@ static void test_malloc(void)
     } my_random_data = {.a = 20, .b = 300000};
 
     memcpy(dynamic_memory, &my_random_data, sizeof(my_random_data));
-    int err = zbus_chan_pub(dyn_chan, static_external_data, K_NO_WAIT);
+    int err = ZBUS_CHAN_PUB(dyn_chan, static_external_data, K_NO_WAIT);
     zassert_false(err, "Allocation could not be performed");
 
     k_msleep(100);
     zassert_equal(my_random_data.a, my_random_data_expected.a, "It must be 10");
     zassert_equal(my_random_data.b, my_random_data_expected.b, "It must be 200000");
     struct external_data_msg *actual_message_data = NULL;
-    zbus_chan_claim(ZBUS_CHANNEL_METADATA_GET(dyn_chan), (void **) &actual_message_data,
+    zbus_chan_claim(ZBUS_CHANNEL_GET(dyn_chan), (void **) &actual_message_data,
                     K_NO_WAIT);
 
 
@@ -97,7 +97,7 @@ static void test_malloc(void)
     k_free(actual_message_data->reference);
     actual_message_data->reference = NULL;
     actual_message_data->size      = 0;
-    zbus_chan_finish(ZBUS_CHANNEL_METADATA_GET(dyn_chan), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHANNEL_GET(dyn_chan), K_NO_WAIT);
     struct external_data_msg expected_to_be_clean = {0};
     zbus_chan_read(dyn_chan, expected_to_be_clean, K_NO_WAIT);
     zassert_is_null(expected_to_be_clean.reference,

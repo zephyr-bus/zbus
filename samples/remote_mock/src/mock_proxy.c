@@ -28,11 +28,11 @@ void proxy_callback(zbus_channel_index_t idx)
 {
     LOG_DBG("[Mock Proxy callback] started");
     zbus_message_variant_t msg_data = {0};
-    zbus_chan_read_by_index_unsafe(idx, msg_data, K_MSEC(200));
+    zbus_chan_read_by_index(idx, msg_data, K_MSEC(200));
     ct_uart_write_byte(&mock_proxy_uart, (uint8_t *) &tokens[0]);
     ct_uart_write_byte(&mock_proxy_uart, (uint8_t *) &idx);
     ct_uart_write(&mock_proxy_uart, (uint8_t *) &msg_data,
-                  __zbus_metadata_get_by_id(idx)->message_size);
+                  zbus_channel_get_by_index(idx)->message_size);
     ct_uart_write(&mock_proxy_uart, (uint8_t *) &tokens[1], 1);
     LOG_DBG("[Mock Proxy callback] sending sensor data to host");
 }
@@ -63,11 +63,11 @@ void mock_proxy_rx_thread(void)
                 if ('$' == net_buf_simple_pull_u8(rx_buf)) {
                     idx = net_buf_simple_pull_u8(rx_buf);
                     if (idx < ZBUS_CHANNEL_COUNT) {
-                        struct metadata *meta = __zbus_metadata_get_by_id(idx);
+                        struct zbus_channel *meta = zbus_channel_get_by_index(idx);
                         memcpy(&variant,
                                net_buf_simple_pull_mem(rx_buf, meta->message_size),
                                meta->message_size);
-                        zbus_chan_pub_by_index_unsafe(idx, variant, K_MSEC(200));
+                        ZBUS_CHAN_PUB_by_index(idx, variant, K_MSEC(200));
                     }
                 }
                 net_buf_simple_init(rx_buf, 0);

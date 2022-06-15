@@ -118,10 +118,10 @@ typedef enum __attribute__((packed)) {
     }
 
 #define ZBUS_LISTENER_REGISTER(name, cb) \
-    struct zbus_subscriber name = {                 \
-        .enabled  = true,                           \
-        .queue    = NULL,                           \
-        .callback = cb,                             \
+    struct zbus_subscriber name = {      \
+        .enabled  = true,                \
+        .queue    = NULL,                \
+        .callback = cb,                  \
     }
 
 
@@ -133,7 +133,7 @@ struct zbus_subscriber {
 
 void zbus_subscriber_set_enable(struct zbus_subscriber *sub, bool enabled);
 
-struct metadata {
+struct zbus_channel {
     struct {
         uint8_t pend_callback : 1;
         uint8_t on_changed : 1;
@@ -150,7 +150,7 @@ struct metadata {
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
-    struct metadata __zbus_meta_##name;                                          \
+    struct zbus_channel __zbus_chan_##name;                                      \
     type name;
 
 struct zbus_channels {
@@ -167,7 +167,7 @@ typedef union {
 } zbus_message_variant_t;
 
 struct zbus_channels *__zbus_channels_instance();
-struct metadata *__zbus_metadata_get_by_id(zbus_channel_index_t idx);
+struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
 // /* To avoid error when not using LOG */
 #if defined(CONFIG_ZBUS_LOG)
@@ -176,13 +176,12 @@ struct metadata *__zbus_metadata_get_by_id(zbus_channel_index_t idx);
 #define __ZBUS_LOG_DBG(...)
 #endif
 
-#define ZBUS_CHANNEL_GET(chan) &__zbus_channels_instance()->chan
-#define ZBUS_CHANNEL_METADATA_GET(chan) \
-    ((struct metadata *) &__zbus_channels_instance()->__zbus_meta_##chan)
+#define ZBUS_CHANNEL_GET(chan) \
+    ((struct zbus_channel *) &__zbus_channels_instance()->__zbus_chan_##chan)
 
 void zbus_info_dump(void);
 
-#define zbus_chan_pub(chan, value, timeout)                                              \
+#define ZBUS_CHAN_PUB(chan, value, timeout)                                              \
     ({                                                                                   \
         {                                                                                \
             __typeof__(__zbus_channels_instance()->chan) chan##__aux__;                  \
@@ -191,51 +190,51 @@ void zbus_info_dump(void);
         }                                                                                \
         __ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""), \
                        __FILE__, __LINE__);                                              \
-        __zbus_chan_pub(ZBUS_CHANNEL_METADATA_GET(chan), (uint8_t *) &value,             \
-                        sizeof(value), timeout, false);                                  \
+        __zbus_chan_pub(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value),       \
+                        timeout, false);                                                 \
     })
 
-#define zbus_chan_pub_by_index_unsafe(idx, value, timeout)                             \
+#define zbus_chan_pub_by_index(idx, value, timeout)                                    \
     ({                                                                                 \
         __ZBUS_LOG_DBG("[ZBUS] %spub %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                        __FILE__, __LINE__);                                            \
-        __zbus_chan_pub(__zbus_metadata_get_by_id(idx), (uint8_t *) &value,            \
-                        __zbus_metadata_get_by_id(idx)->message_size, timeout, false); \
+        __zbus_chan_pub(zbus_channel_get_by_index(idx), (uint8_t *) &value,            \
+                        zbus_channel_get_by_index(idx)->message_size, timeout, false); \
     })
 
-int __zbus_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
+int __zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
                     k_timeout_t timeout, bool from_ext);
 
 
-#define zbus_chan_read(chan, value, timeout)                                  \
-    ({                                                                        \
-        {                                                                     \
-            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;       \
-            __typeof__(value) value##__aux__;                                 \
-            (void) (&chan##__aux__ == &value##__aux__);                       \
-        }                                                                     \
-        __ZBUS_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d",                    \
-                       (k_is_in_isr() ? "ISR " : ""), __FILE__, __LINE__);    \
-        __zbus_chan_read(ZBUS_CHANNEL_METADATA_GET(chan), (uint8_t *) &value, \
-                         sizeof(value), timeout);                             \
+#define zbus_chan_read(chan, value, timeout)                                        \
+    ({                                                                              \
+        {                                                                           \
+            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;             \
+            __typeof__(value) value##__aux__;                                       \
+            (void) (&chan##__aux__ == &value##__aux__);                             \
+        }                                                                           \
+        __ZBUS_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d",                          \
+                       (k_is_in_isr() ? "ISR " : ""), __FILE__, __LINE__);          \
+        __zbus_chan_read(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value), \
+                         timeout);                                                  \
     })
 
-#define zbus_chan_read_by_index_unsafe(idx, value, timeout)                             \
+#define zbus_chan_read_by_index(idx, value, timeout)                                    \
     ({                                                                                  \
         __ZBUS_LOG_DBG("[ZBUS] %sread %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                        __FILE__, __LINE__);                                             \
-        __zbus_chan_read(__zbus_metadata_get_by_id(idx), (uint8_t *) &value,            \
-                         __zbus_metadata_get_by_id(idx)->message_size, timeout);        \
+        __zbus_chan_read(zbus_channel_get_by_index(idx), (uint8_t *) &value,            \
+                         zbus_channel_get_by_index(idx)->message_size, timeout);        \
     })
 
-int __zbus_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
+int __zbus_chan_read(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
                      k_timeout_t timeout);
 
-int zbus_chan_claim(struct metadata *meta, void **chan_msg, k_timeout_t timeout);
+int zbus_chan_claim(struct zbus_channel *meta, void **chan_msg, k_timeout_t timeout);
 
-void zbus_chan_finish(struct metadata *meta, k_timeout_t timeout);
+void zbus_chan_finish(struct zbus_channel *meta, k_timeout_t timeout);
 
-int zbus_chan_notify(struct metadata *meta, k_timeout_t timeout);
+int zbus_chan_notify(struct zbus_channel *meta, k_timeout_t timeout);
 
 
 #endif  // _ZBUS_H_

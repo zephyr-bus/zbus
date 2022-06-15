@@ -29,7 +29,7 @@ static void test_01(void)
     uint8_t count                   = 0;
     while (1) {
         if (!k_msgq_get(&__zbus_ext_msgq, &idx, K_FOREVER)) {
-            struct metadata *meta = __zbus_metadata_get_by_id(idx);
+            struct zbus_channel *meta = zbus_channel_get_by_index(idx);
             __zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
                              K_MSEC(500));
             switch (idx) {
@@ -60,7 +60,7 @@ static void test_01(void)
 
                 struct action a = {false};
                 LOG_DBG("[Extension] sending start measurement with status %d", a.status);
-                __zbus_chan_pub(__zbus_metadata_get_by_id(zbus_index_start_measurement),
+                __zbus_chan_pub(zbus_channel_get_by_index(zbus_index_start_measurement),
                                 (uint8_t *) &a, sizeof(a), K_MSEC(500), true);
             } break;
             default: {

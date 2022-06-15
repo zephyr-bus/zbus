@@ -22,7 +22,7 @@ void peripheral_thread(void)
     while (!k_msgq_get(peripheral.queue, &idx, K_FOREVER)) {
         sd.value += 1;
         LOG_DBG("[Peripheral] sending sensor data");
-        zbus_chan_pub(sensor_data, sd, K_MSEC(250));
+        ZBUS_CHAN_PUB(sensor_data, sd, K_MSEC(250));
     }
 }
 

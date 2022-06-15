@@ -34,7 +34,7 @@ extern struct net_pkt pkt;
 static void test_01(void)
 {
     struct action start = {true};
-    zbus_chan_pub(start_measurement, start, K_MSEC(200));
+    ZBUS_CHAN_PUB(start_measurement, start, K_MSEC(200));
     k_msleep(1000);
     zassert_equal(pkt.x, 'I', "1 was not equal to 1");
     zassert_equal(pkt.y, false, "1 was not equal to 1");

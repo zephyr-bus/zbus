@@ -19,7 +19,7 @@ void core_thread(void)
 {
     zbus_channel_index_t idx = 0;
     struct action start    = {true};
-    zbus_chan_pub(start_measurement, start, K_FOREVER);
+    ZBUS_CHAN_PUB(start_measurement, start, K_FOREVER);
     while (1) {
         if (!k_msgq_get(core.queue, &idx, K_FOREVER)) {
             struct sensor_data data = {0};
@@ -27,7 +27,7 @@ void core_thread(void)
             LOG_DBG("[Core] sensor {a = %d, b = %d}. Sending pkt", data.a, data.b);
             struct net_pkt pkt = {.x = !(data.a % 2) ? 'P' : 'I',
                                   .y = !(data.b % 3) ? true : false};
-            zbus_chan_pub(net_pkt, pkt, K_MSEC(200));
+            ZBUS_CHAN_PUB(net_pkt, pkt, K_MSEC(200));
         }
     }
 }

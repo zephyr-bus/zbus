@@ -55,8 +55,8 @@ ZBUS_SUBSCRIBER_REGISTER(s16, 4);
         zbus_channel_index_t idx   = ZBUS_CHANNEL_COUNT;                                \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                              \
             if (!__zbus_chan_read(                                                      \
-                    __zbus_metadata_get_by_id(idx), (uint8_t *) &msg_received,          \
-                    __zbus_metadata_get_by_id(idx)->message_size, K_NO_WAIT)) {         \
+                    zbus_channel_get_by_index(idx), (uint8_t *) &msg_received,          \
+                    zbus_channel_get_by_index(idx)->message_size, K_NO_WAIT)) {         \
                 count += BM_MESSAGE_SIZE;                                               \
             }                                                                           \
         }                                                                               \
@@ -119,7 +119,7 @@ ZBUS_LISTENER_REGISTER(s16, s_cb);
 zbus_message_variant_t msg_received = {0};
 void s_cb(zbus_channel_index_t idx)
 {
-    if (!zbus_chan_read_by_index_unsafe(idx, msg_received, K_NO_WAIT)) {
+    if (!zbus_chan_read_by_index(idx, msg_received, K_NO_WAIT)) {
         count += BM_MESSAGE_SIZE;
     }
 }
@@ -143,7 +143,7 @@ void producer_thread(void)
     for (uint64_t internal_count = BYTES_TO_BE_SENT / BM_ONE_TO; internal_count > 0;
          internal_count -= BM_MESSAGE_SIZE) {
         memcpy(&msg_to_be_sent, &msg, BM_MESSAGE_SIZE);
-        zbus_chan_pub(bm_channel, msg_to_be_sent, K_MSEC(100));
+        ZBUS_CHAN_PUB(bm_channel, msg_to_be_sent, K_MSEC(100));
     }
     uint32_t duration = (k_uptime_get_32() - start);
     if (duration == 0) {
