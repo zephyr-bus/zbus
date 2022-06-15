@@ -8,6 +8,11 @@ struct version {
     uint16_t build;
 };
 
+struct external_data_msg {
+    void *reference;
+    size_t size;
+};
+
 struct sensor_data {
     int a;
     int b;
