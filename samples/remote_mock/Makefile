@@ -27,6 +27,10 @@ run: rebuild
 	@echo "\n *** Run project:"
 	renode renode_setup.resc --console
 
+renode_debug: rebuild
+	@echo "\n *** Debug project in Renode"
+	renode renode_debug.resc --console 
+
 run_posix: clean
 	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
 	./build/zephyr/zephyr.exe

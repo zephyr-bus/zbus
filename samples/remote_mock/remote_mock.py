@@ -4,9 +4,9 @@ from time import sleep
 
 j = """
 [
-    {"name":"version","on_changed": false, "read_only": true, "message_size": 4},
-    {"name":"sensor_data","on_changed": true, "read_only": false, "message_size": 4},
-    {"name":"start_measurement","on_changed": false, "read_only": false, "message_size": 1}
+{"name":"version","on_changed": false, "read_only": true, "message_size": 4},
+{"name":"sensor_data","on_changed": true, "read_only": false, "message_size": 4},
+{"name":"start_measurement","on_changed": false, "read_only": false, "message_size": 1}
 ]"""
 
 channels = json.loads(j)

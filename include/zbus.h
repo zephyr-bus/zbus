@@ -171,7 +171,7 @@ void zbus_info_dump(void);
                         timeout, false);                                                 \
     })
 
-#define zbus_chan_pub_by_index(idx, value, timeout)                                    \
+#define ZBUS_CHAN_PUB_BY_INDEX(idx, value, timeout)                                    \
     ({                                                                                 \
         __ZBUS_LOG_DBG("[ZBUS] %spub %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                        __FILE__, __LINE__);                                            \

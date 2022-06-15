@@ -67,7 +67,7 @@ void mock_proxy_rx_thread(void)
                         memcpy(&variant,
                                net_buf_simple_pull_mem(rx_buf, meta->message_size),
                                meta->message_size);
-                        ZBUS_CHAN_PUB_by_index(idx, variant, K_MSEC(200));
+                        ZBUS_CHAN_PUB_BY_INDEX(idx, variant, K_MSEC(200));
                     }
                 }
                 net_buf_simple_init(rx_buf, 0);
