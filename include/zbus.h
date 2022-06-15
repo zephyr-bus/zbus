@@ -28,11 +28,6 @@
 #define ZBUS_ASSERT(cond)
 #endif
 
-struct zbus_dyn_message {
-    void *ref;
-    size_t size;
-};
-
 #ifndef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val)
 #endif
@@ -42,7 +37,7 @@ typedef enum __attribute__((packed)) {
 #undef ZBUS_CHANNEL
 #endif
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    zbus_index_##name,
+    name##_index,
 #include "zbus_channels.h"
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
@@ -84,7 +79,7 @@ typedef enum __attribute__((packed)) {
         val, ##__VA_ARGS__      \
     }
 
-#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                        \
+#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                         \
     K_MSGQ_DEFINE(name##_queue, sizeof(zbus_channel_index_t), queue_size, \
                   sizeof(zbus_channel_index_t));                          \
     struct zbus_observer name = {                                         \
@@ -94,10 +89,10 @@ typedef enum __attribute__((packed)) {
     }
 
 #define ZBUS_LISTENER_DECLARE(name, cb) \
-    struct zbus_observer name = {        \
-        .enabled  = true,                \
-        .queue    = NULL,                \
-        .callback = cb,                  \
+    struct zbus_observer name = {       \
+        .enabled  = true,               \
+        .queue    = NULL,               \
+        .callback = cb,                 \
     }
 
 

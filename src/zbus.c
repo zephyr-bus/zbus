@@ -83,7 +83,7 @@ static struct zbus_channels __zbus_channels = {
                                 value. */                                                \
                  false       /* ISC source flag */                                       \
              },              /* ISC source flag */                                       \
-         zbus_index_##name,  /* Lookup table index */                                    \
+         name##_index,       /* Lookup table index */                                    \
          sizeof(type),       /* The channel's size */                                    \
          (uint8_t *) &__zbus_messages.name, /* The actual channel */                     \
          &__zbus_sem_##name,                /* Channel's semaphore */                    \

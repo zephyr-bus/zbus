@@ -25,7 +25,7 @@ void fh1_cb(zbus_channel_index_t idx);
 ZBUS_SUBSCRIBER_DECLARE(fast_handler1, 16);
 
 
-zbus_channel_index_t current_idx = zbus_index_chan_256b;
+zbus_channel_index_t current_idx = chan_256b_index;
 size_t current_message_size      = 0;
 
 uint64_t count                      = 0;
