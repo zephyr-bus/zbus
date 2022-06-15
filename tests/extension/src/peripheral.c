@@ -13,7 +13,7 @@
 #include "zbus.h"
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-ZBUS_SUBSCRIBER_REGISTER(peripheral, 16);
+ZBUS_SUBSCRIBER_DECLARE(peripheral, 16);
 
 
 void peripheral_thread(void)
@@ -24,7 +24,7 @@ void peripheral_thread(void)
         sd.a += 1;
         sd.b += 10;
         LOG_DBG("[Peripheral] sending sensor data");
-        zbus_chan_pub(sensor_data, sd, K_MSEC(250));
+        ZBUS_CHAN_PUB(sensor_data, sd, K_MSEC(250));
     }
 }
 

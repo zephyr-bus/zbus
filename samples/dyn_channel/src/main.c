@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include "kernel.h"
 #include "zbus.h"
-#include "zbus_messages.h"
 
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
@@ -27,34 +26,33 @@ struct pkt {
 };
 
 void filter_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(filter, filter_cb);
+ZBUS_LISTENER_DECLARE(filter, filter_cb);
 
 zbus_message_variant_t msg_received = {0};
 void filter_cb(zbus_channel_index_t idx)
 {
     struct external_data_msg *chan_message = NULL;
-    ZBUS_ASSERT(idx == zbus_index_pkt_channel);
-    zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(pkt_channel), (void **) &chan_message,
-                     K_NO_WAIT);
+    ZBUS_ASSERT(idx == pkt_channel_index);
+    zbus_chan_claim(ZBUS_CHANNEL_GET(pkt_channel), (void **) &chan_message, K_NO_WAIT);
     struct pkt *filtered_data = (struct pkt *) chan_message->reference;
     if (filtered_data->header.filter) {
         memset(filtered_data->body, 0, filtered_data->header.body_size);
     }
-    zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(pkt_channel), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHANNEL_GET(pkt_channel), K_NO_WAIT);
 
     struct ack_msg dr = {1};
-    zbus_chan_pub(data_ready, dr, K_NO_WAIT);
+    ZBUS_CHAN_PUB(data_ready, dr, K_NO_WAIT);
 }
 
 void main(void)
 {
     struct version_msg v = {0};
-    zbus_chan_read(version, v, K_NO_WAIT);
+    ZBUS_CHAN_READ(version, v, K_NO_WAIT);
 
     printk("\n -> Sample dynamic filter version %u.%u-%u\n\n", v.major, v.minor, v.build);
 }
 
-ZBUS_SUBSCRIBER_REGISTER(producer, 4);
+ZBUS_SUBSCRIBER_DECLARE(producer, 4);
 void producer_thread(void)
 {
     struct pkt *msg          = NULL;
@@ -69,22 +67,21 @@ void producer_thread(void)
         msg->header.filter                   = i % 2;
         struct external_data_msg malloc_data = {.reference = msg,
                                                 .size      = sizeof(struct pkt) + i};
-        zbus_chan_pub(pkt_channel, malloc_data, K_NO_WAIT);
+        ZBUS_CHAN_PUB(pkt_channel, malloc_data, K_NO_WAIT);
         ++i;
     } while ((i < 16) && !k_msgq_get(producer.queue, &idx, K_FOREVER));
 }
 K_THREAD_DEFINE(producer_thread_id, 1024, producer_thread, NULL, NULL, NULL, 5, 0, 5000);
 
 
-ZBUS_SUBSCRIBER_REGISTER(consumer, 4);
+ZBUS_SUBSCRIBER_DECLARE(consumer, 4);
 void consumer_thread(void)
 {
     struct external_data_msg *chan_message = NULL;
     zbus_channel_index_t idx               = ZBUS_CHANNEL_COUNT;
     while (!k_msgq_get(consumer.queue, &idx, K_FOREVER)) {
-        ZBUS_ASSERT(idx == zbus_index_data_ready);
-        zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(pkt_channel), (void *) &chan_message,
-                         K_NO_WAIT);
+        ZBUS_ASSERT(idx == data_ready_index);
+        zbus_chan_claim(ZBUS_CHANNEL_GET(pkt_channel), (void *) &chan_message, K_NO_WAIT);
 
         struct pkt *received = (struct pkt *) chan_message->reference;
         printk("Header(filter=%d,body_size=%02d)+Body(", received->header.filter,
@@ -98,10 +95,10 @@ void consumer_thread(void)
         k_free(chan_message->reference);
         chan_message->reference = NULL;
         chan_message->size      = 0;
-        zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(pkt_channel), K_NO_WAIT);
+        zbus_chan_finish(ZBUS_CHANNEL_GET(pkt_channel), K_NO_WAIT);
 
         struct ack_msg a = {1};
-        zbus_chan_pub(ack, a, K_MSEC(250));
+        ZBUS_CHAN_PUB(ack, a, K_MSEC(250));
     }
 }
 

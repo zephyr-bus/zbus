@@ -29,11 +29,10 @@ static void test_01(void)
     uint8_t count                   = 0;
     while (1) {
         if (!k_msgq_get(&__zbus_ext_msgq, &idx, K_FOREVER)) {
-            struct metadata *meta = __zbus_metadata_get_by_id(idx);
-            __zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
-                             K_MSEC(500));
+            struct zbus_channel *meta = zbus_channel_get_by_index(idx);
+            zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size, K_MSEC(500));
             switch (idx) {
-            case zbus_index_sensor_data: {
+            case sensor_data_index: {
                 ++count;
                 LOG_DBG("[Extension] receiving sensor data with a=%d, b=%d",
                         msg_data.sensor_data.a, msg_data.sensor_data.b);
@@ -45,14 +44,14 @@ static void test_01(void)
                     return;
                 }
             } break;
-            case zbus_index_start_measurement: {
+            case start_measurement_index: {
                 LOG_DBG("[Extension] receiving start measurement with status %d",
                         msg_data.start_measurement.status);
                 zassert_true(msg_data.start_measurement.status == (count % 2),
                              "it must be %d, and not %d", (count % 2),
                              msg_data.start_measurement.status);
             } break;
-            case zbus_index_finish: {
+            case finish_index: {
                 LOG_DBG("[Extension] receiving finish with status %d",
                         msg_data.finish.status);
                 zassert_true(msg_data.finish.status == true, "it must be %d, and not %d",
@@ -60,7 +59,7 @@ static void test_01(void)
 
                 struct action a = {false};
                 LOG_DBG("[Extension] sending start measurement with status %d", a.status);
-                __zbus_chan_pub(__zbus_metadata_get_by_id(zbus_index_start_measurement),
+                __zbus_chan_pub(zbus_channel_get_by_index(start_measurement_index),
                                 (uint8_t *) &a, sizeof(a), K_MSEC(500), true);
             } break;
             default: {
