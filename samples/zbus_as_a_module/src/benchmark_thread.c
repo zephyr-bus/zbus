@@ -61,7 +61,7 @@ void producer_thread(void)
     uint32_t start       = k_uptime_get_32();
     for (uint64_t internal_count = BYTES_TO_BE_SENT; internal_count > 0;
          internal_count -= current_message_size) {
-        zbus_chan_pub_by_index(current_idx, msg_sent, K_MSEC(250));
+        ZBUS_CHAN_PUB_BY_INDEX(current_idx, msg_sent, K_MSEC(250));
     }
     uint32_t duration = (k_uptime_get_32() - start);
     uint64_t i        = (BYTES_TO_BE_SENT * 1000LLU) / duration;

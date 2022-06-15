@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include "kernel.h"
 #include "zbus.h"
-#include "zbus_messages.h"
 
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
