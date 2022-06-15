@@ -22,16 +22,10 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #undef ZBUS_CHANNEL
 #endif
 
-#ifdef ZBUS_DYN_CHANNEL
-#undef ZBUS_DYN_CHANNEL
-#endif /* ZBUS_DYN_CHANNEL */
-
 /**
  * @def ZBUS_CHANNEL
  * Description
  */
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers) K_SEM_DEFINE(__zbus_sem_##name, 1, 1);
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
     K_SEM_DEFINE(__zbus_sem_##name, 1, 1);
@@ -45,8 +39,6 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
     extern struct zbus_subscriber sub_ref, ##__VA_ARGS__
 
 #define ZBUS_CHANNEL_SUBSCRIBERS_EMPTY
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers) subscribers;
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
@@ -74,44 +66,30 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
     }
 
 static struct zbus_channels __zbus_channels = {
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers)                                          \
-    .__zbus_meta_##name =                                                            \
-        {.flag = {false,    /* Not defined yet */                                    \
-                  false,    /* Only changes in the channel will propagate  */        \
-                  false,    /* The channel is only for reading. It must have tial */ \
-                  false,    /* ISC source flag */                                    \
-                  true},    /* Dynamic channel flag */                               \
-         zbus_index_##name, /* Lookup table index */                                 \
-         sizeof(struct zbus_dyn_message),   /* The channel's size */                 \
-         (uint8_t *) &__zbus_channels.name, /* The actual channel */                 \
-         &__zbus_sem_##name,                /* Channel's semaphore */                \
-         subscribers},                      /* List of subscribers queues */         \
-        .name = {0},
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,         \
-                     init_val)                                                           \
-    .__zbus_meta_##name =                                                                \
-        {.flag = {false,      /* Not defined yet */                                      \
-                  on_changed, /* Only changes in the channel will propagate  */          \
-                  read_only,  /* The channel is only for reading. It must have a initial \
-                                 value. */                                               \
-                  false,      /* ISC source flag */                                      \
-                  false},     /* ISC source flag */                                      \
-         zbus_index_##name,   /* Lookup table index */                                   \
-         sizeof(type),        /* The channel's size */                                   \
-         (uint8_t *) &__zbus_channels.name, /* The actual channel */                     \
-         &__zbus_sem_##name,                /* Channel's semaphore */                    \
-         subscribers},                      /* List of subscribers queues */             \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,        \
+                     init_val)                                                          \
+    .__zbus_meta_##name =                                                               \
+        {.flag =                                                                        \
+             {                                                                          \
+                 false,      /* Not defined yet */                                      \
+                 on_changed, /* Only changes in the channel will propagate  */          \
+                 read_only,  /* The channel is only for reading. It must have a initial \
+                                value. */                                               \
+                 false       /* ISC source flag */                                      \
+             },              /* ISC source flag */                                      \
+         zbus_index_##name,  /* Lookup table index */                                   \
+         sizeof(type),       /* The channel's size */                                   \
+         (uint8_t *) &__zbus_channels.name, /* The actual channel */                    \
+         &__zbus_sem_##name,                /* Channel's semaphore */                   \
+         subscribers},                      /* List of subscribers queues */            \
         .name = init_val,
 
 #include "zbus_channels.h"
 };
 
 struct metadata *__zbus_channels_lookup_table[] = {
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers) &__zbus_channels.__zbus_meta_##name,
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers, \
                      init_val)                                                   \
@@ -166,11 +144,6 @@ struct metadata *__zbus_metadata_get_by_id(zbus_channel_index_t idx)
 void zbus_info_dump(void)
 {
     printk("[\n");
-#undef ZBUS_DYN_CHANNEL
-#define ZBUS_DYN_CHANNEL(name, subscribers)                                 \
-    printk("{\"name\":\"%s\",\"on_changed\": false, \"read_only\": false, " \
-           "\"message_size\": %u},\n",                                      \
-           #name, sizeof(struct zbus_dyn_message));
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, subscribers,        \
                      init_val)                                                          \
@@ -268,68 +241,9 @@ int __zbus_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
     return err;
 }
 
-#if defined(CONFIG_ZBUS_DYNAMIC_CHANNELS)
-int zbus_dyn_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                      k_timeout_t timeout, bool from_ext)
+int zbus_chan_notify(struct metadata *meta, k_timeout_t timeout)
 {
     ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
-    ZBUS_ASSERT(meta->message != NULL);
-    ZBUS_ASSERT(msg != NULL);
-    ZBUS_ASSERT(msg_size > 0);
-    ZBUS_ASSERT(meta->flag.read_only == 0);
-    /* Force to not use timeout inside ISR */
-    if (k_is_in_isr()) {
-        timeout = K_NO_WAIT;
-    }
-
-    int err = k_sem_take(meta->semaphore, timeout);
-    if (err < 0) {
-        return err;
-    }
-    struct zbus_dyn_message *dyn_msg = (struct zbus_dyn_message *) meta->message;
-    ZBUS_ASSERT(dyn_msg->ref != NULL);
-    ZBUS_ASSERT(dyn_msg->size > 0);
-    memcpy(dyn_msg->ref, msg, dyn_msg->size);
-    meta->flag.pend_callback = true;
-    meta->flag.from_ext      = from_ext;
-    k_sem_give(meta->semaphore);
-    return k_msgq_put(&__zbus_channels_changed_msgq,
-                      (uint8_t *) &meta->lookup_table_index, timeout);
-}
-
-
-int zbus_dyn_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
-                       k_timeout_t timeout)
-{
-    ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
-    ZBUS_ASSERT(meta->message != NULL);
-    ZBUS_ASSERT(msg != NULL);
-    ZBUS_ASSERT(msg_size > 0);
-
-    /* Force to not use timeout inside ISR */
-    if (k_is_in_isr()) {
-        timeout = K_NO_WAIT;
-    }
-
-    int err = k_sem_take(meta->semaphore, timeout);
-    if (err < 0) {
-        return err;
-    }
-    struct zbus_dyn_message *dyn_msg = (struct zbus_dyn_message *) meta->message;
-    ZBUS_ASSERT(dyn_msg->ref != NULL);
-    ZBUS_ASSERT(dyn_msg->size > 0);
-    ZBUS_ASSERT(dyn_msg->size == msg_size);
-    memcpy(msg, dyn_msg->ref, msg_size);
-    k_sem_give(meta->semaphore);
-    return err;
-}
-
-int zbus_dyn_chan_notify(struct metadata *meta, k_timeout_t timeout)
-{
-    ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
     ZBUS_ASSERT(meta->message != NULL);
     /* Force to not use timeout inside ISR */
     if (k_is_in_isr()) {
@@ -347,92 +261,22 @@ int zbus_dyn_chan_notify(struct metadata *meta, k_timeout_t timeout)
                       (uint8_t *) &meta->lookup_table_index, timeout);
 }
 
-int zbus_dyn_chan_alloc(struct metadata *meta, void *user_allocated_data,
-                        size_t user_allocated_data_size, k_timeout_t timeout)
+int zbus_chan_borrow(struct metadata *meta, void **chan_msg, k_timeout_t timeout)
 {
     ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
-    ZBUS_ASSERT(meta->message != NULL);
-    ZBUS_ASSERT(user_allocated_data != NULL);
-    ZBUS_ASSERT(user_allocated_data_size > 0);
-
-    if (k_is_in_isr()) {
-        timeout = K_NO_WAIT;
-    }
-
     int err = k_sem_take(meta->semaphore, timeout);
     if (err < 0) {
         return err;
     }
-    struct zbus_dyn_message *dyn_msg = (struct zbus_dyn_message *) meta->message;
-    dyn_msg->ref                     = user_allocated_data;
-    LOG_DBG("Alloc with data prt %p", user_allocated_data);
-    dyn_msg->size = user_allocated_data_size;
-    k_sem_give(meta->semaphore);
-    return err;
-}
-int zbus_dyn_chan_size(struct metadata *meta, size_t *size, k_timeout_t timeout)
-{
-    ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
-    ZBUS_ASSERT(meta->message != NULL);
-
-    if (k_is_in_isr()) {
-        timeout = K_NO_WAIT;
-    }
-
-    int err = k_sem_take(meta->semaphore, timeout);
-    if (err < 0) {
-        return err;
-    }
-    *size = ((struct zbus_dyn_message *) meta->message)->size;
-    k_sem_give(meta->semaphore);
-    return err;
-}
-
-int zbus_dyn_chan_dealloc(struct metadata *meta, void **reference, k_timeout_t timeout)
-{
-    ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
-    ZBUS_ASSERT(meta->message != NULL);
-    ZBUS_ASSERT(reference != NULL);
-    if (k_is_in_isr()) {
-        timeout = K_NO_WAIT;
-    }
-
-    int err = k_sem_take(meta->semaphore, timeout);
-    if (err < 0) {
-        return err;
-    }
-    struct zbus_dyn_message *dyn_msg = (struct zbus_dyn_message *) meta->message;
-    ZBUS_ASSERT(dyn_msg->ref != NULL);
-    *reference    = dyn_msg->ref;
-    dyn_msg->ref  = NULL;
-    dyn_msg->size = 0;
-    k_sem_give(meta->semaphore);
-    return err;
-}
-
-int zbus_dyn_chan_borrow(struct metadata *meta, void **reference, k_timeout_t timeout)
-{
-    ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
-    int err = k_sem_take(meta->semaphore, timeout);
-    if (err < 0) {
-        return err;
-    }
-    *reference = ((struct zbus_dyn_message *) meta->message)->ref;
+    *chan_msg = (void *) meta->message;
     return 0;
 }
 
-void zbus_dyn_chan_give_back(struct metadata *meta, k_timeout_t timeout)
+void zbus_chan_give_back(struct metadata *meta, k_timeout_t timeout)
 {
     ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 1);
     k_sem_give(meta->semaphore);
 }
-
-#endif  // defined(CONFIG_ZBUS_DYNAMIC_CHANNELS)
 
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
