@@ -52,14 +52,17 @@ ZBUS_SUBSCRIBER_REGISTER(s16, 4);
 #define S_TASK(name)                                                                    \
     void name##_task()                                                                  \
     {                                                                                   \
-        struct bm_msg msg_received = {0};                                               \
-        zbus_channel_index_t idx   = ZBUS_CHANNEL_COUNT;                                \
+        struct bm_msg msg_received                    = {0};                            \
+        struct external_data_msg *actual_message_data = NULL;                           \
+        zbus_channel_index_t idx                      = ZBUS_CHANNEL_COUNT;             \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                              \
-            if (!zbus_dyn_chan_read(__zbus_metadata_get_by_id(idx),                     \
-                                    (uint8_t *) &msg_received, sizeof(msg_received),    \
-                                    K_NO_WAIT)) {                                       \
-                count += BM_MESSAGE_SIZE;                                               \
-            }                                                                           \
+            zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(bm_channel),                     \
+                             (void *) &actual_message_data, K_NO_WAIT);                 \
+            ZBUS_ASSERT(actual_message_data->reference != NULL);                        \
+            memcpy(&msg_received, actual_message_data->reference,                       \
+                   sizeof(struct bm_msg));                                              \
+            zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(bm_channel), K_NO_WAIT);      \
+            count += BM_MESSAGE_SIZE;                                                   \
         }                                                                               \
     }                                                                                   \
     K_THREAD_DEFINE(name##_id, BM_MESSAGE_SIZE + 196, name##_task, NULL, NULL, NULL, 3, \
@@ -120,12 +123,12 @@ ZBUS_SUBSCRIBER_REGISTER_CALLBACK(s16, s_cb);
 struct bm_msg msg_received = {0};
 void s_cb(zbus_channel_index_t idx)
 {
-    int err =
-        zbus_dyn_chan_read(__zbus_metadata_get_by_id(idx), (uint8_t *) &msg_received,
-                           sizeof(msg_received), K_NO_WAIT);
-    if (err == 0) {
-        count += BM_MESSAGE_SIZE;
-    }
+    struct external_data_msg *actual_message_data = NULL;
+    zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(bm_channel), (void *) &actual_message_data,
+                     K_NO_WAIT);
+    memcpy(&msg_received, actual_message_data->reference, sizeof(struct bm_msg));
+    zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(bm_channel), K_NO_WAIT);
+    count += BM_MESSAGE_SIZE;
 }
 #endif  // BM_ASYNC
 
@@ -143,18 +146,23 @@ void producer_thread(void)
         msg.bytes[i] = i;
     }
 
-    void *mem_ref = k_malloc(sizeof(struct bm_msg));
-    ZBUS_ASSERT(mem_ref != NULL);
-    zbus_dyn_chan_alloc(ZBUS_CHANNEL_METADATA_GET(bm_channel), mem_ref,
-                        sizeof(struct bm_msg), K_NO_WAIT);
-    struct bm_msg msg_to_be_sent = {0};
-    uint32_t start               = k_uptime_get_32();
+    struct external_data_msg *actual_message_data = NULL;
+    zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(bm_channel), (void *) &actual_message_data,
+                     K_NO_WAIT);
+    actual_message_data->reference = k_malloc(sizeof(struct bm_msg));
+    actual_message_data->size      = sizeof(struct bm_msg);
+    ZBUS_ASSERT(actual_message_data->reference != NULL);
+    ZBUS_ASSERT(actual_message_data->size > 0);
+    zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(bm_channel), K_NO_WAIT);
+
+    uint32_t start = k_uptime_get_32();
     for (uint64_t internal_count = BYTES_TO_BE_SENT / BM_ONE_TO; internal_count > 0;
          internal_count -= BM_MESSAGE_SIZE) {
-        memcpy(&msg_to_be_sent, &msg, BM_MESSAGE_SIZE);
-        zbus_dyn_chan_pub(ZBUS_CHANNEL_METADATA_GET(bm_channel),
-                          (uint8_t *) &msg_to_be_sent, sizeof(struct bm_msg), K_MSEC(100),
-                          false);
+        zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(bm_channel),
+                         (void *) &actual_message_data, K_NO_WAIT);
+        memcpy(actual_message_data->reference, &msg, BM_MESSAGE_SIZE);
+        zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(bm_channel), K_NO_WAIT);
+        zbus_chan_notify(ZBUS_CHANNEL_METADATA_GET(bm_channel), K_MSEC(200));
     }
     uint32_t duration = (k_uptime_get_32() - start);
     if (duration == 0) {
