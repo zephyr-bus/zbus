@@ -13,7 +13,7 @@
 #include "zbus.h"
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-ZBUS_SUBSCRIBER_REGISTER(peripheral, 16);
+ZBUS_SUBSCRIBER_DECLARE(peripheral, 16);
 
 void peripheral_thread(void)
 {

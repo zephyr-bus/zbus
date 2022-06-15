@@ -22,7 +22,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 void fh1_cb(zbus_channel_index_t idx);
 
 
-ZBUS_SUBSCRIBER_REGISTER(fast_handler1, 16);
+ZBUS_SUBSCRIBER_DECLARE(fast_handler1, 16);
 
 
 zbus_channel_index_t current_idx = zbus_index_chan_256b;

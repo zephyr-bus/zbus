@@ -13,7 +13,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-ZBUS_SUBSCRIBER_REGISTER(core, 10);
+ZBUS_SUBSCRIBER_DECLARE(core, 10);
 
 void core_thread(void)
 {

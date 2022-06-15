@@ -15,7 +15,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 void urgent_callback(zbus_channel_index_t idx);
 
-ZBUS_LISTENER_REGISTER(critical, urgent_callback);
+ZBUS_LISTENER_DECLARE(critical, urgent_callback);
 
 int count = 0;
 void urgent_callback(zbus_channel_index_t idx)

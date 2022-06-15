@@ -17,7 +17,7 @@
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 void s1_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(s1, s1_cb);
+ZBUS_LISTENER_DECLARE(s1, s1_cb);
 
 
 struct {

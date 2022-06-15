@@ -15,22 +15,22 @@
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 void fh1_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(fast_handler1, fh1_cb);
+ZBUS_LISTENER_DECLARE(fast_handler1, fh1_cb);
 
 void fh2_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(fast_handler2, fh2_cb);
+ZBUS_LISTENER_DECLARE(fast_handler2, fh2_cb);
 
 void fh3_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(fast_handler3, fh3_cb);
+ZBUS_LISTENER_DECLARE(fast_handler3, fh3_cb);
 
 void dh1_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(delay_handler1, dh1_cb);
+ZBUS_LISTENER_DECLARE(delay_handler1, dh1_cb);
 
 void dh2_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(delay_handler2, dh2_cb);
+ZBUS_LISTENER_DECLARE(delay_handler2, dh2_cb);
 
 void dh3_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(delay_handler3, dh3_cb);
+ZBUS_LISTENER_DECLARE(delay_handler3, dh3_cb);
 
 struct sensor_msg msg = {0};
 void fh1_cb(zbus_channel_index_t idx)
@@ -102,7 +102,7 @@ void main(void)
     LOG_DBG("Sensor sample started, version %u.%u-%u!", v.major, v.minor, v.build);
 }
 
-ZBUS_SUBSCRIBER_REGISTER(thread_handler1, 4);
+ZBUS_SUBSCRIBER_DECLARE(thread_handler1, 4);
 void thread_handler1_task()
 {
     zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
@@ -117,7 +117,7 @@ void thread_handler1_task()
 K_THREAD_DEFINE(thread_handler1_id, 1024, thread_handler1_task, NULL, NULL, NULL, 3, 0,
                 0);
 
-ZBUS_SUBSCRIBER_REGISTER(thread_handler2, 4);
+ZBUS_SUBSCRIBER_DECLARE(thread_handler2, 4);
 void thread_handler2_task()
 {
     zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
@@ -132,7 +132,7 @@ void thread_handler2_task()
 K_THREAD_DEFINE(thread_handler2_id, 1024, thread_handler2_task, NULL, NULL, NULL, 3, 0,
                 0);
 
-ZBUS_SUBSCRIBER_REGISTER(thread_handler3, 4);
+ZBUS_SUBSCRIBER_DECLARE(thread_handler3, 4);
 void thread_handler3_task()
 {
     zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;

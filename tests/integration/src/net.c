@@ -13,7 +13,7 @@
 #include "zbus_messages.h"
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-ZBUS_SUBSCRIBER_REGISTER(net, 4);
+ZBUS_SUBSCRIBER_DECLARE(net, 4);
 
 struct net_pkt pkt = {0};
 

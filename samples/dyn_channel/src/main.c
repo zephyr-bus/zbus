@@ -27,7 +27,7 @@ struct pkt {
 };
 
 void filter_cb(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(filter, filter_cb);
+ZBUS_LISTENER_DECLARE(filter, filter_cb);
 
 zbus_message_variant_t msg_received = {0};
 void filter_cb(zbus_channel_index_t idx)
@@ -54,7 +54,7 @@ void main(void)
     printk("\n -> Sample dynamic filter version %u.%u-%u\n\n", v.major, v.minor, v.build);
 }
 
-ZBUS_SUBSCRIBER_REGISTER(producer, 4);
+ZBUS_SUBSCRIBER_DECLARE(producer, 4);
 void producer_thread(void)
 {
     struct pkt *msg          = NULL;
@@ -76,7 +76,7 @@ void producer_thread(void)
 K_THREAD_DEFINE(producer_thread_id, 1024, producer_thread, NULL, NULL, NULL, 5, 0, 5000);
 
 
-ZBUS_SUBSCRIBER_REGISTER(consumer, 4);
+ZBUS_SUBSCRIBER_DECLARE(consumer, 4);
 void consumer_thread(void)
 {
     struct external_data_msg *chan_message = NULL;

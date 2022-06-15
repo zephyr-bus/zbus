@@ -20,7 +20,7 @@ struct ct_uart_device mock_proxy_uart = {DEVICE_DT_GET(DT_NODELABEL(uart1)),
                                          &_mock_proxy_output_msgq};
 
 void proxy_callback(zbus_channel_index_t idx);
-ZBUS_LISTENER_REGISTER(proxy, proxy_callback);
+ZBUS_LISTENER_DECLARE(proxy, proxy_callback);
 
 
 const uint8_t tokens[] = "$*";

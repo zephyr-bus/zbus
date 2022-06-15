@@ -41,8 +41,7 @@ typedef enum __attribute__((packed)) {
 #ifdef ZBUS_CHANNEL
 #undef ZBUS_CHANNEL
 #endif
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
-                     init_val)                                                   \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
     zbus_index_##name,
 #include "zbus_channels.h"
     ZBUS_CHANNEL_COUNT
@@ -80,35 +79,12 @@ typedef enum __attribute__((packed)) {
     }
 
 
-/**
- * @def ZBUS_CHANNEL_INIT_DEFAULT_COMPLEX
- * This must be used to initialize structs with other structs or union inside itself.
- */
-#define ZBUS_CHANNEL_INIT_DEFAULT_COMPLEX \
-    {                                     \
-        {                                 \
-            0                             \
-        }                                 \
-    }
-
-
-/**
- * @def ZBUS_CHANNEL_INIT_DEFAULT
- * This must be used to initialize structs with only scalar values inside.
- */
-#define ZBUS_CHANNEL_INIT_DEFAULT \
-    {                             \
-        0                         \
-    }
-
-#define ZBUS_CHANNEL_INIT_VAL(init) init
-
 #define ZBUS_MSG_INIT(val, ...) \
     {                           \
         val, ##__VA_ARGS__      \
     }
 
-#define ZBUS_SUBSCRIBER_REGISTER(name, queue_size)                        \
+#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                        \
     K_MSGQ_DEFINE(name##_queue, sizeof(zbus_channel_index_t), queue_size, \
                   sizeof(zbus_channel_index_t));                          \
     struct zbus_observer name = {                                         \
@@ -117,7 +93,7 @@ typedef enum __attribute__((packed)) {
         .callback = NULL,                                                 \
     }
 
-#define ZBUS_LISTENER_REGISTER(name, cb) \
+#define ZBUS_LISTENER_DECLARE(name, cb) \
     struct zbus_observer name = {        \
         .enabled  = true,                \
         .queue    = NULL,                \
@@ -148,8 +124,7 @@ struct zbus_channel {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
-                     init_val)                                                   \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
     type name;
 
 struct zbus_messages {
@@ -157,9 +132,8 @@ struct zbus_messages {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
-                     init_val)                                                   \
-    struct zbus_channel __zbus_chan_##name;                                      \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
+    struct zbus_channel __zbus_chan_##name;                                              \
     type name;
 
 struct zbus_channels {
@@ -167,8 +141,7 @@ struct zbus_channels {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, \
-                     init_val)                                                   \
+#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
     type name;
 
 typedef union {
