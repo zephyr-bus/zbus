@@ -117,7 +117,7 @@ typedef enum __attribute__((packed)) {
         .callback = NULL,                                                 \
     }
 
-#define ZBUS_SUBSCRIBER_REGISTER_CALLBACK(name, cb) \
+#define ZBUS_LISTENER_REGISTER(name, cb) \
     struct zbus_subscriber name = {                 \
         .enabled  = true,                           \
         .queue    = NULL,                           \
@@ -231,9 +231,9 @@ int __zbus_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
 int __zbus_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                      k_timeout_t timeout);
 
-int zbus_chan_borrow(struct metadata *meta, void **chan_msg, k_timeout_t timeout);
+int zbus_chan_claim(struct metadata *meta, void **chan_msg, k_timeout_t timeout);
 
-void zbus_chan_give_back(struct metadata *meta, k_timeout_t timeout);
+void zbus_chan_finish(struct metadata *meta, k_timeout_t timeout);
 
 int zbus_chan_notify(struct metadata *meta, k_timeout_t timeout);
 

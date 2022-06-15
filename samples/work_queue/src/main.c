@@ -15,22 +15,22 @@
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 void fh1_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(fast_handler1, fh1_cb);
+ZBUS_LISTENER_REGISTER(fast_handler1, fh1_cb);
 
 void fh2_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(fast_handler2, fh2_cb);
+ZBUS_LISTENER_REGISTER(fast_handler2, fh2_cb);
 
 void fh3_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(fast_handler3, fh3_cb);
+ZBUS_LISTENER_REGISTER(fast_handler3, fh3_cb);
 
 void dh1_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(delay_handler1, dh1_cb);
+ZBUS_LISTENER_REGISTER(delay_handler1, dh1_cb);
 
 void dh2_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(delay_handler2, dh2_cb);
+ZBUS_LISTENER_REGISTER(delay_handler2, dh2_cb);
 
 void dh3_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(delay_handler3, dh3_cb);
+ZBUS_LISTENER_REGISTER(delay_handler3, dh3_cb);
 
 struct sensor_msg msg = {0};
 void fh1_cb(zbus_channel_index_t idx)

@@ -259,7 +259,7 @@ int zbus_chan_notify(struct metadata *meta, k_timeout_t timeout)
                       (uint8_t *) &meta->lookup_table_index, timeout);
 }
 
-int zbus_chan_borrow(struct metadata *meta, void **chan_msg, k_timeout_t timeout)
+int zbus_chan_claim(struct metadata *meta, void **chan_msg, k_timeout_t timeout)
 {
     ZBUS_ASSERT(meta != NULL);
     int err = k_sem_take(meta->semaphore, timeout);
@@ -270,7 +270,7 @@ int zbus_chan_borrow(struct metadata *meta, void **chan_msg, k_timeout_t timeout
     return 0;
 }
 
-void zbus_chan_give_back(struct metadata *meta, k_timeout_t timeout)
+void zbus_chan_finish(struct metadata *meta, k_timeout_t timeout)
 {
     ZBUS_ASSERT(meta != NULL);
     k_sem_give(meta->semaphore);

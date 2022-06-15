@@ -17,7 +17,7 @@
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 void s1_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(s1, s1_cb);
+ZBUS_LISTENER_REGISTER(s1, s1_cb);
 
 
 struct {
@@ -28,10 +28,10 @@ struct {
 void s1_cb(zbus_channel_index_t idx)
 {
     struct external_data_msg *chan_message = NULL;
-    zbus_chan_borrow(__zbus_metadata_get_by_id(idx), (void *) &chan_message, K_NO_WAIT);
+    zbus_chan_claim(__zbus_metadata_get_by_id(idx), (void *) &chan_message, K_NO_WAIT);
     memcpy(&my_random_data_expected, chan_message->reference,
            sizeof(my_random_data_expected));
-    zbus_chan_give_back(__zbus_metadata_get_by_id(idx), K_NO_WAIT);
+    zbus_chan_finish(__zbus_metadata_get_by_id(idx), K_NO_WAIT);
 }
 
 /**
@@ -88,8 +88,8 @@ static void test_malloc(void)
     zassert_equal(my_random_data.a, my_random_data_expected.a, "It must be 10");
     zassert_equal(my_random_data.b, my_random_data_expected.b, "It must be 200000");
     struct external_data_msg *actual_message_data = NULL;
-    zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(dyn_chan), (void **) &actual_message_data,
-                     K_NO_WAIT);
+    zbus_chan_claim(ZBUS_CHANNEL_METADATA_GET(dyn_chan), (void **) &actual_message_data,
+                    K_NO_WAIT);
 
 
     zassert_equal(actual_message_data->reference, dynamic_memory,
@@ -97,7 +97,7 @@ static void test_malloc(void)
     k_free(actual_message_data->reference);
     actual_message_data->reference = NULL;
     actual_message_data->size      = 0;
-    zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(dyn_chan), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHANNEL_METADATA_GET(dyn_chan), K_NO_WAIT);
     struct external_data_msg expected_to_be_clean = {0};
     zbus_chan_read(dyn_chan, expected_to_be_clean, K_NO_WAIT);
     zassert_is_null(expected_to_be_clean.reference,

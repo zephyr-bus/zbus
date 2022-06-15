@@ -27,20 +27,20 @@ struct pkt {
 };
 
 void filter_cb(zbus_channel_index_t idx);
-ZBUS_SUBSCRIBER_REGISTER_CALLBACK(filter, filter_cb);
+ZBUS_LISTENER_REGISTER(filter, filter_cb);
 
 zbus_message_variant_t msg_received = {0};
 void filter_cb(zbus_channel_index_t idx)
 {
     struct external_data_msg *chan_message = NULL;
     ZBUS_ASSERT(idx == zbus_index_pkt_channel);
-    zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(pkt_channel), (void **) &chan_message,
-                     K_NO_WAIT);
+    zbus_chan_claim(ZBUS_CHANNEL_METADATA_GET(pkt_channel), (void **) &chan_message,
+                    K_NO_WAIT);
     struct pkt *filtered_data = (struct pkt *) chan_message->reference;
     if (filtered_data->header.filter) {
         memset(filtered_data->body, 0, filtered_data->header.body_size);
     }
-    zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(pkt_channel), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHANNEL_METADATA_GET(pkt_channel), K_NO_WAIT);
 
     struct ack_msg dr = {1};
     zbus_chan_pub(data_ready, dr, K_NO_WAIT);
@@ -83,8 +83,8 @@ void consumer_thread(void)
     zbus_channel_index_t idx               = ZBUS_CHANNEL_COUNT;
     while (!k_msgq_get(consumer.queue, &idx, K_FOREVER)) {
         ZBUS_ASSERT(idx == zbus_index_data_ready);
-        zbus_chan_borrow(ZBUS_CHANNEL_METADATA_GET(pkt_channel), (void *) &chan_message,
-                         K_NO_WAIT);
+        zbus_chan_claim(ZBUS_CHANNEL_METADATA_GET(pkt_channel), (void *) &chan_message,
+                        K_NO_WAIT);
 
         struct pkt *received = (struct pkt *) chan_message->reference;
         printk("Header(filter=%d,body_size=%02d)+Body(", received->header.filter,
@@ -98,7 +98,7 @@ void consumer_thread(void)
         k_free(chan_message->reference);
         chan_message->reference = NULL;
         chan_message->size      = 0;
-        zbus_chan_give_back(ZBUS_CHANNEL_METADATA_GET(pkt_channel), K_NO_WAIT);
+        zbus_chan_finish(ZBUS_CHANNEL_METADATA_GET(pkt_channel), K_NO_WAIT);
 
         struct ack_msg a = {1};
         zbus_chan_pub(ack, a, K_MSEC(250));
