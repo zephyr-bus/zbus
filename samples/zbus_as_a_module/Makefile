@@ -11,7 +11,7 @@ clean:
 
 build:
 	@echo "\n *** Build project:"
-	west build -b $(BOARD) $(ARGS) -DZEPHYR_EXTRA_MODULES=`pwd`/../../
+	west build -b $(BOARD) $(ARGS) -DZEPHYR_EXTRA_MODULES=/<path>/<to>/zbus
 	mv ./build/compile_commands.json .
 
 build_production:
@@ -28,7 +28,7 @@ run: rebuild
 	renode renode_setup.resc --console
 
 run_posix: clean
-	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y -DZEPHYR_EXTRA_MODULES=`pwd`/../../
+	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y -DZEPHYR_EXTRA_MODULES=/<path>/<to>/zbus
 	./build/zephyr/zephyr.exe
 
 menuconfig: rebuild
