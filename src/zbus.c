@@ -172,7 +172,6 @@ int __zbus_chan_pub(struct metadata *meta, uint8_t *msg, size_t msg_size,
                     k_timeout_t timeout, bool from_ext)
 {
     ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 0);
     ZBUS_ASSERT(meta->flag.read_only == 0);
     ZBUS_ASSERT(meta->message != NULL);
     ZBUS_ASSERT(msg != NULL);
@@ -221,7 +220,6 @@ int __zbus_chan_read(struct metadata *meta, uint8_t *msg, size_t msg_size,
                      k_timeout_t timeout)
 {
     ZBUS_ASSERT(meta != NULL);
-    ZBUS_ASSERT(meta->flag.dynamic == 0);
     ZBUS_ASSERT(meta->message != NULL);
     ZBUS_ASSERT(msg != NULL);
     ZBUS_ASSERT(msg_size > 0);
