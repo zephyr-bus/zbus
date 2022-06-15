@@ -1,5 +1,5 @@
 # ARGS := -- -G'Unix Makefiles' -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
-ARGS := -- -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev# -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
+ARGS := -- -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
 ARGS_PRODUCTION := -- -Wno-dev
 BOARD ?= hifive1_revb
 
@@ -11,8 +11,8 @@ clean:
 
 build:
 	@echo "\n *** Build project:"
-	west build -b $(BOARD) $(ARGS) -DZEPHYR_EXTRA_MODULES=`pwd`/../../
-	mv ./build/compile_commands.json .
+	west build -b $(BOARD) $(ARGS)
+	cp ./build/compile_commands.json .
 
 build_production:
 	@echo "\n *** Build project for production:"
@@ -20,15 +20,12 @@ build_production:
 
 rebuild: clean build
 
-serial_monitor:
-	@python3 decoder.py
-
 run: rebuild
 	@echo "\n *** Run project:"
 	renode renode_setup.resc --console
 
 run_posix: clean
-	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y -DZEPHYR_EXTRA_MODULES=`pwd`/../../
+	west build -b native_posix -- -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
 	./build/zephyr/zephyr.exe
 
 menuconfig: rebuild

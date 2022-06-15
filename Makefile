@@ -1,4 +1,4 @@
-ARGS := -- -G'Unix Makefiles' -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
+ARGS := -- -G'Unix Makefiles' -save-temps -DCMAKE_EXPORT_COMPILE_COMMANDS=on -Wno-dev -DCONFIG_ZBUS_LOG_LEVEL_DBG=y -DCONFIG_COVERAGE=y
 ARGS_PRODUCTION := -- -G'Unix Makefiles' -Wno-dev
 BOARD := hifive1_revb
 

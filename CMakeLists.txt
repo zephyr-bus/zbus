@@ -1,3 +1,4 @@
+
 if(CONFIG_ZBUS)
   zephyr_include_directories(
     ${ZEPHYR_ZBUS_MODULE_DIR}/include
