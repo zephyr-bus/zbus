@@ -216,7 +216,7 @@ int __zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
  * ISR it will force the timeout to be K_NO_WAIT.
  * @return 0 if succes and a negative number if error.
  */
-int __zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
+int zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
                      k_timeout_t timeout)
 {
     ZBUS_ASSERT(chan != NULL);

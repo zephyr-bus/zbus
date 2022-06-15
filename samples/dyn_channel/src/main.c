@@ -49,7 +49,7 @@ void filter_cb(zbus_channel_index_t idx)
 void main(void)
 {
     struct version_msg v = {0};
-    zbus_chan_read(version, v, K_NO_WAIT);
+    ZBUS_CHAN_READ(version, v, K_NO_WAIT);
 
     printk("\n -> Sample dynamic filter version %u.%u-%u\n\n", v.major, v.minor, v.build);
 }

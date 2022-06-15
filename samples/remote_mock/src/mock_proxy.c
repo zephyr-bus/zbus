@@ -28,7 +28,7 @@ void proxy_callback(zbus_channel_index_t idx)
 {
     LOG_DBG("[Mock Proxy callback] started");
     zbus_message_variant_t msg_data = {0};
-    zbus_chan_read_by_index(idx, msg_data, K_MSEC(200));
+    ZBUS_CHAN_READ_BY_INDEX(idx, msg_data, K_MSEC(200));
     ct_uart_write_byte(&mock_proxy_uart, (uint8_t *) &tokens[0]);
     ct_uart_write_byte(&mock_proxy_uart, (uint8_t *) &idx);
     ct_uart_write(&mock_proxy_uart, (uint8_t *) &msg_data,

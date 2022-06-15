@@ -54,7 +54,7 @@ ZBUS_SUBSCRIBER_REGISTER(s16, 4);
         struct bm_msg msg_received = {0};                                               \
         zbus_channel_index_t idx   = ZBUS_CHANNEL_COUNT;                                \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                              \
-            if (!__zbus_chan_read(                                                      \
+            if (!zbus_chan_read(                                                        \
                     zbus_channel_get_by_index(idx), (uint8_t *) &msg_received,          \
                     zbus_channel_get_by_index(idx)->message_size, K_NO_WAIT)) {         \
                 count += BM_MESSAGE_SIZE;                                               \
@@ -119,7 +119,7 @@ ZBUS_LISTENER_REGISTER(s16, s_cb);
 zbus_message_variant_t msg_received = {0};
 void s_cb(zbus_channel_index_t idx)
 {
-    if (!zbus_chan_read_by_index(idx, msg_received, K_NO_WAIT)) {
+    if (!ZBUS_CHAN_READ_BY_INDEX(idx, msg_received, K_NO_WAIT)) {
         count += BM_MESSAGE_SIZE;
     }
 }

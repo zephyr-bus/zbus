@@ -23,7 +23,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 static void test_readonly_channel(void)
 {
     struct version v = {0};
-    zbus_chan_read(version, v, K_NO_WAIT);
+    ZBUS_CHAN_READ(version, v, K_NO_WAIT);
     zassert_equal(v.major, 0, "Major must be 0");
     zassert_equal(v.minor, 1, "Minor must be 1");
     zassert_equal(v.build, 1023, "Build must be 1023");

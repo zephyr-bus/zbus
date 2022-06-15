@@ -206,29 +206,29 @@ int __zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
                     k_timeout_t timeout, bool from_ext);
 
 
-#define zbus_chan_read(chan, value, timeout)                                        \
-    ({                                                                              \
-        {                                                                           \
-            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;             \
-            __typeof__(value) value##__aux__;                                       \
-            (void) (&chan##__aux__ == &value##__aux__);                             \
-        }                                                                           \
-        __ZBUS_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d",                          \
-                       (k_is_in_isr() ? "ISR " : ""), __FILE__, __LINE__);          \
-        __zbus_chan_read(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value), \
-                         timeout);                                                  \
+#define ZBUS_CHAN_READ(chan, value, timeout)                                      \
+    ({                                                                            \
+        {                                                                         \
+            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;           \
+            __typeof__(value) value##__aux__;                                     \
+            (void) (&chan##__aux__ == &value##__aux__);                           \
+        }                                                                         \
+        __ZBUS_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d",                        \
+                       (k_is_in_isr() ? "ISR " : ""), __FILE__, __LINE__);        \
+        zbus_chan_read(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value), \
+                       timeout);                                                  \
     })
 
-#define zbus_chan_read_by_index(idx, value, timeout)                                    \
+#define ZBUS_CHAN_READ_BY_INDEX(idx, value, timeout)                                    \
     ({                                                                                  \
         __ZBUS_LOG_DBG("[ZBUS] %sread %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                        __FILE__, __LINE__);                                             \
-        __zbus_chan_read(zbus_channel_get_by_index(idx), (uint8_t *) &value,            \
-                         zbus_channel_get_by_index(idx)->message_size, timeout);        \
+        zbus_chan_read(zbus_channel_get_by_index(idx), (uint8_t *) &value,              \
+                       zbus_channel_get_by_index(idx)->message_size, timeout);          \
     })
 
-int __zbus_chan_read(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
-                     k_timeout_t timeout);
+int zbus_chan_read(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
+                   k_timeout_t timeout);
 
 int zbus_chan_claim(struct zbus_channel *meta, void **chan_msg, k_timeout_t timeout);
 

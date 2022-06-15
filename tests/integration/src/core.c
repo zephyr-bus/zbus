@@ -23,7 +23,7 @@ void core_thread(void)
     while (1) {
         if (!k_msgq_get(core.queue, &idx, K_FOREVER)) {
             struct sensor_data data = {0};
-            zbus_chan_read(sensor_data, data, K_NO_WAIT);
+            ZBUS_CHAN_READ(sensor_data, data, K_NO_WAIT);
             LOG_DBG("[Core] sensor {a = %d, b = %d}. Sending pkt", data.a, data.b);
             struct net_pkt pkt = {.x = !(data.a % 2) ? 'P' : 'I',
                                   .y = !(data.b % 3) ? true : false};

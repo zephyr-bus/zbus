@@ -30,7 +30,7 @@ static void test_01(void)
     while (1) {
         if (!k_msgq_get(&__zbus_ext_msgq, &idx, K_FOREVER)) {
             struct zbus_channel *meta = zbus_channel_get_by_index(idx);
-            __zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
+            zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
                              K_MSEC(500));
             switch (idx) {
             case zbus_index_sensor_data: {

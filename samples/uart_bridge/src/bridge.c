@@ -34,7 +34,7 @@ void bridge_thread(void)
             struct zbus_channel *meta = zbus_channel_get_by_index(idx);
 
             LOG_DBG("[Bridge] send data %d",
-                    __zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
+                    zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
                                      K_MSEC(500)));
             ct_uart_write_byte(&bridge_uart, tokens);
             ct_uart_write_byte(&bridge_uart, (uint8_t *) &idx);

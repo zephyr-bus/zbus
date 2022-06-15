@@ -34,7 +34,7 @@ void thread_handler1_task()
 {
     zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
     while (!k_msgq_get(fast_handler1.queue, &idx, K_FOREVER)) {
-        if (!zbus_chan_read_by_index(idx, msg_received, K_NO_WAIT)) {
+        if (!ZBUS_CHAN_READ_BY_INDEX(idx, msg_received, K_NO_WAIT)) {
             count += current_message_size;
         }
     }
@@ -46,7 +46,7 @@ K_THREAD_DEFINE(thread_handler1_id, 1024, thread_handler1_task, NULL, NULL, NULL
 void main(void)
 {
     struct version v = {0};
-    zbus_chan_read(version, v, K_NO_WAIT);
+    ZBUS_CHAN_READ(version, v, K_NO_WAIT);
 
     LOG_DBG("Benchmark sample started, version %u.%u-%u!", v.major, v.minor, v.build);
 }

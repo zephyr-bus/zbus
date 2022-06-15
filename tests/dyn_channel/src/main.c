@@ -59,7 +59,7 @@ static void test_static(void)
     zassert_equal(my_random_data.a, my_random_data_expected.a, "It must be 10");
     zassert_equal(my_random_data.b, my_random_data_expected.b, "It must be 200000");
     struct external_data_msg edm = {0};
-    zbus_chan_read(dyn_chan, edm, K_NO_WAIT);
+    ZBUS_CHAN_READ(dyn_chan, edm, K_NO_WAIT);
     zassert_equal(edm.reference, static_memory, "The pointer must be equal here");
 }
 
@@ -99,7 +99,7 @@ static void test_malloc(void)
     actual_message_data->size      = 0;
     zbus_chan_finish(ZBUS_CHANNEL_GET(dyn_chan), K_NO_WAIT);
     struct external_data_msg expected_to_be_clean = {0};
-    zbus_chan_read(dyn_chan, expected_to_be_clean, K_NO_WAIT);
+    ZBUS_CHAN_READ(dyn_chan, expected_to_be_clean, K_NO_WAIT);
     zassert_is_null(expected_to_be_clean.reference,
                     "The current message reference should be NULL");
     zassert_equal(expected_to_be_clean.size, 0,
