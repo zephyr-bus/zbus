@@ -17,10 +17,20 @@ ZBUS_CHANNEL(sensor_data,                    /* Name */
              ZBUS_INIT(0)                    /* Initial value {0} */
 )
 
-ZBUS_DYN_CHANNEL(dyn_chan_no_subs,              /* Name */
-                 ZBUS_CHANNEL_SUBSCRIBERS_EMPTY /* Subscribers */
+ZBUS_CHANNEL(dyn_chan_no_subs,               /* Name */
+             false,                          /* Persistent */
+             false,                          /* On changes only */
+             false,                          /* Read only */
+             struct external_data_msg,       /* Message type */
+             ZBUS_CHANNEL_SUBSCRIBERS_EMPTY, /* Subscribers */
+             ZBUS_INIT(0)                    /* Initial value {0} */
 )
 
-ZBUS_DYN_CHANNEL(dyn_chan,                    /* Name */
-                 ZBUS_CHANNEL_SUBSCRIBERS(s1) /* Subscribers */
+ZBUS_CHANNEL(dyn_chan,                     /* Name */
+             true,                         /* Persistent */
+             true,                         /* On changes only */
+             false,                        /* Read only */
+             struct external_data_msg,     /* Message type */
+             ZBUS_CHANNEL_SUBSCRIBERS(s1), /* Subscribers */
+             ZBUS_INIT(0)                  /* Initial value {0} */
 )
