@@ -8,6 +8,11 @@ struct version_msg {
     uint16_t build;
 };
 
+struct external_data_msg {
+    void *reference;
+    size_t size;
+};
+
 struct ack_msg {
     uint8_t value;
 };

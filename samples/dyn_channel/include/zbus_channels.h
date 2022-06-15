@@ -1,7 +1,11 @@
 
-#include "zbus_messages.h"
-ZBUS_DYN_CHANNEL(pkt_channel,                     /* Name */
-                 ZBUS_CHANNEL_SUBSCRIBERS(filter) /* Subscribers */
+ZBUS_CHANNEL(pkt_channel,                      /* Name */
+             false,                            /* Persistent */
+             false,                            /* On changes only */
+             false,                            /* Read only */
+             struct external_data_msg,         /* Message type */
+             ZBUS_CHANNEL_SUBSCRIBERS(filter), /* Subscribers */
+             ZBUS_INIT(0)                      /* Initial value {0} */
 )
 
 ZBUS_CHANNEL(version,                                      /* Name */
