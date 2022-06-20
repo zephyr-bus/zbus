@@ -15,29 +15,6 @@
 
 #include "zbus_messages.h"
 
-#if defined(CONFIG_ZBUS_ASSERTS)
-/**
- *
- * @brief Zbus assert.
- *
- * This macro checks the condition stopping the execution by a k_oops if the condition is
- * not true.
- *
- * @param cond The condition to be checked.
-  FIX: move this macro to the APIs group
- */
-#define ZBUS_ASSERT(cond)                                                                \
-    do {                                                                                 \
-        if (!(cond)) {                                                                   \
-            printk("Assertion failed %s:%d(%s): %s\n", __FILE__, __LINE__, __FUNCTION__, \
-                   #cond);                                                               \
-            k_oops();                                                                    \
-        }                                                                                \
-    } while (0)
-#else
-#define ZBUS_ASSERT(cond)
-#endif
-
 
 #ifndef ZBUS_CHANNEL
 /**
@@ -70,107 +47,11 @@ typedef enum __attribute__((packed)) {
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
 
-
-/**
- * @brief Check if _v value is equal to _c, otherwise _err will be
- * returned and a message will be sent to LOG.
- *
- * @param _v Value
- * @param _c Condition
- * @param _err Error code
- * @brief Initialize a message.
- *
- */
-#define ZBUS_CHECK_VAL(_p, _e, _err, ...) \
-    if (_p == _e) {                       \
-        LOG_INF(__VA_ARGS__);             \
-        return _err;                      \
-    }
-
-/**
- * @brief Check if _v is true, otherwise _err will be returned and a
- * message will be sent to LOG.
- * This macro initializes a message by passing the values to initialize the message struct
- * or union.
- *
- * @param _v Value
- * @param _err Error code
- *
- * @return
- * @param[in] val Variadic with the initial values.
- FIX: move to the group
- */
-#define ZBUS_CHECK(_p, _err, ...) \
-    if (_p) {                     \
-        LOG_INF(__VA_ARGS__);     \
-        return _err;              \
-    }
-
-
-#define ZBUS_MSG_INIT(val, ...) \
-    {                           \
-        val, ##__VA_ARGS__      \
-    }
-
-/**
- *
- * @brief Define and initialize a subscriber.
- *
- * This macro establishes the message queue where the subscriber will receive the
- * notification asynchronously, and initialize the struct defining the subscriber.
- *
- * @info The difer
- *
- * @param[in] name The subscriber's name.
- * @param[in] queue_size The notification queue's size.
- FIX: move to the group
- */
-#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                         \
-    K_MSGQ_DEFINE(name##_queue, sizeof(zbus_channel_index_t), queue_size, \
-                  sizeof(zbus_channel_index_t));                          \
-    struct zbus_observer name = {                                         \
-        .enabled  = true,                                                 \
-        .queue    = &name##_queue,                                        \
-        .callback = NULL,                                                 \
-    }
-
-/**
- *
- * @brief Define and initialize a listener.
- *
- * This macro establishes the callback where the listener will be notified synchronously,
- * and initialize the struct defining the listener.
- *
- * @param[in] name The listener's name.
- * @param[in] cb The callback function.
- FIX: move to the group
- */
-#define ZBUS_LISTENER_DECLARE(name, cb) \
-    struct zbus_observer name = {       \
-        .enabled  = true,               \
-        .queue    = NULL,               \
-        .callback = cb,                 \
-    }
-
-
 struct zbus_observer {
     bool enabled;
     struct k_msgq *queue;
     void (*callback)(zbus_channel_index_t idx);
 };
-
-
-/**
- *
- * @brief Change the observer state.
- *
- * This routine changes the observer state.
- *
- * @param[in] sub The observer's reference.
- * @param[in] enabled State to be. When false the observer stops to receive notifications.
- FIX: move to the group
- */
-void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
 
 struct zbus_channel {
     struct {
@@ -214,7 +95,7 @@ typedef union {
 struct zbus_channels *__zbus_channels_instance();
 struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
-// /* To avoid error when not using LOG */
+/* To avoid error when not using LOG */
 #if defined(CONFIG_ZBUS_LOG)
 #define __ZBUS_LOG_DBG(...) LOG_DBG(__VA_ARGS__)
 #else
@@ -227,6 +108,81 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
  * @{
   FIX: Adjust this comment
  */
+
+
+#if defined(CONFIG_ZBUS_ASSERTS)
+/**
+ *
+ * @brief Zbus assert.
+ *
+ * This macro checks the condition stopping the execution by a k_oops if the condition is
+ * not true.
+ *
+ * @param cond The condition to be checked.
+ */
+#define ZBUS_ASSERT(cond)                                                                \
+    do {                                                                                 \
+        if (!(cond)) {                                                                   \
+            printk("Assertion failed %s:%d(%s): %s\n", __FILE__, __LINE__, __FUNCTION__, \
+                   #cond);                                                               \
+            k_oops();                                                                    \
+        }                                                                                \
+    } while (0)
+#else
+#define ZBUS_ASSERT(cond)
+#endif
+
+/**
+ *
+ * @brief Initialize a message.
+ *
+ * This macro initializes a message by passing the values to initialize the message struct
+ * or union.
+ *
+ * @param[in] val Variadic with the initial values.
+ */
+#define ZBUS_MSG_INIT(val, ...) \
+    {                           \
+        val, ##__VA_ARGS__      \
+    }
+
+/**
+ *
+ * @brief Define and initialize a subscriber.
+ *
+ * This macro establishes the message queue where the subscriber will receive the
+ * notification asynchronously, and initialize the struct defining the subscriber.
+ *
+ * @info The difer
+ *
+ * @param[in] name The subscriber's name.
+ * @param[in] queue_size The notification queue's size.
+ */
+#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                         \
+    K_MSGQ_DEFINE(name##_queue, sizeof(zbus_channel_index_t), queue_size, \
+                  sizeof(zbus_channel_index_t));                          \
+    struct zbus_observer name = {                                         \
+        .enabled  = true,                                                 \
+        .queue    = &name##_queue,                                        \
+        .callback = NULL,                                                 \
+    }
+
+/**
+ *
+ * @brief Define and initialize a listener.
+ *
+ * This macro establishes the callback where the listener will be notified synchronously,
+ * and initialize the struct defining the listener.
+ *
+ * @param[in] name The listener's name.
+ * @param[in] cb The callback function.
+ */
+#define ZBUS_LISTENER_DECLARE(name, cb) \
+    struct zbus_observer name = {       \
+        .enabled  = true,               \
+        .queue    = NULL,               \
+        .callback = cb,                 \
+    }
 
 /**
  *
@@ -241,7 +197,6 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 #define ZBUS_CHANNEL_GET(chan) \
     ((struct zbus_channel *) &__zbus_channels_instance()->__zbus_chan_##chan)
 
-void zbus_info_dump(void);
 
 /**
  *
@@ -268,8 +223,8 @@ void zbus_info_dump(void);
         }                                                                                \
         __ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""), \
                        __FILE__, __LINE__);                                              \
-        zbus_chan_pub(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value),       \
-                        timeout, false);                                                 \
+        zbus_chan_pub(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value),         \
+                      timeout, false);                                                   \
     })
 
 /**
@@ -292,8 +247,8 @@ void zbus_info_dump(void);
     ({                                                                                 \
         __ZBUS_LOG_DBG("[ZBUS] %spub %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                        __FILE__, __LINE__);                                            \
-        zbus_chan_pub(zbus_channel_get_by_index(idx), (uint8_t *) &value,            \
-                        zbus_channel_get_by_index(idx)->message_size, timeout, false); \
+        zbus_chan_pub(zbus_channel_get_by_index(idx), (uint8_t *) &value,              \
+                      zbus_channel_get_by_index(idx)->message_size, timeout, false);   \
     })
 
 /**
@@ -314,7 +269,7 @@ void zbus_info_dump(void);
  * @retval -EINVAL Some parameter is invalid.
  */
 int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
-                    k_timeout_t timeout, bool from_ext);
+                  k_timeout_t timeout, bool from_ext);
 
 
 /**
@@ -465,7 +420,18 @@ int zbus_chan_notify(struct zbus_channel *meta, k_timeout_t timeout);
  * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
+void zbus_info_dump(void);
 
+/**
+ *
+ * @brief Change the observer state.
+ *
+ * This routine changes the observer state.
+ *
+ * @param[in] sub The observer's reference.
+ * @param[in] enabled State to be. When false the observer stops to receive notifications.
+ */
+void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
 /**
  * @}
  */
