@@ -167,7 +167,7 @@ void zbus_info_dump(void);
         }                                                                                \
         __ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""), \
                        __FILE__, __LINE__);                                              \
-        __zbus_chan_pub(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value),       \
+        zbus_chan_pub(ZBUS_CHANNEL_GET(chan), (uint8_t *) &value, sizeof(value),       \
                         timeout, false);                                                 \
     })
 
@@ -175,11 +175,11 @@ void zbus_info_dump(void);
     ({                                                                                 \
         __ZBUS_LOG_DBG("[ZBUS] %spub %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                        __FILE__, __LINE__);                                            \
-        __zbus_chan_pub(zbus_channel_get_by_index(idx), (uint8_t *) &value,            \
+        zbus_chan_pub(zbus_channel_get_by_index(idx), (uint8_t *) &value,            \
                         zbus_channel_get_by_index(idx)->message_size, timeout, false); \
     })
 
-int __zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
+int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
                     k_timeout_t timeout, bool from_ext);
 
 
