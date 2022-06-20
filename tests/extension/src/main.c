@@ -57,7 +57,7 @@ static void test_01(void)
 
                 struct action a = {false};
                 LOG_DBG("[Extension] sending start measurement with status %d", a.status);
-                __zbus_chan_pub(zbus_channel_get_by_index(start_measurement_index),
+                zbus_chan_pub(zbus_channel_get_by_index(start_measurement_index),
                                 (uint8_t *) &a, sizeof(a), K_MSEC(500), true);
             } break;
             default: {
