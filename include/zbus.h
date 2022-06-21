@@ -24,10 +24,9 @@ extern "C" {
  *
  * @brief Zbus channel definition.
  *
- * This macro defines the channel.
+ * This macro defines a channel.
  *
  * @param name The channel's name.
- * @param persistant Reserved for future use.
  * @param on_changed Flag indicates if the subscribers of the channel would be notified
  * only by an actual message change. If a publishing action does not change the message
  * value it will not generate a notification event by the bus.
