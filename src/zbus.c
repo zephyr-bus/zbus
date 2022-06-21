@@ -118,34 +118,17 @@ struct zbus_messages *__zbus_messages_instance()
     return &__zbus_messages;
 }
 
-/**
- * @brief This function returns the __zbus_channels instance reference.
- * @details Do not use this directly! It is being used by the auxilary functions.
- * @return A pointer of struct zbus_channels.
- */
 struct zbus_channels *__zbus_channels_instance()
 {
     return &__zbus_channels;
 }
 
-/**
- * @brief Retreives the channel's metada by a given index
- *
- * @param idx channel's index based on the generated enum.
- * @return the metada struct of the channel
- */
 struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx)
 {
     ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
     return __zbus_channels_lookup_table[idx];
 }
 
-
-/**
- * @brief This function prints the channels information in json format. I would help if
- * the developer needs to decode information. Take a look at the uart_bridge sample to get
- * the idea.
- */
 void zbus_info_dump(void)
 {
     printk("[\n");
@@ -159,19 +142,6 @@ void zbus_info_dump(void)
     printk("\n]\n");
 }
 
-/**
- * @brief Channel publish function.
- * This function publishes data to a channel. This function must not be called directly.
- *
- * @param meta Channel's zbus_channel.
- * @param data The message data to be written to the channel. This must be the same type
- * as the channel.
- * @param data_size The size of the type.
- * @param timeout The timeout for the operation to fail. If you are calling this from a
- * ISR it will force timeout to be K_NO_WAIT. The pub function can use the timeout twice,
- * once for taking the semaphore and another to put the idx at the monitor's queue.
- * @return 0 if succes and a negative number if error.
- */
 int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
                   k_timeout_t timeout, bool from_ext)
 {
@@ -206,20 +176,6 @@ int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
                       (uint8_t *) &chan->lookup_table_index, timeout);
 }
 
-
-/**
- * @brief Channel read function.
- * This function enables the reading of a channel message. This function must not be
- * called directly.
- *
- * @param meta Channel's zbus_channel.
- * @param data The message data to be read from the channel. This must be the same type
- * as the channel.
- * @param data_size The size of the type.
- * @param timeout The timeout for the operation to fail. If you are calling this from a
- * ISR it will force the timeout to be K_NO_WAIT.
- * @return 0 if succes and a negative number if error.
- */
 int zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
                    k_timeout_t timeout)
 {
@@ -279,7 +235,6 @@ void zbus_chan_finish(struct zbus_channel *chan, k_timeout_t timeout)
     ZBUS_ASSERT(chan != NULL);
     k_sem_give(chan->semaphore);
 }
-
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
 K_MSGQ_DEFINE(__zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);

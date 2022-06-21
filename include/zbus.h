@@ -55,6 +55,19 @@ struct zbus_observer {
     void (*callback)(zbus_channel_index_t idx);
 };
 
+/**
+ * @brief Type used to represent a channel.
+ *
+ * Every channel has a zbus_channel structure associated.
+ * Every struct device has an associated handle. You can get a pointer
+ * to a device structure from its handle and vice versa, but the
+ * handle uses less space than a pointer. The device.h API mainly uses
+ * handles to store lists of multiple devices in a compact way.
+ *
+ * The extreme values and zero have special significance. Negative
+ * values identify functionality that does not correspond to a Zephyr
+ * device, such as the system clock or a SYS_INIT() function.
+ */
 struct zbus_channel {
     struct {
         uint8_t pend_callback : 1;
@@ -91,9 +104,6 @@ typedef union {
 #include "zbus_channels.h"
 } zbus_message_variant_t;
 
-struct zbus_messages *__zbus_messages_instance();
-struct zbus_channels *__zbus_channels_instance();
-struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
 /* To avoid error when not using LOG */
 #if defined(CONFIG_ZBUS_LOG)
@@ -109,6 +119,31 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
   FIX: Adjust this comment
  */
 
+/**
+ * @brief This function returns the __zbus_channels instance reference.
+ *
+ * Do not use this directly! It is being used by the auxilary functions.
+ *
+ * @return A pointer of struct zbus_channels.
+ */
+struct zbus_messages *__zbus_messages_instance();
+
+/**
+ * @brief This function returns the __zbus_channels instance reference.
+ *
+ * Do not use this directly! It is being used by the auxilary functions.
+ *
+ * @return A pointer of struct zbus_channels.
+ */
+struct zbus_channels *__zbus_channels_instance();
+
+/**
+ * @brief Retreives the channel's metada by a given index
+ *
+ * @param idx channel's index based on the generated enum.
+ * @return the metada struct of the channel
+ */
+struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
 #if defined(CONFIG_ZBUS_ASSERTS)
 /**
