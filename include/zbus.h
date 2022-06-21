@@ -13,6 +13,9 @@
 #include <string.h>
 #include <zephyr.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "zbus_messages.h"
 
 
@@ -436,4 +439,8 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
  * @}
  */
 
-#endif  // _ZBUS_H_
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _ZBUS_H_ */
