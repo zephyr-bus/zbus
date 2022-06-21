@@ -78,8 +78,7 @@ struct zbus_messages {
 
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
-    struct zbus_channel __zbus_chan_##name;                                  \
-    type name;
+    struct zbus_channel __zbus_chan_##name;
 
 struct zbus_channels {
 #include "zbus_channels.h"
@@ -92,6 +91,7 @@ typedef union {
 #include "zbus_channels.h"
 } zbus_message_variant_t;
 
+struct zbus_messages *__zbus_messages_instance();
 struct zbus_channels *__zbus_channels_instance();
 struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
@@ -197,6 +197,18 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 #define ZBUS_CHANNEL_GET(chan) \
     ((struct zbus_channel *) &__zbus_channels_instance()->__zbus_chan_##chan)
 
+/**
+ *
+ * @brief Get a message data.
+ *
+ * This macro gets a channel's message using the channel's name.
+ *
+ * @param[in] chan The channel's name.
+ *
+ * @return The channel's message.
+ */
+#define ZBUS_MSG_GET(chan) (((struct zbus_messages *) __zbus_messages_instance())->chan)
+
 
 /**
  *
@@ -217,7 +229,7 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 #define ZBUS_CHAN_PUB(chan, value, timeout)                                              \
     ({                                                                                   \
         {                                                                                \
-            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;                  \
+            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                                \
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
@@ -291,7 +303,7 @@ int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
 #define ZBUS_CHAN_READ(chan, value, timeout)                                      \
     ({                                                                            \
         {                                                                         \
-            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;           \
+            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                         \
             __typeof__(value) value##__aux__;                                     \
             (void) (&chan##__aux__ == &value##__aux__);                           \
         }                                                                         \

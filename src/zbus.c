@@ -72,22 +72,21 @@ static struct zbus_messages __zbus_messages = {
 static struct zbus_channels __zbus_channels = {
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)            \
-    .__zbus_chan_##name =                                                               \
-        {.flag =                                                                        \
-             {                                                                          \
-                 false,      /* Not defined yet */                                      \
-                 on_changed, /* Only changes in the channel will propagate  */          \
-                 read_only,  /* The channel is only for reading. It must have a initial \
-                                value. */                                               \
-                 false       /* ISC source flag */                                      \
-             },              /* ISC source flag */                                      \
-         name##_index,       /* Lookup table index */                                   \
-         sizeof(type),       /* The channel's size */                                   \
-         (uint8_t *) &__zbus_messages.name, /* The actual channel */                    \
-         &__zbus_sem_##name,                /* Channel's semaphore */                   \
-         observers},                        /* List of observers queues */              \
-        .name = init_val,
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)           \
+    .__zbus_chan_##name = {                                                            \
+        .flag =                                                                        \
+            {                                                                          \
+                false,      /* Not defined yet */                                      \
+                on_changed, /* Only changes in the channel will propagate  */          \
+                read_only,  /* The channel is only for reading. It must have a initial \
+                               value. */                                               \
+                false       /* ISC source flag */                                      \
+            },              /* ISC source flag */                                      \
+        name##_index,       /* Lookup table index */                                   \
+        sizeof(type),       /* The channel's size */                                   \
+        (uint8_t *) &__zbus_messages.name, /* The actual channel */                    \
+        &__zbus_sem_##name,                /* Channel's semaphore */                   \
+        observers},                        /* List of observers queues */
 
 #include "zbus_channels.h"
 };
@@ -114,6 +113,11 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
     }
 }
 
+struct zbus_messages *__zbus_messages_instance()
+{
+    return &__zbus_messages;
+}
+
 /**
  * @brief This function returns the __zbus_channels instance reference.
  * @details Do not use this directly! It is being used by the auxilary functions.
@@ -123,7 +127,6 @@ struct zbus_channels *__zbus_channels_instance()
 {
     return &__zbus_channels;
 }
-
 
 /**
  * @brief Retreives the channel's metada by a given index
