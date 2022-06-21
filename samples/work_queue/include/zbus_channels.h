@@ -1,5 +1,4 @@
 ZBUS_CHANNEL(version,              /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -9,7 +8,6 @@ ZBUS_CHANNEL(version,              /* Name */
 )
 
 ZBUS_CHANNEL(sensor_data,       /* Name */
-             false,             /* Persistent */
              false,             /* On changes only */
              false,             /* Read only */
              struct sensor_msg, /* Message type */

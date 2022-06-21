@@ -13,6 +13,9 @@
 #include <string.h>
 #include <zephyr.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "zbus_messages.h"
 
 
@@ -21,10 +24,9 @@
  *
  * @brief Zbus channel definition.
  *
- * This macro defines the channel.
+ * This macro defines a channel.
  *
  * @param name The channel's name.
- * @param persistant Reserved for future use.
  * @param on_changed Flag indicates if the subscribers of the channel would be notified
  * only by an actual message change. If a publishing action does not change the message
  * value it will not generate a notification event by the bus.
@@ -34,15 +36,14 @@
  FIX: point to the subscriber type.
  * @param init_val The message initialization.
  */
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val)
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)
 #endif
 
 typedef enum __attribute__((packed)) {
 #ifdef ZBUS_CHANNEL
 #undef ZBUS_CHANNEL
 #endif
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    name##_index,
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) name##_index,
 #include "zbus_channels.h"
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
@@ -53,6 +54,19 @@ struct zbus_observer {
     void (*callback)(zbus_channel_index_t idx);
 };
 
+/**
+ * @brief Type used to represent a channel.
+ *
+ * Every channel has a zbus_channel structure associated.
+ * Every struct device has an associated handle. You can get a pointer
+ * to a device structure from its handle and vice versa, but the
+ * handle uses less space than a pointer. The device.h API mainly uses
+ * handles to store lists of multiple devices in a compact way.
+ *
+ * The extreme values and zero have special significance. Negative
+ * values identify functionality that does not correspond to a Zephyr
+ * device, such as the system clock or a SYS_INIT() function.
+ */
 struct zbus_channel {
     struct {
         uint8_t pend_callback : 1;
@@ -68,32 +82,27 @@ struct zbus_channel {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) type name;
 
 struct zbus_messages {
 #include "zbus_channels.h"
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    struct zbus_channel __zbus_chan_##name;                                              \
-    type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
+    struct zbus_channel __zbus_chan_##name;
 
 struct zbus_channels {
 #include "zbus_channels.h"
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) type name;
 
 typedef union {
 #include "zbus_channels.h"
 } zbus_message_variant_t;
 
-struct zbus_channels *__zbus_channels_instance();
-struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
 /* To avoid error when not using LOG */
 #if defined(CONFIG_ZBUS_LOG)
@@ -109,6 +118,31 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
   FIX: Adjust this comment
  */
 
+/**
+ * @brief This function returns the __zbus_channels instance reference.
+ *
+ * Do not use this directly! It is being used by the auxilary functions.
+ *
+ * @return A pointer of struct zbus_channels.
+ */
+struct zbus_messages *__zbus_messages_instance();
+
+/**
+ * @brief This function returns the __zbus_channels instance reference.
+ *
+ * Do not use this directly! It is being used by the auxilary functions.
+ *
+ * @return A pointer of struct zbus_channels.
+ */
+struct zbus_channels *__zbus_channels_instance();
+
+/**
+ * @brief Retreives the channel's metada by a given index
+ *
+ * @param idx channel's index based on the generated enum.
+ * @return the metada struct of the channel
+ */
+struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 
 #if defined(CONFIG_ZBUS_ASSERTS)
 /**
@@ -197,6 +231,18 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 #define ZBUS_CHANNEL_GET(chan) \
     ((struct zbus_channel *) &__zbus_channels_instance()->__zbus_chan_##chan)
 
+/**
+ *
+ * @brief Get a message data.
+ *
+ * This macro gets a channel's message using the channel's name.
+ *
+ * @param[in] chan The channel's name.
+ *
+ * @return The channel's message.
+ */
+#define ZBUS_MSG_GET(chan) (((struct zbus_messages *) __zbus_messages_instance())->chan)
+
 
 /**
  *
@@ -217,7 +263,7 @@ struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx);
 #define ZBUS_CHAN_PUB(chan, value, timeout)                                              \
     ({                                                                                   \
         {                                                                                \
-            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;                  \
+            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                                \
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
@@ -291,7 +337,7 @@ int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
 #define ZBUS_CHAN_READ(chan, value, timeout)                                      \
     ({                                                                            \
         {                                                                         \
-            __typeof__(__zbus_channels_instance()->chan) chan##__aux__;           \
+            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                         \
             __typeof__(value) value##__aux__;                                     \
             (void) (&chan##__aux__ == &value##__aux__);                           \
         }                                                                         \
@@ -436,4 +482,8 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
  * @}
  */
 
-#endif  // _ZBUS_H_
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _ZBUS_H_ */

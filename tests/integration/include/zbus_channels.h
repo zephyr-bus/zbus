@@ -1,5 +1,4 @@
 ZBUS_CHANNEL(version,              /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -9,7 +8,6 @@ ZBUS_CHANNEL(version,              /* Name */
 )
 
 ZBUS_CHANNEL(sensor_data,          /* Name */
-             true,                 /* Persistent */
              true,                 /* On changes only */
              false,                /* Read only */
              struct sensor_data,   /* Message type */
@@ -18,7 +16,6 @@ ZBUS_CHANNEL(sensor_data,          /* Name */
 )
 
 ZBUS_CHANNEL(net_pkt,                            /* Name */
-             false,                              /* Persistent */
              true,                               /* On changes only */
              false,                              /* Read only */
              struct net_pkt,                     /* Message type */
@@ -27,7 +24,6 @@ ZBUS_CHANNEL(net_pkt,                            /* Name */
 )
 
 ZBUS_CHANNEL(start_measurement,                    /* Name */
-             false,                                /* Persistent */
              false,                                /* On changes only */
              false,                                /* Read only */
              struct action,                        /* Message type */

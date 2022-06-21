@@ -26,7 +26,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
  * @def ZBUS_CHANNEL
  * Description
  */
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
     K_SEM_DEFINE(__zbus_sem_##name, 1, 1);
 #include "zbus_channels.h"
 
@@ -38,8 +38,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 #define ZBUS_OBSERVERS_EMPTY
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    observers;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) observers;
 
 #include "zbus_channels.h"
 
@@ -65,7 +64,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 static struct zbus_messages __zbus_messages = {
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
     .name = init_val,
 #include "zbus_channels.h"
 };
@@ -73,29 +72,28 @@ static struct zbus_messages __zbus_messages = {
 static struct zbus_channels __zbus_channels = {
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    .__zbus_chan_##name =                                                                \
-        {.flag =                                                                         \
-             {                                                                           \
-                 false,      /* Not defined yet */                                       \
-                 on_changed, /* Only changes in the channel will propagate  */           \
-                 read_only,  /* The channel is only for reading. It must have a initial  \
-                                value. */                                                \
-                 false       /* ISC source flag */                                       \
-             },              /* ISC source flag */                                       \
-         name##_index,       /* Lookup table index */                                    \
-         sizeof(type),       /* The channel's size */                                    \
-         (uint8_t *) &__zbus_messages.name, /* The actual channel */                     \
-         &__zbus_sem_##name,                /* Channel's semaphore */                    \
-         observers},                        /* List of observers queues */               \
-        .name = init_val,
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)           \
+    .__zbus_chan_##name = {                                                            \
+        .flag =                                                                        \
+            {                                                                          \
+                false,      /* Not defined yet */                                      \
+                on_changed, /* Only changes in the channel will propagate  */          \
+                read_only,  /* The channel is only for reading. It must have a initial \
+                               value. */                                               \
+                false       /* ISC source flag */                                      \
+            },              /* ISC source flag */                                      \
+        name##_index,       /* Lookup table index */                                   \
+        sizeof(type),       /* The channel's size */                                   \
+        (uint8_t *) &__zbus_messages.name, /* The actual channel */                    \
+        &__zbus_sem_##name,                /* Channel's semaphore */                   \
+        observers},                        /* List of observers queues */
 
 #include "zbus_channels.h"
 };
 
 struct zbus_channel *__zbus_channels_lookup_table[] = {
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
     &__zbus_channels.__zbus_chan_##name,
 #include "zbus_channels.h"
 };
@@ -115,63 +113,37 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
     }
 }
 
-/**
- * @brief This function returns the __zbus_channels instance reference.
- * @details Do not use this directly! It is being used by the auxilary functions.
- * @return A pointer of struct zbus_channels.
- */
+struct zbus_messages *__zbus_messages_instance()
+{
+    return &__zbus_messages;
+}
+
 struct zbus_channels *__zbus_channels_instance()
 {
     return &__zbus_channels;
 }
 
-
-/**
- * @brief Retreives the channel's metada by a given index
- *
- * @param idx channel's index based on the generated enum.
- * @return the metada struct of the channel
- */
 struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx)
 {
     ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
     return __zbus_channels_lookup_table[idx];
 }
 
-
-/**
- * @brief This function prints the channels information in json format. I would help if
- * the developer needs to decode information. Take a look at the uart_bridge sample to get
- * the idea.
- */
 void zbus_info_dump(void)
 {
     printk("[\n");
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": "  \
-           "%u},\n",                                                                     \
-           #name, on_changed ? "true" : "false", read_only ? "true" : "false",           \
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)            \
+    printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
+           "%u},\n",                                                                    \
+           #name, on_changed ? "true" : "false", read_only ? "true" : "false",          \
            sizeof(type));
 #include "zbus_channels.h"
     printk("\n]\n");
 }
 
-/**
- * @brief Channel publish function.
- * This function publishes data to a channel. This function must not be called directly.
- *
- * @param meta Channel's zbus_channel.
- * @param data The message data to be written to the channel. This must be the same type
- * as the channel.
- * @param data_size The size of the type.
- * @param timeout The timeout for the operation to fail. If you are calling this from a
- * ISR it will force timeout to be K_NO_WAIT. The pub function can use the timeout twice,
- * once for taking the semaphore and another to put the idx at the monitor's queue.
- * @return 0 if succes and a negative number if error.
- */
 int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
-                    k_timeout_t timeout, bool from_ext)
+                  k_timeout_t timeout, bool from_ext)
 {
     ZBUS_ASSERT(chan != NULL);
     ZBUS_ASSERT(chan->flag.read_only == 0);
@@ -204,20 +176,6 @@ int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
                       (uint8_t *) &chan->lookup_table_index, timeout);
 }
 
-
-/**
- * @brief Channel read function.
- * This function enables the reading of a channel message. This function must not be
- * called directly.
- *
- * @param meta Channel's zbus_channel.
- * @param data The message data to be read from the channel. This must be the same type
- * as the channel.
- * @param data_size The size of the type.
- * @param timeout The timeout for the operation to fail. If you are calling this from a
- * ISR it will force the timeout to be K_NO_WAIT.
- * @return 0 if succes and a negative number if error.
- */
 int zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
                    k_timeout_t timeout)
 {
@@ -277,7 +235,6 @@ void zbus_chan_finish(struct zbus_channel *chan, k_timeout_t timeout)
     ZBUS_ASSERT(chan != NULL);
     k_sem_give(chan->semaphore);
 }
-
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
 K_MSGQ_DEFINE(__zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
