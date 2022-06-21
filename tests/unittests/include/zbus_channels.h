@@ -1,6 +1,5 @@
 #include "zbus_messages.h"
 ZBUS_CHANNEL(version,              /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -10,7 +9,6 @@ ZBUS_CHANNEL(version,              /* Name */
 )
 
 ZBUS_CHANNEL(a,                    /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -19,7 +17,6 @@ ZBUS_CHANNEL(a,                    /* Name */
 )
 
 ZBUS_CHANNEL(b,                    /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -28,7 +25,6 @@ ZBUS_CHANNEL(b,                    /* Name */
 )
 
 ZBUS_CHANNEL(complex,              /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              struct complex_msg,   /* Message type */
@@ -39,7 +35,6 @@ ZBUS_CHANNEL(complex,              /* Name */
 )
 
 ZBUS_CHANNEL(union_complex,        /* Name */
-             false,                /* Persistent */
              false,                /* On changes only */
              true,                 /* Read only */
              union union_msg,      /* Message type */

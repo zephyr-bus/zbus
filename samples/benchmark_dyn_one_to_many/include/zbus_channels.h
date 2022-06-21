@@ -1,5 +1,4 @@
 ZBUS_CHANNEL(bm_channel,               /* Name */
-             false,                    /* Persistent */
              false,                    /* On changes only */
              false,                    /* Read only */
              struct external_data_msg, /* Message type */

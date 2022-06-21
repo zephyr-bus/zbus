@@ -37,15 +37,14 @@ extern "C" {
  FIX: point to the subscriber type.
  * @param init_val The message initialization.
  */
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val)
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)
 #endif
 
 typedef enum __attribute__((packed)) {
 #ifdef ZBUS_CHANNEL
 #undef ZBUS_CHANNEL
 #endif
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    name##_index,
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) name##_index,
 #include "zbus_channels.h"
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
@@ -71,16 +70,15 @@ struct zbus_channel {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) type name;
 
 struct zbus_messages {
 #include "zbus_channels.h"
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    struct zbus_channel __zbus_chan_##name;                                              \
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
+    struct zbus_channel __zbus_chan_##name;                                  \
     type name;
 
 struct zbus_channels {
@@ -88,8 +86,7 @@ struct zbus_channels {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, persistant, on_changed, read_only, type, observers, init_val) \
-    type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) type name;
 
 typedef union {
 #include "zbus_channels.h"
