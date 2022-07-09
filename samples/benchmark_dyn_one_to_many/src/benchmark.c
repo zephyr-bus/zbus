@@ -56,12 +56,12 @@ ZBUS_SUBSCRIBER_DECLARE(s16, 4);
         struct external_data_msg *actual_message_data = NULL;                           \
         zbus_channel_index_t idx                      = ZBUS_CHANNEL_COUNT;             \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                              \
-            zbus_chan_claim(ZBUS_CHANNEL_GET(bm_channel),                      \
+            zbus_chan_claim(ZBUS_CHAN_GET(bm_channel),                      \
                             (void *) &actual_message_data, K_NO_WAIT);                  \
             ZBUS_ASSERT(actual_message_data->reference != NULL);                        \
             memcpy(&msg_received, actual_message_data->reference,                       \
                    sizeof(struct bm_msg));                                              \
-            zbus_chan_finish(ZBUS_CHANNEL_GET(bm_channel), K_NO_WAIT);         \
+            zbus_chan_finish(ZBUS_CHAN_GET(bm_channel), K_NO_WAIT);         \
             count += BM_MESSAGE_SIZE;                                                   \
         }                                                                               \
     }                                                                                   \
@@ -124,10 +124,10 @@ struct bm_msg msg_received = {0};
 void s_cb(zbus_channel_index_t idx)
 {
     struct external_data_msg *actual_message_data = NULL;
-    zbus_chan_claim(ZBUS_CHANNEL_GET(bm_channel), (void *) &actual_message_data,
+    zbus_chan_claim(ZBUS_CHAN_GET(bm_channel), (void *) &actual_message_data,
                     K_NO_WAIT);
     memcpy(&msg_received, actual_message_data->reference, sizeof(struct bm_msg));
-    zbus_chan_finish(ZBUS_CHANNEL_GET(bm_channel), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHAN_GET(bm_channel), K_NO_WAIT);
     count += BM_MESSAGE_SIZE;
 }
 #endif  // BM_ASYNC
@@ -147,22 +147,22 @@ void producer_thread(void)
     }
 
     struct external_data_msg *actual_message_data = NULL;
-    zbus_chan_claim(ZBUS_CHANNEL_GET(bm_channel), (void *) &actual_message_data,
+    zbus_chan_claim(ZBUS_CHAN_GET(bm_channel), (void *) &actual_message_data,
                     K_NO_WAIT);
     actual_message_data->reference = k_malloc(sizeof(struct bm_msg));
     actual_message_data->size      = sizeof(struct bm_msg);
     ZBUS_ASSERT(actual_message_data->reference != NULL);
     ZBUS_ASSERT(actual_message_data->size > 0);
-    zbus_chan_finish(ZBUS_CHANNEL_GET(bm_channel), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHAN_GET(bm_channel), K_NO_WAIT);
 
     uint32_t start = k_uptime_get_32();
     for (uint64_t internal_count = BYTES_TO_BE_SENT / BM_ONE_TO; internal_count > 0;
          internal_count -= BM_MESSAGE_SIZE) {
-        zbus_chan_claim(ZBUS_CHANNEL_GET(bm_channel),
+        zbus_chan_claim(ZBUS_CHAN_GET(bm_channel),
                         (void *) &actual_message_data, K_NO_WAIT);
         memcpy(actual_message_data->reference, &msg, BM_MESSAGE_SIZE);
-        zbus_chan_finish(ZBUS_CHANNEL_GET(bm_channel), K_NO_WAIT);
-        zbus_chan_notify(ZBUS_CHANNEL_GET(bm_channel), K_MSEC(200));
+        zbus_chan_finish(ZBUS_CHAN_GET(bm_channel), K_NO_WAIT);
+        zbus_chan_notify(ZBUS_CHAN_GET(bm_channel), K_MSEC(200));
     }
     uint32_t duration = (k_uptime_get_32() - start);
     if (duration == 0) {

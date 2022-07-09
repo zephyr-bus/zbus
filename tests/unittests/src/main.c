@@ -25,7 +25,7 @@ static void test_readonly_channel(void)
     zassert_equal(v.major, 0, "Major must be 0");
     zassert_equal(v.minor, 1, "Minor must be 1");
     zassert_equal(v.build, 1023, "Build must be 1023");
-    struct zbus_channel *version_metadata = ZBUS_CHANNEL_GET(version);
+    struct zbus_channel *version_metadata = ZBUS_CHAN_GET(version);
     zassert_equal(version_metadata->flag.read_only, true, "It must be true");
     zassert_equal(version_metadata->message_size, sizeof(struct version),
                   "Message size is wrong");

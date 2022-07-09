@@ -123,7 +123,7 @@ struct zbus_channels *__zbus_channels_instance()
     return &__zbus_channels;
 }
 
-struct zbus_channel *zbus_channel_get_by_index(zbus_channel_index_t idx)
+struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx)
 {
     ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
     return __zbus_channels_lookup_table[idx];

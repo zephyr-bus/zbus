@@ -31,11 +31,11 @@ void bridge_thread(void)
     LOG_DBG("[Bridge] Started.");
     while (1) {
         if (!k_msgq_get(&__zbus_ext_msgq, &idx, K_FOREVER)) {
-            struct zbus_channel *meta = zbus_channel_get_by_index(idx);
+            struct zbus_channel *meta = zbus_chan_get_by_index(idx);
 
             LOG_DBG("[Bridge] send data %d",
                     zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size,
-                                     K_MSEC(500)));
+                                   K_MSEC(500)));
             ct_uart_write_byte(&bridge_uart, tokens);
             ct_uart_write_byte(&bridge_uart, (uint8_t *) &idx);
             ct_uart_write(&bridge_uart, (uint8_t *) &msg_data, meta->message_size);

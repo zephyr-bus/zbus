@@ -57,7 +57,7 @@ void producer_thread(void)
     for (uint8_t i = 255; i > 0; --i) {
         msg_sent.chan_256b.bytes[i] = i;
     }
-    current_message_size = zbus_channel_get_by_index(current_idx)->message_size;
+    current_message_size = zbus_chan_get_by_index(current_idx)->message_size;
     uint32_t start       = k_uptime_get_32();
     for (uint64_t internal_count = BYTES_TO_BE_SENT; internal_count > 0;
          internal_count -= current_message_size) {
