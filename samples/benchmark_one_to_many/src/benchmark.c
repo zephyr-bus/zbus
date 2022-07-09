@@ -48,20 +48,19 @@ ZBUS_SUBSCRIBER_DECLARE(s16, 4);
 #endif
 #endif
 
-#define S_TASK(name)                                                                    \
-    void name##_task()                                                                  \
-    {                                                                                   \
-        struct bm_msg msg_received = {0};                                               \
-        zbus_channel_index_t idx   = ZBUS_CHANNEL_COUNT;                                \
-        while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                              \
-            if (!zbus_chan_read(                                                        \
-                    zbus_channel_get_by_index(idx), (uint8_t *) &msg_received,          \
-                    zbus_channel_get_by_index(idx)->message_size, K_NO_WAIT)) {         \
-                count += BM_MESSAGE_SIZE;                                               \
-            }                                                                           \
-        }                                                                               \
-    }                                                                                   \
-    K_THREAD_DEFINE(name##_id, BM_MESSAGE_SIZE + 192, name##_task, NULL, NULL, NULL, 3, \
+#define S_TASK(name)                                                                     \
+    void name##_task()                                                                   \
+    {                                                                                    \
+        struct bm_msg msg_received = {0};                                                \
+        zbus_channel_index_t idx   = ZBUS_CHANNEL_COUNT;                                 \
+        while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                               \
+            if (!zbus_chan_read(zbus_chan_get_by_index(idx), (uint8_t *) &msg_received,  \
+                                zbus_chan_get_by_index(idx)->message_size, K_NO_WAIT)) { \
+                count += BM_MESSAGE_SIZE;                                                \
+            }                                                                            \
+        }                                                                                \
+    }                                                                                    \
+    K_THREAD_DEFINE(name##_id, BM_MESSAGE_SIZE + 192, name##_task, NULL, NULL, NULL, 3,  \
                     0, 0);
 
 S_TASK(s1)
