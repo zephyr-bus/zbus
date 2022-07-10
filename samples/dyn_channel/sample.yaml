@@ -1,0 +1,35 @@
+sample:
+  name: Dynamic channel
+common:
+  tags: zbus
+  timeout: 10
+  harness: console
+  harness_config:
+    type: multi_line
+    ordered: true
+    regex:
+     - " -> Sample dynamic filter version 0.1-1"
+     - "Header: filter=0,body_size=00; Body:(.*)"
+     - "Header: filter=1,body_size=01; Body: 00"
+     - "Header: filter=0,body_size=02; Body: 0202"
+     - "Header: filter=1,body_size=03; Body: 000000"
+     - "Header: filter=0,body_size=04; Body: 04040404"
+     - "Header: filter=1,body_size=05; Body: 0000000000"
+     - "Header: filter=0,body_size=06; Body: 060606060606"
+     - "Header: filter=1,body_size=07; Body: 00000000000000"
+     - "Header: filter=0,body_size=08; Body: 0808080808080808"
+     - "Header: filter=1,body_size=09; Body: 000000000000000000"
+     - "Header: filter=0,body_size=10; Body: 0A0A0A0A0A0A0A0A0A0A"
+     - "Header: filter=1,body_size=11; Body: 0000000000000000000000"
+     - "Header: filter=0,body_size=12; Body: 0C0C0C0C0C0C0C0C0C0C0C0C"
+     - "Header: filter=1,body_size=13; Body: 00000000000000000000000000"
+     - "Header: filter=0,body_size=14; Body: 0E0E0E0E0E0E0E0E0E0E0E0E0E0E"
+     - "Header: filter=1,body_size=15; Body: 000000000000000000000000000000"
+tests:
+  sample.zbus.dyn_channl_build:
+    tags: zbus
+    build_only: true
+    platform_allow: hifive1_revb nrf52840dk_nrf52840 
+  sample.zbus.dyn_channel:
+    tags: zbus
+    platform_allow: native_posix 
