@@ -1,0 +1,11 @@
+
+/*
+ * RS232 usart
+ */
+/ {
+    aliases {
+            bridge-serial = &uart0;
+    };
+
+};
+

@@ -22,7 +22,7 @@ void core_thread(void)
         LOG_DBG("[Core] sending start measurement with status %d", start.status);
         start.status = !start.status;
         ZBUS_CHAN_PUB(start_measurement, start, K_MSEC(500));
-        k_msleep(1000000);
+        k_msleep(1000);
     }
 }
 

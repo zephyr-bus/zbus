@@ -15,7 +15,7 @@ K_MSGQ_DEFINE(_bridge_output_msgq, sizeof(uint8_t), 256, 1);
 
 extern struct k_msgq __zbus_ext_msgq;
 
-struct ct_uart_device bridge_uart = {DEVICE_DT_GET(DT_NODELABEL(uart1)),
+struct ct_uart_device bridge_uart = {DEVICE_DT_GET(DT_ALIAS(bridge_serial)),
                                      &_bridge_input_msgq, &_bridge_output_msgq};
 void bridge_thread(void)
 {

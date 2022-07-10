@@ -15,6 +15,10 @@ common:
      - "D: From listener -> Acc x=2, y=2, z=2"
      - "D: From subscriber -> Acc x=2, y=2, z=2"
 tests:
+  sample.zbus.hello_world_build:
+    tags: zbus
+    build_only: true
+    platform_allow: hifive1_revb nrf52840dk_nrf52840 
   sample.zbus.hello_world:
     tags: zbus
-    platform_allow: native_posix
+    platform_allow: native_posix 

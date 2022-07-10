@@ -1,0 +1,38 @@
+sample:
+  name: Work queue
+common:
+  tags: zbus
+  timeout: 2
+  harness: console
+  harness_config:
+    type: multi_line
+    ordered: true
+    regex:
+     - "D: Sensor sample started, version 0.1-1023!"
+     - "Sensor msg processed by CALLBACK fh1: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by CALLBACK fh2: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by CALLBACK fh3: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by WORK QUEUE handler dh1: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by WORK QUEUE handler dh2: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by WORK QUEUE handler dh3: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by THREAD handler: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by THREAD handler: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by THREAD handler: temp = 10, press = 1, humidity = 100"
+     - "Sensor msg processed by CALLBACK fh1: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by CALLBACK fh2: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by CALLBACK fh3: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by WORK QUEUE handler dh1: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by WORK QUEUE handler dh2: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by WORK QUEUE handler dh3: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by THREAD handler: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by THREAD handler: temp = 20, press = 2, humidity = 200"
+     - "Sensor msg processed by THREAD handler: temp = 20, press = 2, humidity = 200"
+
+tests:
+  sample.zbus.work_queue_build:
+    tags: zbus
+    build_only: true
+    platform_allow: hifive1_revb nrf52840dk_nrf52840 
+  sample.zbus.work_queue:
+    tags: zbus
+    platform_allow: native_posix 
