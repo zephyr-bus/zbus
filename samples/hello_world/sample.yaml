@@ -1,0 +1,24 @@
+sample:
+  name: Hello World
+common:
+  tags: zbus
+  timeout: 2
+  harness: console
+  harness_config:
+    type: multi_line
+    ordered: true
+    regex:
+     - "D: Sensor sample started raw reading, version 0.1-2!"
+     - "D: Sensor sample started macro reading, version 0.1-2!"
+     - "D: From listener -> Acc x=1, y=1, z=1"
+     - "D: From subscriber -> Acc x=1, y=1, z=1"
+     - "D: From listener -> Acc x=2, y=2, z=2"
+     - "D: From subscriber -> Acc x=2, y=2, z=2"
+tests:
+  sample.zbus.hello_world_build:
+    tags: zbus
+    build_only: true
+    platform_allow: hifive1_revb nrf52840dk_nrf52840 
+  sample.zbus.hello_world:
+    tags: zbus
+    platform_allow: native_posix 

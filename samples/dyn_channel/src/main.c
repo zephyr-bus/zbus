@@ -84,12 +84,12 @@ void consumer_thread(void)
         zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), (void *) &chan_message, K_NO_WAIT);
 
         struct pkt *received = (struct pkt *) chan_message->reference;
-        printk("Header(filter=%d,body_size=%02d)+Body(", received->header.filter,
+        printk("Header: filter=%d,body_size=%02d; Body: ", received->header.filter,
                received->header.body_size);
         for (int i = 0; i < received->header.body_size; ++i) {
             printk("%02X", received->body[i]);
         }
-        printk(")\n");
+        printk("\n");
 
         /* Cleanup the dynamic memory after using that */
         k_free(chan_message->reference);

@@ -4,13 +4,16 @@ cmake_minimum_required(VERSION 3.13.1)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(integration)
 
+# this will help zephyr to find the zbus_messages ans zbus_channels files 
+zephyr_include_directories(
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
 list(APPEND HEADERS
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../include"
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 list(
   APPEND SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/zbus.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c"
   )
 
