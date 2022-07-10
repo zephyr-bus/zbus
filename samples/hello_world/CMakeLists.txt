@@ -14,7 +14,7 @@ list(APPEND HEADERS
   )
 list(
   APPEND SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/benchmark_thread.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c"
   )
 
 include_directories(${HEADERS})
