@@ -1,0 +1,9 @@
+# Copy this file to ${ZEPHYR_BASE}/submanifests/
+# This will add zbus to the workspace as a module 
+
+manifest:
+  projects:
+    - name: zbus
+      url: https://github.com/zephyr-bus/zbus
+      revision: main
+      path: modules/lib/zbus
