@@ -15,12 +15,12 @@ ZBUS_CHANNEL(sensor_data,          /* Name */
              ZBUS_MSG_INIT(0)      /* Initial value {0} */
 )
 
-ZBUS_CHANNEL(net_pkt,                            /* Name */
-             true,                               /* On changes only */
-             false,                              /* Read only */
-             struct net_pkt,                     /* Message type */
-             ZBUS_OBSERVERS(net),                /* observers */
-             ZBUS_MSG_INIT(.y = false, .x = ' ') /* Initial value */
+ZBUS_CHANNEL(net_pkt,                  /* Name */
+             true,                     /* On changes only */
+             false,                    /* Read only */
+             struct net_pkt,           /* Message type */
+             ZBUS_OBSERVERS(net),      /* observers */
+             ZBUS_MSG_INIT(.total = 0) /* Initial value */
 )
 
 ZBUS_CHANNEL(start_measurement,                    /* Name */
