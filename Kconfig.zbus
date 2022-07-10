@@ -29,9 +29,13 @@ config ZBUS_MONITOR_THREAD_PRIORITY
   int "Size of the monitor thead stack"
   default 0
 
-config ZBUS_DYNAMIC_CHANNELS
-  bool "Enable dynamic channels"
-  default n
+config ZBUS_EVENT_DISPATCHER_SEMAPHORE_TIMEOUT
+  int "Timeout in milliseconds the event dispatcher consider when using semaphores"
+  default 50
+
+config ZBUS_EVENT_DISPATCHER_QUEUE_TIMEOUT
+  int "Timeout in milliseconds the event dispatcher consider when using queues"
+  default 50
 
 config ZBUS_EXT
   bool "Enable the Zbus extension"
