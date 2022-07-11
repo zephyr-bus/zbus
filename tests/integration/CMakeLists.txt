@@ -14,10 +14,7 @@ list(APPEND HEADERS
   )
 list(
   APPEND SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/core.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/net.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/peripheral.c"
   )
 
 include_directories(${HEADERS})

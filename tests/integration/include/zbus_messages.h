@@ -14,8 +14,7 @@ struct sensor_data {
 };
 
 struct net_pkt {
-    char x;
-    bool y;
+    int total;
 };
 
 struct action {
