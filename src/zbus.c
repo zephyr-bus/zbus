@@ -135,7 +135,7 @@ void zbus_info_dump(void)
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)            \
     printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
-           "%lu},\n",                                                                    \
+           "%u},\n",                                                                    \
            #name, on_changed ? "true" : "false", read_only ? "true" : "false",          \
            (uint32_t) sizeof(type));
 #include "zbus_channels.h"
