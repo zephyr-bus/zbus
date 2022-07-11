@@ -137,7 +137,7 @@ void zbus_info_dump(void)
     printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
            "%lu},\n",                                                                    \
            #name, on_changed ? "true" : "false", read_only ? "true" : "false",          \
-           sizeof(type));
+           (uint32_t) sizeof(type));
 #include "zbus_channels.h"
     printk("\n]\n");
 }
