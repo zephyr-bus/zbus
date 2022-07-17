@@ -41,3 +41,12 @@ ZBUS_CHANNEL(union_complex,        /* Name */
              ZBUS_OBSERVERS_EMPTY, /* observers */
              ZBUS_MSG_INIT({0})    /* Initial value major 0, minor 1, build 1023 */
 )
+
+ZBUS_CHANNEL(hard_channel,         /* Name */
+             false,                /* On changes only */
+             false,                /* Read only */
+             struct hard_msg,      /* Message type */
+             hard_msg_validator,   /* Validator */
+             ZBUS_OBSERVERS_EMPTY, /* observers */
+             ZBUS_MSG_INIT(0)    /* Initial value major 0, minor 1, build 1023 */
+)

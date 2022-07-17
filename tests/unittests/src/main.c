@@ -17,6 +17,35 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
  initial_value = [0, some, all]
  */
 
+bool hard_msg_validator(void *msg, size_t msg_size)
+{
+    struct hard_msg *ref = (struct hard_msg *) msg;
+    return (0 <= ref->range) && (ref->range <= 1023) && (ref->binary <= 1)
+           && (ref->pointer != NULL);
+}
+
+static void test_hard_channel(void)
+{
+    struct hard_msg valid = {.range = 10, .binary = 1, .pointer = &valid.range};
+    ZBUS_CHAN_PUB(hard_channel, valid, K_NO_WAIT);
+    struct hard_msg current = {0};
+    ZBUS_CHAN_READ(hard_channel, current, K_NO_WAIT);
+    zassert_equal(valid.range, current.range, "Range must be equal");
+    zassert_equal(valid.binary, current.binary, "Binary must be equal");
+    zassert_equal(valid.pointer, current.pointer, "Pointer must be equal");
+    struct hard_msg invalid = {.range = 10000, .binary = 1, .pointer = &valid.range};
+    int err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid,
+                            sizeof invalid, K_NO_WAIT, false);
+    zassert_true(err == -1, "Err must be -1, the channel message is invalid");
+    invalid = (struct hard_msg) {.range=1, .binary=3, .pointer=&invalid.range};
+    err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid,
+                            sizeof invalid, K_NO_WAIT, false);
+    zassert_true(err == -1, "Err must be -1, the channel message is invalid");
+    invalid = (struct hard_msg) {.range=1, .binary=0, .pointer=NULL};
+    err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid,
+                        sizeof invalid, K_NO_WAIT, false);
+    zassert_true(err == -1, "Err must be -1, the channel message is invalid");
+}
 
 static void test_readonly_channel(void)
 {
@@ -38,7 +67,8 @@ static void test_readonly_channel(void)
 
 void test_main(void)
 {
-    ztest_test_suite(framework_tests, ztest_unit_test(test_readonly_channel));
+    ztest_test_suite(framework_tests, ztest_unit_test(test_readonly_channel),
+                     ztest_unit_test(test_hard_channel));
 
     ztest_run_test_suite(framework_tests);
 }
