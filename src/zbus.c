@@ -292,7 +292,7 @@ static void __zbus_monitor_thread(void)
             chan->flag.from_ext      = false; /* B'*/
             k_sem_give(chan->semaphore); /* Give control of chan, from lock B lifetime */
 
-            __ZBUS_LOG_DBG("[ZBUS] notify!");
+            ZBUS_LOG_DBG("[ZBUS] notify!");
         }
     }
 }
