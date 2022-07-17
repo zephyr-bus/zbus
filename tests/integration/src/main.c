@@ -100,12 +100,12 @@ static void context_reset(void)
     struct net_pkt *p;
     zbus_chan_claim(ZBUS_CHAN_GET(net_pkt), (void **) &p, K_NO_WAIT);
     p->total = 0;
-    zbus_chan_finish(ZBUS_CHAN_GET(net_pkt), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHAN_GET(net_pkt));
     struct sensor_data *sd;
     zbus_chan_claim(ZBUS_CHAN_GET(sensor_data), (void **) &sd, K_NO_WAIT);
     sd->a = 0;
     sd->b = 1;
-    zbus_chan_finish(ZBUS_CHAN_GET(sensor_data), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHAN_GET(sensor_data));
     zbus_observer_set_enable(&critical, true);
     zbus_observer_set_enable(&peripheral, true);
 }

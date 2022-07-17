@@ -13,7 +13,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 K_MSGQ_DEFINE(_bridge_input_msgq, sizeof(uint8_t), 256, 1);
 K_MSGQ_DEFINE(_bridge_output_msgq, sizeof(uint8_t), 256, 1);
 
-extern struct k_msgq __zbus_ext_msgq;
+extern struct k_msgq _zbus_ext_msgq;
 
 struct ct_uart_device bridge_uart = {DEVICE_DT_GET(DT_ALIAS(bridge_serial)),
                                      &_bridge_input_msgq, &_bridge_output_msgq};
@@ -30,7 +30,7 @@ void bridge_thread(void)
     ct_uart_write_str(&bridge_uart, "Hello world!\n");
     LOG_DBG("[Bridge] Started.");
     while (1) {
-        if (!k_msgq_get(&__zbus_ext_msgq, &idx, K_FOREVER)) {
+        if (!k_msgq_get(&_zbus_ext_msgq, &idx, K_FOREVER)) {
             struct zbus_channel *meta = zbus_chan_get_by_index(idx);
 
             LOG_DBG("[Bridge] send data %d",

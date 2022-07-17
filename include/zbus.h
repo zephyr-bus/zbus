@@ -129,7 +129,7 @@ struct zbus_messages {
 
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
-    struct zbus_channel __zbus_chan_##name;
+    struct zbus_channel _zbus_chan_##name;
 
 /**
  * @brief Shared memory containing the channels data
@@ -153,7 +153,7 @@ typedef union {
 #if defined(CONFIG_ZBUS_LOG)
 #define ZBUS_LOG_DBG(...) LOG_DBG(__VA_ARGS__)
 #else
-#define __ZBUS_LOG_DBG(...)
+#define ZBUS_LOG_DBG(...)
 #endif
 
 /**
@@ -272,7 +272,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  * @return The channel's metadata.
  */
 #define ZBUS_CHAN_GET(chan) \
-    ((struct zbus_channel *) &__zbus_channels_instance()->__zbus_chan_##chan)
+    ((struct zbus_channel *) &zbus_channels_instance()->_zbus_chan_##chan)
 
 /**
  *
@@ -284,7 +284,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  *
  * @return The channel's message.
  */
-#define ZBUS_MSG_GET(chan) (((struct zbus_messages *) __zbus_messages_instance())->chan)
+#define ZBUS_MSG_GET(chan) (((struct zbus_messages *) zbus_messages_instance())->chan)
 
 
 /**
@@ -468,14 +468,11 @@ int zbus_chan_claim(struct zbus_channel *meta, void **chan_msg, k_timeout_t time
  *
  * @param meta The channel's metadata.
  * @param msg Pointer to the message's data reference.
- * @param timeout Waiting period to claim the channel,
- *                or one of the special values K_NO_WAIT and K_FOREVER.
  *
  * @retval 0 channel claimed.
- * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-void zbus_chan_finish(struct zbus_channel *meta, k_timeout_t timeout);
+void zbus_chan_finish(struct zbus_channel *meta);
 
 /**
  *

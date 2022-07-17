@@ -38,7 +38,7 @@ void filter_cb(zbus_channel_index_t idx)
     if (filtered_data->header.filter) {
         memset(filtered_data->body, 0, filtered_data->header.body_size);
     }
-    zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel), K_NO_WAIT);
+    zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel));
 
     struct ack_msg dr = {1};
     ZBUS_CHAN_PUB(data_ready, dr, K_NO_WAIT);
@@ -95,7 +95,7 @@ void consumer_thread(void)
         k_free(chan_message->reference);
         chan_message->reference = NULL;
         chan_message->size      = 0;
-        zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel), K_NO_WAIT);
+        zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel));
 
         struct ack_msg a = {1};
         ZBUS_CHAN_PUB(ack, a, K_MSEC(250));
