@@ -36,14 +36,15 @@ extern "C" {
  FIX: point to the subscriber type.
  * @param init_val The message initialization.
  */
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val)
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val)
 #endif
 
 typedef enum __attribute__((packed)) {
 #ifdef ZBUS_CHANNEL
 #undef ZBUS_CHANNEL
 #endif
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) name##_index,
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+    name##_index,
 #include "zbus_channels.h"
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
@@ -77,19 +78,21 @@ struct zbus_channel {
     uint16_t lookup_table_index;
     uint16_t message_size;
     uint8_t *message;
+    bool (*validator)(void *msg, size_t msg_size);
     struct k_sem *semaphore;
     struct zbus_observer **observers;
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+    type name;
 
 struct zbus_messages {
 #include "zbus_channels.h"
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) \
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
     struct zbus_channel __zbus_chan_##name;
 
 struct zbus_channels {
@@ -97,7 +100,8 @@ struct zbus_channels {
 };
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, observers, init_val) type name;
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+    type name;
 
 typedef union {
 #include "zbus_channels.h"
@@ -142,7 +146,7 @@ struct zbus_channels *__zbus_channels_instance();
  * @param idx channel's index based on the generated enum.
  * @return the metada struct of the channel
  */
-struct zbus_channel* zbus_chan_get_by_index(zbus_channel_index_t idx);
+struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
 
 #if defined(CONFIG_ZBUS_ASSERTS)
 /**
