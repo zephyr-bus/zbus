@@ -153,7 +153,7 @@ typedef union {
 #if defined(CONFIG_ZBUS_LOG)
 #define ZBUS_LOG_DBG(...) LOG_DBG(__VA_ARGS__)
 #else
-#define __ZBUS_LOG_DBG(...)
+#define ZBUS_LOG_DBG(...)
 #endif
 
 /**
