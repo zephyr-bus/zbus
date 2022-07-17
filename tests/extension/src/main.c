@@ -12,7 +12,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-extern struct k_msgq __zbus_ext_msgq;
+extern struct k_msgq _zbus_ext_msgq;
 
 /**
  * @brief Test Asserts
@@ -26,7 +26,7 @@ static void test_01(void)
     zbus_message_variant_t msg_data = {0};
     uint8_t count                   = 0;
     while (1) {
-        if (!k_msgq_get(&__zbus_ext_msgq, &idx, K_FOREVER)) {
+        if (!k_msgq_get(&_zbus_ext_msgq, &idx, K_FOREVER)) {
             struct zbus_channel *meta = zbus_chan_get_by_index(idx);
             zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size, K_MSEC(500));
             switch (idx) {
