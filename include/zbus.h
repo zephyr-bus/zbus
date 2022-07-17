@@ -32,8 +32,8 @@ extern "C" {
  * value it will not generate a notification event by the bus.
  * @param read_only Flag indicates the channel is read-only.
  * @param type The Message type. It must be a struct or union.
- * @param observer The subscribers list.
- FIX: point to the subscriber type.
+ * @param observer The observers list.
+ * @see struct zbus_observer
  * @param init_val The message initialization.
  */
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val)
@@ -49,6 +49,21 @@ typedef enum __attribute__((packed)) {
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
 
+/**
+ * @brief Type used to represent an observer.
+ *
+ * Every observer has an representation structure containing the relevant information.
+ * An observer is a code portion interested in some channel. The observer can be notified
+ * synchronously or asynchronously and it is called listener and subscriber respectively.
+ * The observer can be enabled ou disabled during runtime by change the enabled boolean
+ * field of the structure. The listeners have a callback function that is executed by the
+ * bus with the index of the changed channel as argument when the notification is sent.
+ * The subscribers have a message queue where the bus enqueues the index of the changed
+ * channel when a notification is sent.
+ *
+ * @see zbus_observer_set_enable function to properly change the observer's enabled field.
+ *
+ */
 struct zbus_observer {
     bool enabled;
     struct k_msgq *queue;
@@ -58,28 +73,43 @@ struct zbus_observer {
 /**
  * @brief Type used to represent a channel.
  *
- * Every channel has a zbus_channel structure associated.
- * Every struct device has an associated handle. You can get a pointer
- * to a device structure from its handle and vice versa, but the
- * handle uses less space than a pointer. The device.h API mainly uses
- * handles to store lists of multiple devices in a compact way.
- *
- * The extreme values and zero have special significance. Negative
- * values identify functionality that does not correspond to a Zephyr
- * device, such as the system clock or a SYS_INIT() function.
+ * Every channel has a zbus_channel structure associated used to control the channel
+ * access and usage.
  */
 struct zbus_channel {
     struct {
+        /** Pending callback flag. It is necessary to optimize two consecutive
+         * publications. The ISR can cause this. Only the most recent of the enqueued
+         * notification is actually performed. */
         uint8_t pend_callback : 1;
+        /** On change flag. Indicates zbus will only consider sending a notification if
+         * the last publication in this channel actually modified the message value,
+         * otherwise zbus will ignore it.
+         * */
         uint8_t on_changed : 1;
+        /** Read only flag. Indicates the channel cannot receive publications. */
         uint8_t read_only : 1;
+        /** Changes from extent. Indicates the channel was modified internally
+         * by the extension feature and not by some user code. */
         uint8_t from_ext : 1;
     } flag;
+    /** Lookup table index. Represents the index of the channel at the lookup table. */
     uint16_t lookup_table_index;
+    /** Message size. Represents the channel's message size. */
     uint16_t message_size;
+    /** Message reference. Represents the message's reference that points to the actual
+     * shared memory region.
+     */
     uint8_t *message;
+    /** Message validator. Stores the reference to the function used by the publish action
+     * to check the message before actually performing the it. No invalid messages can be
+     * published. Every message is considered valid when this field is empty. */
     bool (*validator)(void *msg, size_t msg_size);
+    /** Access control semaphore. Points to the semaphore used to avoid race conditions
+     * for accessing the channel */
     struct k_sem *semaphore;
+    /** Channel observer list. Represents the channel's observers list, it can be empty or
+     * have listeners and subscribers mixed in any sequence */
     struct zbus_observer **observers;
 };
 
@@ -87,6 +117,12 @@ struct zbus_channel {
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
     type name;
 
+
+/**
+ * @brief Shared memory containing the message data
+ *
+ * @warning The user must not access this memory region directly.
+ */
 struct zbus_messages {
 #include "zbus_channels.h"
 };
@@ -95,6 +131,11 @@ struct zbus_messages {
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
     struct zbus_channel __zbus_chan_##name;
 
+/**
+ * @brief Shared memory containing the channels data
+ *
+ * @warning The user must not access this memory region directly.
+ */
 struct zbus_channels {
 #include "zbus_channels.h"
 };
@@ -125,7 +166,7 @@ typedef union {
 /**
  * @brief This function returns the __zbus_channels instance reference.
  *
- * Do not use this directly! It is being used by the auxilary functions.
+ * Do not use this directly! It is being used by the auxiliary functions.
  *
  * @return A pointer of struct zbus_channels.
  */
@@ -134,17 +175,17 @@ struct zbus_messages *__zbus_messages_instance();
 /**
  * @brief This function returns the __zbus_channels instance reference.
  *
- * Do not use this directly! It is being used by the auxilary functions.
+ * Do not use this directly! It is being used by the auxiliary functions.
  *
  * @return A pointer of struct zbus_channels.
  */
 struct zbus_channels *__zbus_channels_instance();
 
 /**
- * @brief Retreives the channel's metada by a given index
+ * @brief Retrieves the channel's metadata by a given index
  *
  * @param idx channel's index based on the generated enum.
- * @return the metada struct of the channel
+ * @return the metadata struct of the channel
  */
 struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
 
@@ -190,8 +231,6 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  *
  * This macro establishes the message queue where the subscriber will receive the
  * notification asynchronously, and initialize the struct defining the subscriber.
- *
- * @info The difer
  *
  * @param[in] name The subscriber's name.
  * @param[in] queue_size The notification queue's size.
