@@ -170,7 +170,7 @@ typedef union {
  *
  * @return A pointer of struct zbus_channels.
  */
-struct zbus_messages *__zbus_messages_instance();
+struct zbus_messages *zbus_messages_instance();
 
 /**
  * @brief This function returns the __zbus_channels instance reference.
@@ -179,7 +179,7 @@ struct zbus_messages *__zbus_messages_instance();
  *
  * @return A pointer of struct zbus_channels.
  */
-struct zbus_channels *__zbus_channels_instance();
+struct zbus_channels *zbus_channels_instance();
 
 /**
  * @brief Retrieves the channel's metadata by a given index

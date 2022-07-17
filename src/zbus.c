@@ -119,12 +119,12 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
     }
 }
 
-struct zbus_messages *__zbus_messages_instance()
+struct zbus_messages *zbus_messages_instance()
 {
     return &__zbus_messages;
 }
 
-struct zbus_channels *__zbus_channels_instance()
+struct zbus_channels *zbus_channels_instance()
 {
     return &__zbus_channels;
 }
