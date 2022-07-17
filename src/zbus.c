@@ -96,7 +96,7 @@ static struct zbus_channels __zbus_channels = {
 #include "zbus_channels.h"
 };
 
-struct zbus_channel *__zbus_channels_lookup_table[] = {
+struct zbus_channel *zbus_channels_lookup_table[] = {
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
     &__zbus_channels.__zbus_chan_##name,
@@ -132,7 +132,7 @@ struct zbus_channels *__zbus_channels_instance()
 struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx)
 {
     ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
-    return __zbus_channels_lookup_table[idx];
+    return zbus_channels_lookup_table[idx];
 }
 
 void zbus_info_dump(void)
@@ -259,7 +259,7 @@ static void __zbus_monitor_thread(void)
     while (1) {
         k_msgq_get(&__zbus_channels_changed_msgq, &idx, K_FOREVER);
         ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
-        struct zbus_channel *chan = __zbus_channels_lookup_table[idx];
+        struct zbus_channel *chan = zbus_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
 
