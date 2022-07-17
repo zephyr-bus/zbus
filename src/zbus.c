@@ -243,10 +243,10 @@ int zbus_chan_claim(struct zbus_channel *chan, void **chan_msg, k_timeout_t time
     return 0;
 }
 
-void zbus_chan_finish(struct zbus_channel *chan, k_timeout_t timeout)
+void zbus_chan_finish(struct zbus_channel *meta)
 {
-    ZBUS_ASSERT(chan != NULL);
-    k_sem_give(chan->semaphore);
+    ZBUS_ASSERT(meta != NULL);
+    k_sem_give(meta->semaphore);
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)

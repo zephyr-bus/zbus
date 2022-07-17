@@ -468,14 +468,11 @@ int zbus_chan_claim(struct zbus_channel *meta, void **chan_msg, k_timeout_t time
  *
  * @param meta The channel's metadata.
  * @param msg Pointer to the message's data reference.
- * @param timeout Waiting period to claim the channel,
- *                or one of the special values K_NO_WAIT and K_FOREVER.
  *
  * @retval 0 channel claimed.
- * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-void zbus_chan_finish(struct zbus_channel *meta, k_timeout_t timeout);
+void zbus_chan_finish(struct zbus_channel *meta);
 
 /**
  *
