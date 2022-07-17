@@ -142,7 +142,7 @@ void zbus_info_dump(void)
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
     printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
            "%u},\n",                                                                    \
-           #name, on_changed ? "true" : "false", read_only ? "true" : "false",          \
+           #name, (on_changed) ? "true" : "false", (read_only) ? "true" : "false",          \
            (uint32_t) sizeof(type));
 
 #include "zbus_channels.h"
@@ -253,7 +253,7 @@ void zbus_chan_finish(struct zbus_channel *meta)
 K_MSGQ_DEFINE(_zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
 #endif
 
-static void zbus_monitor_thread(void)
+_Noreturn static void zbus_monitor_thread(void)
 {
     zbus_channel_index_t idx = 0;
     while (1) {
