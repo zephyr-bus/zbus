@@ -96,7 +96,7 @@ static struct zbus_channels __zbus_channels = {
 #include "zbus_channels.h"
 };
 
-struct zbus_channel *__zbus_channels_lookup_table[] = {
+struct zbus_channel *zbus_channels_lookup_table[] = {
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
     &__zbus_channels.__zbus_chan_##name,
@@ -119,12 +119,12 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
     }
 }
 
-struct zbus_messages *__zbus_messages_instance()
+struct zbus_messages *zbus_messages_instance()
 {
     return &__zbus_messages;
 }
 
-struct zbus_channels *__zbus_channels_instance()
+struct zbus_channels *zbus_channels_instance()
 {
     return &__zbus_channels;
 }
@@ -132,7 +132,7 @@ struct zbus_channels *__zbus_channels_instance()
 struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx)
 {
     ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
-    return __zbus_channels_lookup_table[idx];
+    return zbus_channels_lookup_table[idx];
 }
 
 void zbus_info_dump(void)
@@ -253,13 +253,13 @@ void zbus_chan_finish(struct zbus_channel *chan, k_timeout_t timeout)
 K_MSGQ_DEFINE(__zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
 #endif
 
-static void __zbus_monitor_thread(void)
+static void zbus_monitor_thread(void)
 {
     zbus_channel_index_t idx = 0;
     while (1) {
         k_msgq_get(&__zbus_channels_changed_msgq, &idx, K_FOREVER);
         ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
-        struct zbus_channel *chan = __zbus_channels_lookup_table[idx];
+        struct zbus_channel *chan = zbus_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
 
@@ -292,11 +292,11 @@ static void __zbus_monitor_thread(void)
             chan->flag.from_ext      = false; /* B'*/
             k_sem_give(chan->semaphore); /* Give control of chan, from lock B lifetime */
 
-            __ZBUS_LOG_DBG("[ZBUS] notify!");
+            ZBUS_LOG_DBG("[ZBUS] notify!");
         }
     }
 }
 
 K_THREAD_DEFINE(zbus_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                __zbus_monitor_thread, NULL, NULL, NULL,
+                zbus_monitor_thread, NULL, NULL, NULL,
                 CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
