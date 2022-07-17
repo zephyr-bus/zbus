@@ -2,6 +2,7 @@ ZBUS_CHANNEL(bm_channel,               /* Name */
              false,                    /* On changes only */
              false,                    /* Read only */
              struct external_data_msg, /* Message type */
+             NULL,                     /* Validator */
              ZBUS_OBSERVERS(s1
 
 #if (BM_ONE_TO >= 2LLU)

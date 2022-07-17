@@ -46,4 +46,12 @@ union union_msg {
     struct complex_msg cm;
 };
 
+struct hard_msg {
+    int16_t range;    /* Range 0 to 1023 */
+    uint8_t binary;   /* Range 0 to 1 */
+    int16_t *pointer; /* Not null */
+};
+
+bool hard_msg_validator(void *msg, size_t msg_size);
+
 #endif  // _ZBUS_MESSAGES_H_
