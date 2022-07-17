@@ -253,7 +253,7 @@ void zbus_chan_finish(struct zbus_channel *chan, k_timeout_t timeout)
 K_MSGQ_DEFINE(__zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
 #endif
 
-static void __zbus_monitor_thread(void)
+static void zbus_monitor_thread(void)
 {
     zbus_channel_index_t idx = 0;
     while (1) {
@@ -298,5 +298,5 @@ static void __zbus_monitor_thread(void)
 }
 
 K_THREAD_DEFINE(zbus_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                __zbus_monitor_thread, NULL, NULL, NULL,
+                zbus_monitor_thread, NULL, NULL, NULL,
                 CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
