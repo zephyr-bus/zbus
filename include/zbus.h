@@ -129,7 +129,7 @@ struct zbus_messages {
 
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
-    struct zbus_channel __zbus_chan_##name;
+    struct zbus_channel _zbus_chan_##name;
 
 /**
  * @brief Shared memory containing the channels data
@@ -272,7 +272,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  * @return The channel's metadata.
  */
 #define ZBUS_CHAN_GET(chan) \
-    ((struct zbus_channel *) &__zbus_channels_instance()->__zbus_chan_##chan)
+    ((struct zbus_channel *) &zbus_channels_instance()->_zbus_chan_##chan)
 
 /**
  *
@@ -284,7 +284,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  *
  * @return The channel's message.
  */
-#define ZBUS_MSG_GET(chan) (((struct zbus_messages *) __zbus_messages_instance())->chan)
+#define ZBUS_MSG_GET(chan) (((struct zbus_messages *) zbus_messages_instance())->chan)
 
 
 /**

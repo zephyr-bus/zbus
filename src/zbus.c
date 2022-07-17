@@ -13,10 +13,10 @@
 #include <logging/log.h>
 
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
-K_MSGQ_DEFINE(__zbus_channels_changed_msgq, sizeof(zbus_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(_zbus_channels_changed_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 #if defined(CONFIG_ZBUS_EXT)
-K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #endif
 
 #ifdef ZBUS_CHANNEL
@@ -28,7 +28,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
  * Description
  */
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
-    K_SEM_DEFINE(__zbus_sem_##name, 1, 1);
+    K_SEM_DEFINE(_zbus_sem_##name, 1, 1);
 
 #include "zbus_channels.h"
 
@@ -64,7 +64,7 @@ K_MSGQ_DEFINE(__zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
         NULL                                             \
     }
 
-static struct zbus_messages __zbus_messages = {
+static struct zbus_messages _zbus_messages = {
 
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
@@ -73,11 +73,11 @@ static struct zbus_messages __zbus_messages = {
 #include "zbus_channels.h"
 };
 
-static struct zbus_channels __zbus_channels = {
+static struct zbus_channels _zbus_channels = {
 
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
-    .__zbus_chan_##name = {                                                             \
+    ._zbus_chan_##name = {                                                             \
         .flag =                                                                         \
             {                                                                           \
                 false,      /* Not defined yet */                                       \
@@ -88,9 +88,9 @@ static struct zbus_channels __zbus_channels = {
             },              /* ISC source flag */                                       \
         name##_index,       /* Lookup table index */                                    \
         sizeof(type),       /* The channel's size */                                    \
-        (uint8_t *) &__zbus_messages.name, /* The actual channel */                     \
+        (uint8_t *) &_zbus_messages.name, /* The actual channel */                     \
         validator,          /* The channel's message validator function */              \
-        &__zbus_sem_##name, /* Channel's semaphore */                                   \
+        &_zbus_sem_##name, /* Channel's semaphore */                                   \
         observers},         /* List of observers queues */
 
 #include "zbus_channels.h"
@@ -99,7 +99,7 @@ static struct zbus_channels __zbus_channels = {
 struct zbus_channel *zbus_channels_lookup_table[] = {
 #undef ZBUS_CHANNEL
 #define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
-    &__zbus_channels.__zbus_chan_##name,
+    &_zbus_channels._zbus_chan_##name,
 
 #include "zbus_channels.h"
 };
@@ -121,12 +121,12 @@ void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
 
 struct zbus_messages *zbus_messages_instance()
 {
-    return &__zbus_messages;
+    return &_zbus_messages;
 }
 
 struct zbus_channels *zbus_channels_instance()
 {
-    return &__zbus_channels;
+    return &_zbus_channels;
 }
 
 struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx)
@@ -185,7 +185,7 @@ int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
     chan->flag.pend_callback = true;
     chan->flag.from_ext      = from_ext;
     k_sem_give(chan->semaphore);
-    return k_msgq_put(&__zbus_channels_changed_msgq,
+    return k_msgq_put(&_zbus_channels_changed_msgq,
                       (uint8_t *) &chan->lookup_table_index, timeout);
 }
 
@@ -228,7 +228,7 @@ int zbus_chan_notify(struct zbus_channel *chan, k_timeout_t timeout)
     chan->flag.pend_callback = true;
     chan->flag.from_ext      = false;
     k_sem_give(chan->semaphore);
-    return k_msgq_put(&__zbus_channels_changed_msgq,
+    return k_msgq_put(&_zbus_channels_changed_msgq,
                       (uint8_t *) &chan->lookup_table_index, timeout);
 }
 
@@ -250,14 +250,14 @@ void zbus_chan_finish(struct zbus_channel *chan, k_timeout_t timeout)
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-K_MSGQ_DEFINE(__zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
+K_MSGQ_DEFINE(_zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
 #endif
 
 static void zbus_monitor_thread(void)
 {
     zbus_channel_index_t idx = 0;
     while (1) {
-        k_msgq_get(&__zbus_channels_changed_msgq, &idx, K_FOREVER);
+        k_msgq_get(&_zbus_channels_changed_msgq, &idx, K_FOREVER);
         ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
         struct zbus_channel *chan = zbus_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
@@ -269,7 +269,7 @@ static void zbus_monitor_thread(void)
         if (chan->flag.pend_callback) {   /* A'*/
 #if defined(CONFIG_ZBUS_EXT)
             if (chan->flag.from_ext == false) {                 /* A'*/
-                k_msgq_put(&__zbus_ext_msgq, &idx, K_MSEC(50)); /* A'*/
+                k_msgq_put(&_zbus_ext_msgq, &idx, K_MSEC(50)); /* A'*/
             }                                                   /* A'*/
 #endif
 
