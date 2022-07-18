@@ -189,7 +189,6 @@ struct zbus_channels *zbus_channels_instance();
  */
 struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
 
-#if defined(CONFIG_ZBUS_ASSERTS)
 /**
  *
  * @brief Zbus assert.
@@ -207,9 +206,6 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
             k_oops();                                                                    \
         }                                                                                \
     } while (0)
-#else
-#define ZBUS_ASSERT(cond)
-#endif
 
 /**
  *
@@ -515,8 +511,11 @@ void zbus_info_dump(void);
  *
  * @param[in] sub The observer's reference.
  * @param[in] enabled State to be. When false the observer stops to receive notifications.
+ *
+ * @retval 0 observer set enable.
+ * @retval -EINVAL Some parameter is invalid.
  */
-void zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
+int zbus_observer_set_enable(struct zbus_observer *sub, bool enabled);
 /**
  * @}
  */
