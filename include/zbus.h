@@ -254,7 +254,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
     struct zbus_observer name = {       \
         .enabled  = true,               \
         .queue    = NULL,               \
-        .callback = (cb),                 \
+        .callback = (cb),               \
     }
 
 /**
@@ -306,9 +306,9 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
             __typeof__(value) value##__aux__;                                            \
             (void) (&chan##__aux__ == &value##__aux__);                                  \
         }                                                                                \
-        ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""), \
-                       __FILE__, __LINE__);                                              \
-        zbus_chan_pub(ZBUS_CHAN_GET(chan), (uint8_t *) &(value), sizeof(value), timeout,   \
+        ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""),   \
+                     __FILE__, __LINE__);                                                \
+        zbus_chan_pub(ZBUS_CHAN_GET(chan), (uint8_t *) &(value), sizeof(value), timeout, \
                       false);                                                            \
     })
 
@@ -328,12 +328,12 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-#define ZBUS_CHAN_PUB_BY_INDEX(idx, value, timeout)                                    \
-    ({                                                                                 \
+#define ZBUS_CHAN_PUB_BY_INDEX(idx, value, timeout)                                  \
+    ({                                                                               \
         ZBUS_LOG_DBG("[ZBUS] %spub %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
-                       __FILE__, __LINE__);                                            \
-        zbus_chan_pub(zbus_chan_get_by_index(idx), (uint8_t *) &(value),                 \
-                      zbus_chan_get_by_index(idx)->message_size, timeout, false);      \
+                     __FILE__, __LINE__);                                            \
+        zbus_chan_pub(zbus_chan_get_by_index(idx), (uint8_t *) &(value),             \
+                      zbus_chan_get_by_index(idx)->message_size, timeout, false);    \
     })
 
 /**
@@ -373,16 +373,17 @@ int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
  * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-#define ZBUS_CHAN_READ(chan, value, timeout)                                             \
-    ({                                                                                   \
-        {                                                                                \
-            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                                \
-            __typeof__(value) value##__aux__;                                            \
-            (void) (&chan##__aux__ == &value##__aux__);                                  \
-        }                                                                                \
-        ZBUS_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d",                               \
-                       (k_is_in_isr() ? "ISR " : ""), __FILE__, __LINE__);               \
-        zbus_chan_read(ZBUS_CHAN_GET(chan), (uint8_t *) &(value), sizeof(value), timeout); \
+#define ZBUS_CHAN_READ(chan, value, timeout)                                            \
+    ({                                                                                  \
+        {                                                                               \
+            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                               \
+            __typeof__(value) value##__aux__;                                           \
+            (void) (&chan##__aux__ == &value##__aux__);                                 \
+        }                                                                               \
+        ZBUS_LOG_DBG("[ZBUS] %sread " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""), \
+                     __FILE__, __LINE__);                                               \
+        zbus_chan_read(ZBUS_CHAN_GET(chan), (uint8_t *) &(value), sizeof(value),        \
+                       timeout);                                                        \
     })
 
 /**
@@ -401,12 +402,12 @@ int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
  * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-#define ZBUS_CHAN_READ_BY_INDEX(idx, value, timeout)                                    \
-    ({                                                                                  \
+#define ZBUS_CHAN_READ_BY_INDEX(idx, value, timeout)                                  \
+    ({                                                                                \
         ZBUS_LOG_DBG("[ZBUS] %sread %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
-                       __FILE__, __LINE__);                                             \
-        zbus_chan_read(zbus_chan_get_by_index(idx), (uint8_t *) &(value),                 \
-                       zbus_chan_get_by_index(idx)->message_size, timeout);             \
+                     __FILE__, __LINE__);                                             \
+        zbus_chan_read(zbus_chan_get_by_index(idx), (uint8_t *) &(value),             \
+                       zbus_chan_get_by_index(idx)->message_size, timeout);           \
     })
 
 /**
@@ -462,13 +463,13 @@ int zbus_chan_claim(struct zbus_channel *meta, void **chan_msg, k_timeout_t time
  *
  * @warning This routine must only be used after a zbus_chan_claim.
  *
- * @param meta The channel's metadata.
+ * @param chan The channel's metadata.
  * @param msg Pointer to the message's data reference.
  *
  * @retval 0 channel claimed.
  * @retval -EINVAL Some parameter is invalid.
  */
-void zbus_chan_finish(struct zbus_channel *meta);
+int zbus_chan_finish(struct zbus_channel *chan);
 
 /**
  *

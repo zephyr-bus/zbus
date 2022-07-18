@@ -11,8 +11,8 @@
 #include <sys/printk.h>
 
 #include <logging/log.h>
-
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
+
 K_MSGQ_DEFINE(_zbus_channels_changed_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 #if defined(CONFIG_ZBUS_EXT)
@@ -76,22 +76,22 @@ static struct zbus_messages _zbus_messages = {
 static struct zbus_channels _zbus_channels = {
 
 #undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
-    ._zbus_chan_##name = {                                                             \
-        .flag =                                                                         \
-            {                                                                           \
-                false,      /* Not defined yet */                                       \
-                on_changed, /* Only changes in the channel will propagate  */           \
-                read_only,  /* The channel is only for reading. It must have a initial  \
-                               value. */                                                \
-                false       /* ISC source flag */                                       \
-            },              /* ISC source flag */                                       \
-        name##_index,       /* Lookup table index */                                    \
-        sizeof(type),       /* The channel's size */                                    \
-        (uint8_t *) &_zbus_messages.name, /* The actual channel */                     \
-        validator,          /* The channel's message validator function */              \
-        &_zbus_sem_##name, /* Channel's semaphore */                                   \
-        observers},         /* List of observers queues */
+#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val)  \
+    ._zbus_chan_##name = {                                                               \
+        .flag =                                                                          \
+            {                                                                            \
+                false,      /* Not defined yet */                                        \
+                on_changed, /* Only changes in the channel will propagate  */            \
+                read_only,  /* The channel is only for reading. It must have a initial   \
+                               value. */                                                 \
+                false       /* ISC source flag */                                        \
+            },              /* ISC source flag */                                        \
+        name##_index,       /* Lookup table index */                                     \
+        sizeof(type),       /* The channel's size */                                     \
+        (uint8_t *) &_zbus_messages.name, /* The actual channel */                       \
+        validator,                        /* The channel's message validator function */ \
+        &_zbus_sem_##name,                /* Channel's semaphore */                      \
+        observers},                       /* List of observers queues */
 
 #include "zbus_channels.h"
 };
@@ -117,13 +117,6 @@ static inline int zbus_observer_set_enable_args_check(struct zbus_observer *obs)
     return 0;
 }
 
-/**
- * @brief Change the enable flag of the subscriber.
- *
- * @param sub the subscriber to changed
- * @param enabled if true, the Event notifier will send notification for this subscribe.
- * If false the Event dispatcher won't send notifications to this subscriber.
- */
 int zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
 {
     int err = zbus_observer_set_enable_args_check(sub);
