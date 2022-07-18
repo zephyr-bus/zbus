@@ -1,32 +1,24 @@
-module = ZBUS
-module-str = zbus
-source "subsys/logging/Kconfig.template.log_config"
-
-config ZEPHYR_ZBUS_MODULE
-	bool
-
 config ZBUS
 	bool "Zbus messaging bus"
 	help
 	  Zbus messaging bus
 
 if ZBUS 
-
 config ZBUS_LOG
   bool "Enable log for zbus usage"
   depends on LOG
   default n
 
-config ZBUS_ASSERTS
+config ZBUS_OFFENSIVE_PROG
   bool "Enable asserts for zbus implementation"
-  default y
+  default n
 
 config ZBUS_MONITOR_THREAD_STACK_SIZE
-  int "Size of the monitor thead stack"
+  int "Size of the monitor thread stack"
   default 2048
 
 config ZBUS_MONITOR_THREAD_PRIORITY
-  int "Size of the monitor thead stack"
+  int "Size of the monitor thread stack"
   default 0
 
 config ZBUS_EVENT_DISPATCHER_SEMAPHORE_TIMEOUT
@@ -44,12 +36,17 @@ config ZBUS_EXT
 if ZBUS_EXT
 
     config ZBUS_EXT_THREAD_STACK_SIZE
-      int "Size of the monitor thead stack"
+      int "Size of the monitor thread stack"
       default 2048
 
     config ZBUS_EXT_THREAD_PRIORITY
-      int "Size of the monitor thead stack"
+      int "Size of the monitor thread stack"
       default 1
 
 endif # ZBUS_EXT
+
+module = ZBUS
+module-str = zbus
+source "subsys/logging/Kconfig.template.log_config"
+
 endif # ZBUS
