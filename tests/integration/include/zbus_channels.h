@@ -1,4 +1,4 @@
-ZBUS_CHANNEL(version,              /* Name */
+ZBUS_CHAN_DEFINE(version,              /* Name */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -8,7 +8,7 @@ ZBUS_CHANNEL(version,              /* Name */
                            .build = 1023) /* Initial value major 0, minor 1, build 1023 */
 )
 
-ZBUS_CHANNEL(sensor_data,          /* Name */
+ZBUS_CHAN_DEFINE(sensor_data,          /* Name */
              true,                 /* On changes only */
              false,                /* Read only */
              struct sensor_data,   /* Message type */
@@ -17,7 +17,7 @@ ZBUS_CHANNEL(sensor_data,          /* Name */
              ZBUS_MSG_INIT(0)      /* Initial value {0} */
 )
 
-ZBUS_CHANNEL(net_pkt,                  /* Name */
+ZBUS_CHAN_DEFINE(net_pkt,                  /* Name */
              true,                     /* On changes only */
              false,                    /* Read only */
              struct net_pkt,           /* Message type */
@@ -26,7 +26,7 @@ ZBUS_CHANNEL(net_pkt,                  /* Name */
              ZBUS_MSG_INIT(.total = 0) /* Initial value */
 )
 
-ZBUS_CHANNEL(start_measurement,                    /* Name */
+ZBUS_CHAN_DEFINE(start_measurement,                    /* Name */
              false,                                /* On changes only */
              false,                                /* Read only */
              struct action,                        /* Message type */

@@ -1,5 +1,5 @@
 #include "zbus_messages.h"
-ZBUS_CHANNEL(version,              /* Name */
+ZBUS_CHAN_DEFINE(version,              /* Name */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -9,7 +9,7 @@ ZBUS_CHANNEL(version,              /* Name */
                            .build = 1023) /* Initial value major 0, minor 1, build 1023 */
 )
 
-ZBUS_CHANNEL(a,                    /* Name */
+ZBUS_CHAN_DEFINE(a,                    /* Name */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -18,7 +18,7 @@ ZBUS_CHANNEL(a,                    /* Name */
              ZBUS_MSG_INIT(0)      /* Initial value major 0, minor 1, build 1023 */
 )
 
-ZBUS_CHANNEL(b,                    /* Name */
+ZBUS_CHAN_DEFINE(b,                    /* Name */
              false,                /* On changes only */
              true,                 /* Read only */
              struct version,       /* Message type */
@@ -27,7 +27,7 @@ ZBUS_CHANNEL(b,                    /* Name */
              ZBUS_MSG_INIT(0)      /* Initial value major 0, minor 1, build 1023 */
 )
 
-ZBUS_CHANNEL(complex,              /* Name */
+ZBUS_CHAN_DEFINE(complex,              /* Name */
              false,                /* On changes only */
              true,                 /* Read only */
              struct complex_msg,   /* Message type */
@@ -38,7 +38,7 @@ ZBUS_CHANNEL(complex,              /* Name */
                            .action = 0) /* Initial value major 0, minor 1, build 1023 */
 )
 
-ZBUS_CHANNEL(union_complex,        /* Name */
+ZBUS_CHAN_DEFINE(union_complex,        /* Name */
              false,                /* On changes only */
              true,                 /* Read only */
              union union_msg,      /* Message type */
@@ -47,7 +47,7 @@ ZBUS_CHANNEL(union_complex,        /* Name */
              ZBUS_MSG_INIT({0})    /* Initial value major 0, minor 1, build 1023 */
 )
 
-ZBUS_CHANNEL(hard_channel,         /* Name */
+ZBUS_CHAN_DEFINE(hard_channel,         /* Name */
              false,                /* On changes only */
              false,                /* Read only */
              struct hard_msg,      /* Message type */
