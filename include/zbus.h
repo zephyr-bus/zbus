@@ -50,8 +50,8 @@ typedef enum __attribute__((packed)) {
 
 #include "zbus_channels.h"
 
-    ZBUS_CHANNEL_COUNT
-} zbus_channel_index_t;
+    ZBUS_CHAN_COUNT
+} zbus_chan_idx_t;
 
 /**
  * @brief Type used to represent an observer.
@@ -72,7 +72,7 @@ struct zbus_observer {
     bool enabled;
     struct k_msgq *queue;
 
-    void (*callback)(zbus_channel_index_t idx);
+    void (*callback)(zbus_chan_idx_t idx);
 };
 
 /**
@@ -154,9 +154,9 @@ struct zbus_channels {
                          init_val)                                                \
     type name;
 
-typedef union {
+union zbus_msg_var {
 #include "zbus_channels.h"
-} zbus_message_variant_t;
+};
 
 
 /* To avoid error when not using LOG */
@@ -197,7 +197,7 @@ struct zbus_channels *zbus_channels_instance();
  * @param idx channel's index based on the generated enum.
  * @return the metadata struct of the channel
  */
-struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
+struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx);
 
 /**
  *
@@ -241,13 +241,13 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx);
  * @param[in] name The subscriber's name.
  * @param[in] queue_size The notification queue's size.
  */
-#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                         \
-    K_MSGQ_DEFINE(name##_queue, sizeof(zbus_channel_index_t), queue_size, \
-                  sizeof(zbus_channel_index_t));                          \
-    struct zbus_observer name = {                                         \
-        .enabled  = true,                                                 \
-        .queue    = &name##_queue,                                        \
-        .callback = NULL,                                                 \
+#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                    \
+    K_MSGQ_DEFINE(name##_queue, sizeof(zbus_chan_idx_t), queue_size, \
+                  sizeof(zbus_chan_idx_t));                          \
+    struct zbus_observer name = {                                    \
+        .enabled  = true,                                            \
+        .queue    = &name##_queue,                                   \
+        .callback = NULL,                                            \
     }
 
 /**

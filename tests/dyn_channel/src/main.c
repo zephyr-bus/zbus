@@ -16,7 +16,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-void s1_cb(zbus_channel_index_t idx);
+void s1_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(s1, s1_cb);
 
 
@@ -25,7 +25,7 @@ struct {
     uint64_t b;
 } my_random_data_expected = {0};
 
-void s1_cb(zbus_channel_index_t idx)
+void s1_cb(zbus_chan_idx_t idx)
 {
     struct external_data_msg *chan_message = NULL;
     zbus_chan_claim(zbus_chan_get_by_index(idx), (void *) &chan_message, K_NO_WAIT);

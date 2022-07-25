@@ -19,7 +19,7 @@ ZBUS_SUBSCRIBER_DECLARE(peripheral, 16);
 void peripheral_thread(void)
 {
     struct sensor_data sd  = {0, 0};
-    zbus_channel_index_t idx = 0;
+    zbus_chan_idx_t idx = 0;
     while (!k_msgq_get(peripheral.queue, &idx, K_FOREVER)) {
         sd.a += 1;
         sd.b += 10;

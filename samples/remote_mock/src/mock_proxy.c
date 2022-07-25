@@ -19,15 +19,15 @@ struct ct_uart_device mock_proxy_uart = {DEVICE_DT_GET(DT_NODELABEL(uart1)),
                                          &_mock_proxy_input_msgq,
                                          &_mock_proxy_output_msgq};
 
-void proxy_callback(zbus_channel_index_t idx);
+void proxy_callback(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(proxy, proxy_callback);
 
 
 const uint8_t tokens[] = "$*";
-void proxy_callback(zbus_channel_index_t idx)
+void proxy_callback(zbus_chan_idx_t idx)
 {
     LOG_DBG("[Mock Proxy callback] started");
-    zbus_message_variant_t msg_data = {0};
+    union zbus_msg_var msg_data = {0};
     ZBUS_CHAN_READ_BY_INDEX(idx, msg_data, K_MSEC(200));
     ct_uart_write_byte(&mock_proxy_uart, (uint8_t *) &tokens[0]);
     ct_uart_write_byte(&mock_proxy_uart, (uint8_t *) &idx);
@@ -55,14 +55,14 @@ void mock_proxy_rx_thread(void)
     net_buf_simple_init(rx_buf, 0);
 
     uint8_t byte                   = 0;
-    zbus_channel_index_t idx       = ZBUS_CHANNEL_COUNT;
-    zbus_message_variant_t variant = {0};
+    zbus_chan_idx_t idx       = ZBUS_CHAN_COUNT;
+    union zbus_msg_var variant = {0};
     while (1) {
         if (!k_msgq_get(&_mock_proxy_input_msgq, &byte, K_FOREVER)) {
             if (byte == '*') {
                 if ('$' == net_buf_simple_pull_u8(rx_buf)) {
                     idx = net_buf_simple_pull_u8(rx_buf);
-                    if (idx < ZBUS_CHANNEL_COUNT) {
+                    if (idx < ZBUS_CHAN_COUNT) {
                         struct zbus_channel *meta = zbus_chan_get_by_index(idx);
                         memcpy(&variant,
                                net_buf_simple_pull_mem(rx_buf, meta->message_size),

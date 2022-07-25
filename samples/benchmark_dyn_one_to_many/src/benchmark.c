@@ -55,7 +55,7 @@ ZBUS_SUBSCRIBER_DECLARE(s16, 4);
     {                                                                                   \
         struct bm_msg msg_received                    = {0};                            \
         struct external_data_msg *actual_message_data = NULL;                           \
-        zbus_channel_index_t idx                      = ZBUS_CHANNEL_COUNT;             \
+        zbus_chan_idx_t idx                      = ZBUS_CHAN_COUNT;             \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                              \
             zbus_chan_claim(ZBUS_CHAN_GET(bm_channel), (void *) &actual_message_data,   \
                             K_NO_WAIT);                                                 \
@@ -96,7 +96,7 @@ S_TASK(s16)
 
 #else  // SYNC
 
-void s_cb(zbus_channel_index_t idx);
+void s_cb(zbus_chan_idx_t idx);
 
 ZBUS_LISTENER_DECLARE(s1, s_cb);
 #if (BM_ONE_TO >= 2LLU)
@@ -125,7 +125,7 @@ ZBUS_LISTENER_DECLARE(s16, s_cb);
 
 struct bm_msg msg_received = {0};
 
-void s_cb(zbus_channel_index_t idx)
+void s_cb(zbus_chan_idx_t idx)
 {
     struct external_data_msg *actual_message_data = NULL;
     zbus_chan_claim(ZBUS_CHAN_GET(bm_channel), (void *) &actual_message_data, K_NO_WAIT);

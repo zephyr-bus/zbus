@@ -13,7 +13,7 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(core_queue, sizeof(zbus_channel_index_t), 10, sizeof(zbus_channel_index_t));
+K_MSGQ_DEFINE(core_queue, sizeof(zbus_chan_idx_t), 10, sizeof(zbus_chan_idx_t));
 
 void core_thread(void)
 {

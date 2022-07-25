@@ -17,7 +17,7 @@ LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 int count_callback = 0;
 
-void urgent_callback(zbus_channel_index_t idx)
+void urgent_callback(zbus_chan_idx_t idx)
 {
     printk(" *** LISTENER activated for channel %d ***\n", idx);
     ++count_callback;
@@ -29,7 +29,7 @@ int count_core = 0;
 ZBUS_SUBSCRIBER_DECLARE(core, 1);
 void core_thread(void)
 {
-    zbus_channel_index_t idx = 0;
+    zbus_chan_idx_t idx = 0;
     while (1) {
         if (!k_msgq_get(core.queue, &idx, K_FOREVER)) {
             count_core++;
@@ -52,7 +52,7 @@ int count_net      = 0;
 ZBUS_SUBSCRIBER_DECLARE(net, 4);
 void net_thread(void)
 {
-    zbus_channel_index_t idx = 0;
+    zbus_chan_idx_t idx = 0;
     while (1) {
         if (!k_msgq_get(net.queue, &idx, K_FOREVER)) {
             count_net++;
@@ -73,7 +73,7 @@ void peripheral_thread(void)
     struct sensor_data sd = {0, 0};
 
 
-    zbus_channel_index_t idx = 0;
+    zbus_chan_idx_t idx = 0;
     while (!k_msgq_get(peripheral.queue, &idx, K_FOREVER)) {
         count_peripheral++;
         LOG_DBG("[Peripheral] starting measurement");

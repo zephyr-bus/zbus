@@ -14,38 +14,38 @@
 #include "zbus_messages.h"
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-void fh1_cb(zbus_channel_index_t idx);
+void fh1_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(fast_handler1, fh1_cb);
 
-void fh2_cb(zbus_channel_index_t idx);
+void fh2_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(fast_handler2, fh2_cb);
 
-void fh3_cb(zbus_channel_index_t idx);
+void fh3_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(fast_handler3, fh3_cb);
 
-void dh1_cb(zbus_channel_index_t idx);
+void dh1_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(delay_handler1, dh1_cb);
 
-void dh2_cb(zbus_channel_index_t idx);
+void dh2_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(delay_handler2, dh2_cb);
 
-void dh3_cb(zbus_channel_index_t idx);
+void dh3_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(delay_handler3, dh3_cb);
 
 struct sensor_msg msg = {0};
-void fh1_cb(zbus_channel_index_t idx)
+void fh1_cb(zbus_chan_idx_t idx)
 {
     ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
     printk("Sensor msg processed by CALLBACK fh1: temp = %u, press = %u, humidity = %u\n",
            msg.temp, msg.press, msg.humidity);
 }
-void fh2_cb(zbus_channel_index_t idx)
+void fh2_cb(zbus_chan_idx_t idx)
 {
     ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
     printk("Sensor msg processed by CALLBACK fh2: temp = %u, press = %u, humidity = %u\n",
            msg.temp, msg.press, msg.humidity);
 }
-void fh3_cb(zbus_channel_index_t idx)
+void fh3_cb(zbus_chan_idx_t idx)
 {
     ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
     printk("Sensor msg processed by CALLBACK fh3: temp = %u, press = %u, humidity = %u\n",
@@ -55,7 +55,7 @@ void fh3_cb(zbus_channel_index_t idx)
 
 struct sensor_wq_info {
     struct k_work work;
-    zbus_channel_index_t idx;
+    zbus_chan_idx_t idx;
     uint8_t handle;
 };
 
@@ -72,19 +72,19 @@ void wq_dh_cb(struct k_work *item)
            sens->handle, msg.temp, msg.press, msg.humidity);
 }
 
-void dh1_cb(zbus_channel_index_t idx)
+void dh1_cb(zbus_chan_idx_t idx)
 {
     wq_handler1.idx = idx;
     k_work_submit(&wq_handler1.work);
 }
 
-void dh2_cb(zbus_channel_index_t idx)
+void dh2_cb(zbus_chan_idx_t idx)
 {
     wq_handler2.idx = idx;
     k_work_submit(&wq_handler2.work);
 }
 
-void dh3_cb(zbus_channel_index_t idx)
+void dh3_cb(zbus_chan_idx_t idx)
 {
     wq_handler3.idx = idx;
     k_work_submit(&wq_handler3.work);
@@ -105,7 +105,7 @@ void main(void)
 ZBUS_SUBSCRIBER_DECLARE(thread_handler1, 4);
 void thread_handler1_task()
 {
-    zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(thread_handler1.queue, &idx, K_FOREVER)) {
         ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
         printk("Sensor msg processed by THREAD handler: temp = %u, press = %u, "
@@ -120,7 +120,7 @@ K_THREAD_DEFINE(thread_handler1_id, 1024, thread_handler1_task, NULL, NULL, NULL
 ZBUS_SUBSCRIBER_DECLARE(thread_handler2, 4);
 void thread_handler2_task()
 {
-    zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(thread_handler2.queue, &idx, K_FOREVER)) {
         ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
         printk("Sensor msg processed by THREAD handler: temp = %u, press = %u, "
@@ -135,7 +135,7 @@ K_THREAD_DEFINE(thread_handler2_id, 1024, thread_handler2_task, NULL, NULL, NULL
 ZBUS_SUBSCRIBER_DECLARE(thread_handler3, 4);
 void thread_handler3_task()
 {
-    zbus_channel_index_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(thread_handler3.queue, &idx, K_FOREVER)) {
         ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
         printk("Sensor msg processed by THREAD handler: temp = %u, press = %u, "
