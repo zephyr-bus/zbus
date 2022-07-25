@@ -23,7 +23,7 @@ extern struct k_msgq _zbus_ext_msgq;
 static void test_01(void)
 {
     zbus_chan_idx_t idx        = 0;
-    zbus_message_variant_t msg_data = {0};
+    union zbus_msg_var msg_data = {0};
     uint8_t count                   = 0;
     while (1) {
         if (!k_msgq_get(&_zbus_ext_msgq, &idx, K_FOREVER)) {
@@ -64,7 +64,7 @@ static void test_01(void)
                 zassert_unreachable("Wrong idx send");
             }
             }
-            memset(&msg_data, 0, sizeof(zbus_message_variant_t));
+            memset(&msg_data, 0, sizeof(union zbus_msg_var));
         }
     }
 }

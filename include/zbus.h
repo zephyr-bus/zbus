@@ -154,9 +154,9 @@ struct zbus_channels {
                          init_val)                                                \
     type name;
 
-typedef union {
+union zbus_msg_var {
 #include "zbus_channels.h"
-} zbus_message_variant_t;
+};
 
 
 /* To avoid error when not using LOG */

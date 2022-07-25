@@ -20,7 +20,7 @@ struct ct_uart_device bridge_uart = {DEVICE_DT_GET(DT_ALIAS(bridge_serial)),
 void bridge_thread(void)
 {
     zbus_chan_idx_t idx        = 0;
-    zbus_message_variant_t msg_data = {0};
+    union zbus_msg_var msg_data = {0};
     uint8_t tokens[]                = "$\r\n";
 
     if (ct_uart_open(&bridge_uart)) {

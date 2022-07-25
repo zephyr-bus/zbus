@@ -28,7 +28,7 @@ struct pkt {
 void filter_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(filter, filter_cb);
 
-zbus_message_variant_t msg_received = {0};
+union zbus_msg_var msg_received = {0};
 void filter_cb(zbus_chan_idx_t idx)
 {
     struct external_data_msg *chan_message = NULL;

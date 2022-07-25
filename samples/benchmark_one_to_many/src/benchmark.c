@@ -115,7 +115,7 @@ ZBUS_LISTENER_DECLARE(s16, s_cb);
 #endif
 #endif
 
-zbus_message_variant_t msg_received = {0};
+union zbus_msg_var msg_received = {0};
 void s_cb(zbus_chan_idx_t idx)
 {
     if (!ZBUS_CHAN_READ_BY_INDEX(idx, msg_received, K_NO_WAIT)) {
