@@ -139,7 +139,7 @@ struct zbus_channels *zbus_channels_instance()
 
 struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx)
 {
-    ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
+    ZBUS_ASSERT(idx < ZBUS_CHAN_COUNT);
     return zbus_channels_lookup_table[idx];
 }
 
@@ -411,7 +411,7 @@ _Noreturn static void zbus_monitor_thread(void)
     zbus_chan_idx_t idx = 0;
     while (1) {
         k_msgq_get(&_zbus_channels_changed_msgq, &idx, K_FOREVER);
-        ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
+        ZBUS_ASSERT(idx < ZBUS_CHAN_COUNT);
         struct zbus_channel *chan = zbus_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */

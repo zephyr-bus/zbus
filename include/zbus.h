@@ -50,7 +50,7 @@ typedef enum __attribute__((packed)) {
 
 #include "zbus_channels.h"
 
-    ZBUS_CHANNEL_COUNT
+    ZBUS_CHAN_COUNT
 } zbus_chan_idx_t;
 
 /**
@@ -241,13 +241,13 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx);
  * @param[in] name The subscriber's name.
  * @param[in] queue_size The notification queue's size.
  */
-#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                         \
+#define ZBUS_SUBSCRIBER_DECLARE(name, queue_size)                    \
     K_MSGQ_DEFINE(name##_queue, sizeof(zbus_chan_idx_t), queue_size, \
                   sizeof(zbus_chan_idx_t));                          \
-    struct zbus_observer name = {                                         \
-        .enabled  = true,                                                 \
-        .queue    = &name##_queue,                                        \
-        .callback = NULL,                                                 \
+    struct zbus_observer name = {                                    \
+        .enabled  = true,                                            \
+        .queue    = &name##_queue,                                   \
+        .callback = NULL,                                            \
     }
 
 /**

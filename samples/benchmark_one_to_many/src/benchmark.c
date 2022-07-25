@@ -52,7 +52,7 @@ ZBUS_SUBSCRIBER_DECLARE(s16, 4);
     void name##_task()                                                                   \
     {                                                                                    \
         struct bm_msg msg_received = {0};                                                \
-        zbus_chan_idx_t idx   = ZBUS_CHANNEL_COUNT;                                 \
+        zbus_chan_idx_t idx   = ZBUS_CHAN_COUNT;                                 \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                               \
             if (!zbus_chan_read(zbus_chan_get_by_index(idx), (uint8_t *) &msg_received,  \
                                 zbus_chan_get_by_index(idx)->message_size, K_NO_WAIT)) { \

@@ -56,7 +56,7 @@ ZBUS_SUBSCRIBER_DECLARE(producer, 4);
 void producer_thread(void)
 {
     struct pkt *msg          = NULL;
-    zbus_chan_idx_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
 
     int i = 0;
     do {
@@ -78,7 +78,7 @@ ZBUS_SUBSCRIBER_DECLARE(consumer, 4);
 void consumer_thread(void)
 {
     struct external_data_msg *chan_message = NULL;
-    zbus_chan_idx_t idx               = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx               = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(consumer.queue, &idx, K_FOREVER)) {
         ZBUS_ASSERT(idx == data_ready_index);
         zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), (void *) &chan_message, K_NO_WAIT);

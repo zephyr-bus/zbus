@@ -55,14 +55,14 @@ void mock_proxy_rx_thread(void)
     net_buf_simple_init(rx_buf, 0);
 
     uint8_t byte                   = 0;
-    zbus_chan_idx_t idx       = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx       = ZBUS_CHAN_COUNT;
     zbus_message_variant_t variant = {0};
     while (1) {
         if (!k_msgq_get(&_mock_proxy_input_msgq, &byte, K_FOREVER)) {
             if (byte == '*') {
                 if ('$' == net_buf_simple_pull_u8(rx_buf)) {
                     idx = net_buf_simple_pull_u8(rx_buf);
-                    if (idx < ZBUS_CHANNEL_COUNT) {
+                    if (idx < ZBUS_CHAN_COUNT) {
                         struct zbus_channel *meta = zbus_chan_get_by_index(idx);
                         memcpy(&variant,
                                net_buf_simple_pull_mem(rx_buf, meta->message_size),

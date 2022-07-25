@@ -105,7 +105,7 @@ void main(void)
 ZBUS_SUBSCRIBER_DECLARE(thread_handler1, 4);
 void thread_handler1_task()
 {
-    zbus_chan_idx_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(thread_handler1.queue, &idx, K_FOREVER)) {
         ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
         printk("Sensor msg processed by THREAD handler: temp = %u, press = %u, "
@@ -120,7 +120,7 @@ K_THREAD_DEFINE(thread_handler1_id, 1024, thread_handler1_task, NULL, NULL, NULL
 ZBUS_SUBSCRIBER_DECLARE(thread_handler2, 4);
 void thread_handler2_task()
 {
-    zbus_chan_idx_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(thread_handler2.queue, &idx, K_FOREVER)) {
         ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
         printk("Sensor msg processed by THREAD handler: temp = %u, press = %u, "
@@ -135,7 +135,7 @@ K_THREAD_DEFINE(thread_handler2_id, 1024, thread_handler2_task, NULL, NULL, NULL
 ZBUS_SUBSCRIBER_DECLARE(thread_handler3, 4);
 void thread_handler3_task()
 {
-    zbus_chan_idx_t idx = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(thread_handler3.queue, &idx, K_FOREVER)) {
         ZBUS_CHAN_READ_BY_INDEX(idx, msg, K_NO_WAIT);
         printk("Sensor msg processed by THREAD handler: temp = %u, press = %u, "
