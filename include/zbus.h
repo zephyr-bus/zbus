@@ -19,8 +19,6 @@ extern "C" {
 
 #include "zbus_messages.h"
 
-#define ZBUS_CHAN_LIST(chan, ...) chan __VA_ARGS__
-
 #ifndef ZBUS_CHAN_DEFINE
 /**
  *
@@ -88,17 +86,17 @@ struct zbus_channel {
         /** Pending callback flag. It is necessary to optimize two consecutive
          * publications. The ISR can cause this. Only the most recent of the enqueued
          * notification is actually performed. */
-        uint8_t pend_callback: 1;
+        uint8_t pend_callback : 1;
         /** On change flag. Indicates zbus will only consider sending a notification if
          * the last publication in this channel actually modified the message value,
          * otherwise zbus will ignore it.
          * */
-        uint8_t on_changed: 1;
+        uint8_t on_changed : 1;
         /** Read only flag. Indicates the channel cannot receive publications. */
-        uint8_t read_only: 1;
+        uint8_t read_only : 1;
         /** Changes from extent. Indicates the channel was modified internally
          * by the extension feature and not by some user code. */
-        uint8_t from_ext: 1;
+        uint8_t from_ext : 1;
     } flag;
     /** Lookup table index. Represents the index of the channel at the lookup table. */
     uint16_t lookup_table_index;
