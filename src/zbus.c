@@ -196,8 +196,8 @@ static inline int zbus_chan_pub_args_check(struct zbus_channel *chan, uint8_t *m
         return -EINVAL;
     }
     if (chan->validator != NULL) {
-        LOG_ERR("Invalid arg, the message is not valid .");
         if (chan->validator(msg, chan->message_size) == false) {
+            LOG_ERR("Invalid arg, the message is not valid.");
             return -EPERM;
         }
     }
