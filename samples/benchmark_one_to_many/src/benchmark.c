@@ -52,7 +52,7 @@ ZBUS_SUBSCRIBER_DECLARE(s16, 4);
     void name##_task()                                                                   \
     {                                                                                    \
         struct bm_msg msg_received = {0};                                                \
-        zbus_channel_index_t idx   = ZBUS_CHANNEL_COUNT;                                 \
+        zbus_chan_idx_t idx   = ZBUS_CHANNEL_COUNT;                                 \
         while (!k_msgq_get(name.queue, &idx, K_FOREVER)) {                               \
             if (!zbus_chan_read(zbus_chan_get_by_index(idx), (uint8_t *) &msg_received,  \
                                 zbus_chan_get_by_index(idx)->message_size, K_NO_WAIT)) { \
@@ -89,7 +89,7 @@ S_TASK(s16)
 #endif
 
 #else  // SYNC
-void s_cb(zbus_channel_index_t idx);
+void s_cb(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(s1, s_cb);
 #if (BM_ONE_TO >= 2LLU)
 ZBUS_LISTENER_DECLARE(s2, s_cb);
@@ -116,7 +116,7 @@ ZBUS_LISTENER_DECLARE(s16, s_cb);
 #endif
 
 zbus_message_variant_t msg_received = {0};
-void s_cb(zbus_channel_index_t idx)
+void s_cb(zbus_chan_idx_t idx)
 {
     if (!ZBUS_CHAN_READ_BY_INDEX(idx, msg_received, K_NO_WAIT)) {
         count += BM_MESSAGE_SIZE;

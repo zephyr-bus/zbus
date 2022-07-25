@@ -12,10 +12,10 @@
 #include <logging/log.h>
 LOG_MODULE_DECLARE(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-void listener_callback_example(zbus_channel_index_t idx);
+void listener_callback_example(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(my_listener, listener_callback_example);
 
-void listener_callback_example(zbus_channel_index_t idx)
+void listener_callback_example(zbus_chan_idx_t idx)
 {
     struct acc_msg acc = {0};
     ZBUS_CHAN_READ_BY_INDEX(idx, acc, K_NO_WAIT);
@@ -25,7 +25,7 @@ void listener_callback_example(zbus_channel_index_t idx)
 ZBUS_SUBSCRIBER_DECLARE(my_subscriber, 4);
 void subscriber_task()
 {
-    zbus_channel_index_t idx;
+    zbus_chan_idx_t idx;
     while (!k_msgq_get(my_subscriber.queue, &idx, K_FOREVER)) {
         struct acc_msg acc = {0};
         if (acc_data_index == idx) {

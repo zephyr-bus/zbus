@@ -13,10 +13,10 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
-K_MSGQ_DEFINE(_zbus_channels_changed_msgq, sizeof(zbus_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(_zbus_channels_changed_msgq, sizeof(zbus_chan_idx_t), 32, 2);
 
 #if defined(CONFIG_ZBUS_EXT)
-K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
+K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_chan_idx_t), 32, 2);
 #endif
 
 #ifdef ZBUS_CHAN_DEFINE
@@ -137,7 +137,7 @@ struct zbus_channels *zbus_channels_instance()
     return &_zbus_channels;
 }
 
-struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx)
+struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx)
 {
     ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);
     return zbus_channels_lookup_table[idx];
@@ -403,12 +403,12 @@ int zbus_chan_finish(struct zbus_channel *chan)
 }
 
 #if defined(CONFIG_ZBUS_SERIAL_IPC)
-K_MSGQ_DEFINE(_zbus_bridge_queue, sizeof(zbus_channel_index_t), 16, 2);
+K_MSGQ_DEFINE(_zbus_bridge_queue, sizeof(zbus_chan_idx_t), 16, 2);
 #endif
 
 _Noreturn static void zbus_monitor_thread(void)
 {
-    zbus_channel_index_t idx = 0;
+    zbus_chan_idx_t idx = 0;
     while (1) {
         k_msgq_get(&_zbus_channels_changed_msgq, &idx, K_FOREVER);
         ZBUS_ASSERT(idx < ZBUS_CHANNEL_COUNT);

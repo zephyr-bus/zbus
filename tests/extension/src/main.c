@@ -22,7 +22,7 @@ extern struct k_msgq _zbus_ext_msgq;
  */
 static void test_01(void)
 {
-    zbus_channel_index_t idx        = 0;
+    zbus_chan_idx_t idx        = 0;
     zbus_message_variant_t msg_data = {0};
     uint8_t count                   = 0;
     while (1) {

@@ -19,12 +19,12 @@ struct ct_uart_device mock_proxy_uart = {DEVICE_DT_GET(DT_NODELABEL(uart1)),
                                          &_mock_proxy_input_msgq,
                                          &_mock_proxy_output_msgq};
 
-void proxy_callback(zbus_channel_index_t idx);
+void proxy_callback(zbus_chan_idx_t idx);
 ZBUS_LISTENER_DECLARE(proxy, proxy_callback);
 
 
 const uint8_t tokens[] = "$*";
-void proxy_callback(zbus_channel_index_t idx)
+void proxy_callback(zbus_chan_idx_t idx)
 {
     LOG_DBG("[Mock Proxy callback] started");
     zbus_message_variant_t msg_data = {0};
@@ -55,7 +55,7 @@ void mock_proxy_rx_thread(void)
     net_buf_simple_init(rx_buf, 0);
 
     uint8_t byte                   = 0;
-    zbus_channel_index_t idx       = ZBUS_CHANNEL_COUNT;
+    zbus_chan_idx_t idx       = ZBUS_CHANNEL_COUNT;
     zbus_message_variant_t variant = {0};
     while (1) {
         if (!k_msgq_get(&_mock_proxy_input_msgq, &byte, K_FOREVER)) {
