@@ -16,10 +16,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include "zbus_messages.h"
 
-
-#ifndef ZBUS_CHANNEL
+#ifndef ZBUS_CHAN_DEFINE
 /**
  *
  * @brief Zbus channel definition.
@@ -36,16 +36,20 @@ extern "C" {
  * @see struct zbus_observer
  * @param init_val The message initialization.
  */
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val)
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)
 #endif
 
 typedef enum __attribute__((packed)) {
-#ifdef ZBUS_CHANNEL
-#undef ZBUS_CHANNEL
+#ifdef ZBUS_CHAN_DEFINE
+#undef ZBUS_CHAN_DEFINE
 #endif
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     name##_index,
+
 #include "zbus_channels.h"
+
     ZBUS_CHANNEL_COUNT
 } zbus_channel_index_t;
 
@@ -67,6 +71,7 @@ typedef enum __attribute__((packed)) {
 struct zbus_observer {
     bool enabled;
     struct k_msgq *queue;
+
     void (*callback)(zbus_channel_index_t idx);
 };
 
@@ -101,10 +106,12 @@ struct zbus_channel {
      * shared memory region.
      */
     uint8_t *message;
+
     /** Message validator. Stores the reference to the function used by the publish action
      * to check the message before actually performing the it. No invalid messages can be
      * published. Every message is considered valid when this field is empty. */
     bool (*validator)(void *msg, size_t msg_size);
+
     /** Access control semaphore. Points to the semaphore used to avoid race conditions
      * for accessing the channel */
     struct k_sem *semaphore;
@@ -113,8 +120,9 @@ struct zbus_channel {
     struct zbus_observer **observers;
 };
 
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     type name;
 
 
@@ -127,8 +135,9 @@ struct zbus_messages {
 #include "zbus_channels.h"
 };
 
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     struct zbus_channel _zbus_chan_##name;
 
 /**
@@ -140,8 +149,9 @@ struct zbus_channels {
 #include "zbus_channels.h"
 };
 
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     type name;
 
 typedef union {

@@ -19,15 +19,15 @@ K_MSGQ_DEFINE(_zbus_channels_changed_msgq, sizeof(zbus_channel_index_t), 32, 2);
 K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #endif
 
-#ifdef ZBUS_CHANNEL
-#undef ZBUS_CHANNEL
+#ifdef ZBUS_CHAN_DEFINE
+#undef ZBUS_CHAN_DEFINE
 #endif
 
 /**
- * @def ZBUS_CHANNEL
+ * @def ZBUS_CHAN_DEFINE
  * Description
  */
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
     K_SEM_DEFINE(_zbus_sem_##name, 1, 1);
 
 #include "zbus_channels.h"
@@ -39,8 +39,8 @@ K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 #define ZBUS_OBSERVERS(sub_ref, ...) extern struct zbus_observer sub_ref, ##__VA_ARGS__
 
 #define ZBUS_OBSERVERS_EMPTY
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
     observers;
 
 #include "zbus_channels.h"
@@ -66,8 +66,8 @@ K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_channel_index_t), 32, 2);
 
 static struct zbus_messages _zbus_messages = {
 
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
     .name = init_val,
 
 #include "zbus_channels.h"
@@ -75,8 +75,8 @@ static struct zbus_messages _zbus_messages = {
 
 static struct zbus_channels _zbus_channels = {
 
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val)  \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val)  \
     ._zbus_chan_##name = {                                                               \
         .flag =                                                                          \
             {                                                                            \
@@ -97,8 +97,8 @@ static struct zbus_channels _zbus_channels = {
 };
 
 struct zbus_channel *zbus_channels_lookup_table[] = {
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
     &_zbus_channels._zbus_chan_##name,
 
 #include "zbus_channels.h"
@@ -146,8 +146,8 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_channel_index_t idx)
 void zbus_info_dump(void)
 {
     printk("[\n");
-#undef ZBUS_CHANNEL
-#define ZBUS_CHANNEL(name, on_changed, read_only, type, validator, observers, init_val) \
+#undef ZBUS_CHAN_DEFINE
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
     printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
            "%u},\n",                                                                    \
            #name, (on_changed) ? "true" : "false", (read_only) ? "true" : "false",      \
@@ -196,8 +196,8 @@ static inline int zbus_chan_pub_args_check(struct zbus_channel *chan, uint8_t *m
         return -EINVAL;
     }
     if (chan->validator != NULL) {
-        LOG_ERR("Invalid arg, the message is not valid .");
         if (chan->validator(msg, chan->message_size) == false) {
+            LOG_ERR("Invalid arg, the message is not valid.");
             return -EPERM;
         }
     }
