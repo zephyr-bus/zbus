@@ -86,23 +86,23 @@ static struct zbus_channels _zbus_channels = {
 #define ZBUS_USER_DATA_INIT /* No user data */
 #endif
 
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers,        \
-                         init_val)                                                       \
-    ._zbus_chan_##name = {                                                               \
-        .flag =                                                                          \
-            {                                                                            \
-                false,      /* Not defined yet */                                        \
-                on_changed, /* Only changes in the channel will propagate  */            \
-                read_only,  /* The channel is only for reading. It must have a initial   \
-                               value. */                                                 \
-                false       /* ISC source flag */                                        \
-            },              /* ISC source flag */                                        \
-        ZBUS_USER_DATA_INIT name##_index, /* Lookup table index */                       \
-        sizeof(type),                     /* The channel's size */                       \
-        (uint8_t *) &_zbus_messages.name, /* The actual channel */                       \
-        validator,                        /* The channel's message validator function */ \
-        &_zbus_sem_##name,                /* Channel's semaphore */                      \
-        observers},                       /* List of observers queues */
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers,      \
+                         init_val)                                                     \
+    ._zbus_chan_##name = {                                                             \
+        .flag =                                                                        \
+            {                                                                          \
+                false,      /* Not defined yet */                                      \
+                on_changed, /* Only changes in the channel will propagate  */          \
+                read_only,  /* The channel is only for reading. It must have a initial \
+                               value. */                                               \
+                false       /* ISC source flag */                                      \
+            },              /* ISC source flag */                                      \
+        ZBUS_USER_DATA_INIT name##_chan_idx, /* Lookup table index */                  \
+        sizeof(type),                        /* The channel's size */                  \
+        (uint8_t *) &_zbus_messages.name,    /* The actual channel */                  \
+        validator,         /* The channel's message validator function */              \
+        &_zbus_sem_##name, /* Channel's semaphore */                                   \
+        observers},        /* List of observers queues */
 #include "zbus_channels.h"
 };
 

@@ -9,7 +9,7 @@ ZBUS_CHAN_DEFINE(
            .build = 2) /* Initial value major 0, minor 1, build 1023 */
 )
 ZBUS_CHAN_DEFINE(
-    regular_chan,                    /* Name */
+    regular,                    /* Name */
     false,                /* On changes only */
     false,                 /* Read only */
     struct foo_msg,       /* Message type */

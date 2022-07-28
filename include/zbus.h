@@ -46,7 +46,7 @@ typedef enum __attribute__((packed)) {
 #endif
 #define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
                          init_val)                                                \
-    name##_index,
+    name##_chan_idx,
 
 #include "zbus_channels.h"
 
