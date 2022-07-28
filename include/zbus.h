@@ -98,6 +98,11 @@ struct zbus_channel {
          * by the extension feature and not by some user code. */
         uint8_t from_ext : 1;
     } flag;
+#ifdef CONFIG_ZBUS_CHANNEL_USER_DATA
+    /** User data available to extend zbus features. The channel must be claimed before
+     * using this field. */
+    uint8_t user_data[CONFIG_ZBUS_CHANNEL_USER_DATA_SIZE];
+#endif
     /** Lookup table index. Represents the index of the channel at the lookup table. */
     uint16_t lookup_table_index;
     /** Message size. Represents the channel's message size. */

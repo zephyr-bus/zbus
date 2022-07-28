@@ -76,7 +76,12 @@ static struct zbus_messages _zbus_messages = {
 static struct zbus_channels _zbus_channels = {
 
 #undef ZBUS_CHAN_DEFINE
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val)  \
+
+#ifdef CONFIG_ZBUS_CHANNEL_USER_DATA
+#define ZBUS_USER_DATA_INIT {0}, /* User data */
+#else
+#define ZBUS_USER_DATA_INIT /* No user data */
+#endif
     ._zbus_chan_##name = {                                                               \
         .flag =                                                                          \
             {                                                                            \
@@ -86,13 +91,12 @@ static struct zbus_channels _zbus_channels = {
                                value. */                                                 \
                 false       /* ISC source flag */                                        \
             },              /* ISC source flag */                                        \
-        name##_index,       /* Lookup table index */                                     \
-        sizeof(type),       /* The channel's size */                                     \
+        ZBUS_USER_DATA_INIT name##_index, /* Lookup table index */                       \
+        sizeof(type),                     /* The channel's size */                       \
         (uint8_t *) &_zbus_messages.name, /* The actual channel */                       \
         validator,                        /* The channel's message validator function */ \
         &_zbus_sem_##name,                /* Channel's semaphore */                      \
         observers},                       /* List of observers queues */
-
 #include "zbus_channels.h"
 };
 
