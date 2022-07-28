@@ -27,7 +27,8 @@ K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_chan_idx_t), 32, 2);
  * @def ZBUS_CHAN_DEFINE
  * Description
  */
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     K_SEM_DEFINE(_zbus_sem_##name, 1, 1);
 
 #include "zbus_channels.h"
@@ -40,7 +41,8 @@ K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_chan_idx_t), 32, 2);
 
 #define ZBUS_OBSERVERS_EMPTY
 #undef ZBUS_CHAN_DEFINE
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     observers;
 
 #include "zbus_channels.h"
@@ -67,7 +69,8 @@ K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_chan_idx_t), 32, 2);
 static struct zbus_messages _zbus_messages = {
 
 #undef ZBUS_CHAN_DEFINE
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     .name = init_val,
 
 #include "zbus_channels.h"
@@ -82,6 +85,9 @@ static struct zbus_channels _zbus_channels = {
 #else
 #define ZBUS_USER_DATA_INIT /* No user data */
 #endif
+
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers,        \
+                         init_val)                                                       \
     ._zbus_chan_##name = {                                                               \
         .flag =                                                                          \
             {                                                                            \
@@ -102,7 +108,8 @@ static struct zbus_channels _zbus_channels = {
 
 struct zbus_channel *zbus_channels_lookup_table[] = {
 #undef ZBUS_CHAN_DEFINE
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, \
+                         init_val)                                                \
     &_zbus_channels._zbus_chan_##name,
 
 #include "zbus_channels.h"
@@ -151,7 +158,8 @@ void zbus_info_dump(void)
 {
     printk("[\n");
 #undef ZBUS_CHAN_DEFINE
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers, init_val) \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers,       \
+                         init_val)                                                      \
     printk("{\"name\":\"%s\",\"on_changed\": %s, \"read_only\": %s, \"message_size\": " \
            "%u},\n",                                                                    \
            #name, (on_changed) ? "true" : "false", (read_only) ? "true" : "false",      \
