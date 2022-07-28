@@ -86,7 +86,7 @@ static struct zbus_channels _zbus_channels = {
                                value. */                                                 \
                 false       /* ISC source flag */                                        \
             },              /* ISC source flag */                                        \
-        name##_index,       /* Lookup table index */                                     \
+        name##_chan_idx,       /* Lookup table index */                                     \
         sizeof(type),       /* The channel's size */                                     \
         (uint8_t *) &_zbus_messages.name, /* The actual channel */                       \
         validator,                        /* The channel's message validator function */ \
