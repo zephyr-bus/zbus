@@ -29,6 +29,20 @@ config ZBUS_EVENT_DISPATCHER_QUEUE_TIMEOUT
   int "Timeout in milliseconds the event dispatcher consider when using queues"
   default 50
 
+config ZBUS_CHANNEL_USER_DATA
+  bool "Enable the Zbus user data field in the channel structure."
+  default n
+  help
+    This field is a user data where the developer can manipulate freely after claiming the channel.
+    It can be used to extends zbus features. The uart_bridge and remote mock samples illustrate the usage.
+
+config ZBUS_CHANNEL_USER_DATA_SIZE
+  int "Channel user data size in bytes"
+  default 4
+  help
+    The user data field is an uint8_t array. This configuration enables the developer to choose the field size.
+    All the channel will have the same size of user data. Use that carefully to avoid unnecessary memory usage.
+
 config ZBUS_EXT
   bool "Enable the Zbus extension"
   default n
