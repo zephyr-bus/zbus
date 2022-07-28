@@ -131,7 +131,7 @@ struct zbus_channel {
     type name;
 
 
-/**
+/*
  * @brief Shared memory containing the message data
  *
  * @warning The user must not access this memory region directly.
@@ -467,7 +467,7 @@ int zbus_chan_read(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
  * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-int zbus_chan_claim(struct zbus_channel *meta, void **chan_msg, k_timeout_t timeout);
+int zbus_chan_claim(struct zbus_channel *meta, k_timeout_t timeout);
 
 /**
  *

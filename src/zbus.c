@@ -352,13 +352,12 @@ int zbus_chan_notify(struct zbus_channel *chan, k_timeout_t timeout)
                       timeout);
 }
 
-static inline int zbus_chan_claim_args_check(struct zbus_channel *chan, void **chan_msg,
+static inline int zbus_chan_claim_args_check(struct zbus_channel *chan,
                                              k_timeout_t timeout)
 {
 #ifdef CONFIG_ZBUS_OFFENSIVE_PROG
     ZBUS_ASSERT(chan != NULL);
     ZBUS_ASSERT(chan->flag.read_only == 0);
-    ZBUS_ASSERT(chan_msg != NULL);
     if (k_is_in_isr()) {
         ZBUS_ASSERT(timeout.ticks == K_NO_WAIT.ticks);
     }
@@ -371,10 +370,6 @@ static inline int zbus_chan_claim_args_check(struct zbus_channel *chan, void **c
         LOG_ERR("Invalid arg, the channel is read-only cannot be claimed.");
         return -EPERM;
     }
-    if (chan_msg == NULL) {
-        LOG_ERR("Invalid arg, the chan_msg is NULL.");
-        return -EINVAL;
-    }
     if (k_is_in_isr()) {
         if (timeout.ticks != K_NO_WAIT.ticks) {
             LOG_ERR("Invalid arg, timeout is not K_NO_WAIT in ISR.");
@@ -385,9 +380,9 @@ static inline int zbus_chan_claim_args_check(struct zbus_channel *chan, void **c
     return 0;
 }
 
-int zbus_chan_claim(struct zbus_channel *chan, void **chan_msg, k_timeout_t timeout)
+int zbus_chan_claim(struct zbus_channel *chan, k_timeout_t timeout)
 {
-    int err = zbus_chan_claim_args_check(chan, chan_msg, timeout);
+    int err = zbus_chan_claim_args_check(chan, timeout);
     if (err) {
         return err;
     }
@@ -396,7 +391,6 @@ int zbus_chan_claim(struct zbus_channel *chan, void **chan_msg, k_timeout_t time
     if (err < 0) {
         return err;
     }
-    *chan_msg = (void *) chan->message;
     return 0;
 }
 
