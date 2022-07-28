@@ -33,13 +33,14 @@ void filter_cb(zbus_chan_idx_t idx)
 {
     struct external_data_msg *chan_message = NULL;
     ZBUS_ASSERT(idx == pkt_channel_chan_idx);
-    zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), (void **) &chan_message, K_NO_WAIT);
-    struct pkt *filtered_data = (struct pkt *) chan_message->reference;
-    if (filtered_data->header.filter) {
-        memset(filtered_data->body, 0, filtered_data->header.body_size);
+    if (!zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), K_NO_WAIT)) {
+        chan_message = (struct external_data_msg *) ZBUS_CHAN_GET(pkt_channel)->message;
+        struct pkt *filtered_data = (struct pkt *) chan_message->reference;
+        if (filtered_data->header.filter) {
+            memset(filtered_data->body, 0, filtered_data->header.body_size);
+        }
+        zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel));
     }
-    zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel));
-
     struct ack_msg dr = {1};
     ZBUS_CHAN_PUB(data_ready, dr, K_NO_WAIT);
 }
@@ -55,7 +56,7 @@ void main(void)
 ZBUS_SUBSCRIBER_DECLARE(producer, 4);
 void producer_thread(void)
 {
-    struct pkt *msg          = NULL;
+    struct pkt *msg     = NULL;
     zbus_chan_idx_t idx = ZBUS_CHAN_COUNT;
 
     int i = 0;
@@ -78,25 +79,26 @@ ZBUS_SUBSCRIBER_DECLARE(consumer, 4);
 void consumer_thread(void)
 {
     struct external_data_msg *chan_message = NULL;
-    zbus_chan_idx_t idx               = ZBUS_CHAN_COUNT;
+    zbus_chan_idx_t idx                    = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(consumer.queue, &idx, K_FOREVER)) {
         ZBUS_ASSERT(idx == data_ready_chan_idx);
-        zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), (void *) &chan_message, K_NO_WAIT);
+        if (!zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), K_NO_WAIT)) {
+            chan_message =
+                (struct external_data_msg *) ZBUS_CHAN_GET(pkt_channel)->message;
+            struct pkt *received = (struct pkt *) chan_message->reference;
+            printk("Header: filter=%d,body_size=%02d; Body: ", received->header.filter,
+                   received->header.body_size);
+            for (int i = 0; i < received->header.body_size; ++i) {
+                printk("%02X", received->body[i]);
+            }
+            printk("\n");
 
-        struct pkt *received = (struct pkt *) chan_message->reference;
-        printk("Header: filter=%d,body_size=%02d; Body: ", received->header.filter,
-               received->header.body_size);
-        for (int i = 0; i < received->header.body_size; ++i) {
-            printk("%02X", received->body[i]);
+            /* Cleanup the dynamic memory after using that */
+            k_free(chan_message->reference);
+            chan_message->reference = NULL;
+            chan_message->size      = 0;
+            zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel));
         }
-        printk("\n");
-
-        /* Cleanup the dynamic memory after using that */
-        k_free(chan_message->reference);
-        chan_message->reference = NULL;
-        chan_message->size      = 0;
-        zbus_chan_finish(ZBUS_CHAN_GET(pkt_channel));
-
         struct ack_msg a = {1};
         ZBUS_CHAN_PUB(ack, a, K_MSEC(250));
     }

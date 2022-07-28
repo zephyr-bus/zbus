@@ -28,10 +28,13 @@ struct {
 void s1_cb(zbus_chan_idx_t idx)
 {
     struct external_data_msg *chan_message = NULL;
-    zbus_chan_claim(zbus_chan_get_by_index(idx), (void *) &chan_message, K_NO_WAIT);
-    memcpy(&my_random_data_expected, chan_message->reference,
-           sizeof(my_random_data_expected));
-    zbus_chan_finish(zbus_chan_get_by_index(idx));
+    struct zbus_channel *chan              = zbus_chan_get_by_index(idx);
+    if (!zbus_chan_claim(chan, K_NO_WAIT)) {
+        chan_message = (struct external_data_msg *) chan->message;
+        memcpy(&my_random_data_expected, chan_message->reference,
+               sizeof(my_random_data_expected));
+        zbus_chan_finish(zbus_chan_get_by_index(idx));
+    }
 }
 
 /**
@@ -88,9 +91,9 @@ static void test_malloc(void)
     zassert_equal(my_random_data.a, my_random_data_expected.a, "It must be 10");
     zassert_equal(my_random_data.b, my_random_data_expected.b, "It must be 200000");
     struct external_data_msg *actual_message_data = NULL;
-    zbus_chan_claim(ZBUS_CHAN_GET(dyn_chan), (void **) &actual_message_data, K_NO_WAIT);
-
-
+    err = zbus_chan_claim(ZBUS_CHAN_GET(dyn_chan), K_NO_WAIT);
+    zassert_equal(err, 0, "Could not claim the channel");
+    actual_message_data = (struct external_data_msg *) ZBUS_CHAN_GET(dyn_chan)->message;
     zassert_equal(actual_message_data->reference, dynamic_memory,
                   "The pointer must be equal here");
     k_free(actual_message_data->reference);
