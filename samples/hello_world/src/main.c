@@ -28,7 +28,7 @@ void subscriber_task()
     zbus_chan_idx_t idx;
     while (!k_msgq_get(my_subscriber.queue, &idx, K_FOREVER)) {
         struct acc_msg acc = {0};
-        if (acc_data_index == idx) {
+        if (acc_data_chan_idx == idx) {
             ZBUS_CHAN_READ(acc_data, acc, K_NO_WAIT);
             LOG_DBG("From subscriber -> Acc x=%d, y=%d, z=%d", acc.x, acc.y, acc.z);
         }

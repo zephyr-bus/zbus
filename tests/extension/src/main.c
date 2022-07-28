@@ -30,7 +30,7 @@ static void test_01(void)
             struct zbus_channel *meta = zbus_chan_get_by_index(idx);
             zbus_chan_read(meta, (uint8_t *) &msg_data, meta->message_size, K_MSEC(500));
             switch (idx) {
-            case sensor_data_index: {
+            case sensor_data_chan_idx: {
                 ++count;
                 LOG_DBG("[Extension] receiving sensor data with a=%d, b=%d",
                         msg_data.sensor_data.a, msg_data.sensor_data.b);
@@ -42,14 +42,14 @@ static void test_01(void)
                     return;
                 }
             } break;
-            case start_measurement_index: {
+            case start_measurement_chan_idx: {
                 LOG_DBG("[Extension] receiving start measurement with status %d",
                         msg_data.start_measurement.status);
                 zassert_true(msg_data.start_measurement.status == (count % 2),
                              "it must be %d, and not %d", (count % 2),
                              msg_data.start_measurement.status);
             } break;
-            case finish_index: {
+            case finish_chan_idx: {
                 LOG_DBG("[Extension] receiving finish with status %d",
                         msg_data.finish.status);
                 zassert_true(msg_data.finish.status == true, "it must be %d, and not %d",
@@ -57,7 +57,7 @@ static void test_01(void)
 
                 struct action a = {false};
                 LOG_DBG("[Extension] sending start measurement with status %d", a.status);
-                zbus_chan_pub(zbus_chan_get_by_index(start_measurement_index),
+                zbus_chan_pub(zbus_chan_get_by_index(start_measurement_chan_idx),
                               (uint8_t *) &a, sizeof(a), K_MSEC(500), true);
             } break;
             default: {
