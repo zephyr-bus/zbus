@@ -28,7 +28,7 @@ static void test_channel_user_data(void)
     for (int i = 0; i < CONFIG_ZBUS_CHANNEL_USER_DATA_SIZE; ++i) {
         zassert_equal(version_channel->user_data[i], 1, NULL);
     }
-    struct zbus_channel *regular_channel = ZBUS_CHAN_GET(regular_chan);
+    struct zbus_channel *regular_channel = ZBUS_CHAN_GET(regular);
     zassert_equal(regular_channel->user_data[0], 0, NULL);
     zassert_equal(ARRAY_SIZE(regular_channel->user_data),
                   CONFIG_ZBUS_CHANNEL_USER_DATA_SIZE, NULL);
@@ -41,7 +41,7 @@ static void test_channel_user_data(void)
 int count = 0;
 void urgent_callback(zbus_chan_idx_t idx)
 {
-    if (idx == regular_chan_index) {
+    if (idx == regular_chan_idx) {
         ++count;
     }
 }
@@ -53,7 +53,7 @@ void foo_subscriber_thread(void)
     zbus_chan_idx_t idx = 0;
     while (1) {
         if (!k_msgq_get(foo_subscriber.queue, &idx, K_FOREVER)) {
-            if (idx == regular_chan_index) {
+            if (idx == regular_chan_idx) {
                 ++count;
             }
         }
@@ -65,9 +65,9 @@ static void test_user_data_regression(void)
 {
     /* To ensure the pub/sub behavior is kept */
     struct foo_msg sent = {.a = 10, .b = 1000};
-    ZBUS_CHAN_PUB(regular_chan, sent, K_NO_WAIT);
+    ZBUS_CHAN_PUB(regular, sent, K_NO_WAIT);
     struct foo_msg received = {0};
-    ZBUS_CHAN_READ(regular_chan, received, K_NO_WAIT);
+    ZBUS_CHAN_READ(regular, received, K_NO_WAIT);
     zassert_equal(sent.a, received.a, NULL);
     zassert_equal(sent.b, received.b, NULL);
 
