@@ -14,7 +14,7 @@ ZBUS_CHAN_DEFINE(
     false,                /* Read only */
     struct sensor_data,   /* Message type */
     NULL,                 /* Validator */
-    ZBUS_OBSERVERS_EMPTY, /* observers */
+    ZBUS_OBSERVERS(bridge), /* observers */
     ZBUS_MSG_INIT(0)      /* Initial value {0} */
 )
 ZBUS_CHAN_DEFINE(
@@ -23,7 +23,7 @@ ZBUS_CHAN_DEFINE(
     false,                      /* Read only */
     struct action,              /* Message type */
     NULL,                       /* Validator */
-    ZBUS_OBSERVERS(peripheral), /* observers */
+    ZBUS_OBSERVERS(bridge, peripheral), /* observers */
     ZBUS_MSG_INIT(false)        /* Initial value */
 )
 ZBUS_CHAN_DEFINE(
@@ -32,6 +32,6 @@ ZBUS_CHAN_DEFINE(
     false,                /* Read only */
     struct action,        /* Message type */
     NULL,                 /* Validator */
-    ZBUS_OBSERVERS_EMPTY, /* observers */
+    ZBUS_OBSERVERS(bridge), /* observers */
     ZBUS_MSG_INIT(false)  /* Initial value */
 )

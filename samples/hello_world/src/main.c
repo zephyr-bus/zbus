@@ -64,8 +64,7 @@ void main(void)
 
     /* The raw way to publishing a channel's message */
     struct acc_msg acc1 = {.x = 1, .y = 1, .z = 1};
-    zbus_chan_pub(ZBUS_CHAN_GET(acc_data), (uint8_t*) &acc1, sizeof(acc1), K_SECONDS(1),
-                  false);
+    zbus_chan_pub(ZBUS_CHAN_GET(acc_data), (uint8_t*) &acc1, sizeof(acc1), K_SECONDS(1));
 
     /* The macro way to publishing a channel's message */
     struct acc_msg acc2 = {.x = 2, .y = 2, .z = 2};

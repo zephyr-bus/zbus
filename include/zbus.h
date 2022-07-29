@@ -94,9 +94,8 @@ struct zbus_channel {
         uint8_t on_changed : 1;
         /** Read only flag. Indicates the channel cannot receive publications. */
         uint8_t read_only : 1;
-        /** Changes from extent. Indicates the channel was modified internally
-         * by the extension feature and not by some user code. */
-        uint8_t from_ext : 1;
+        /** Reserved for future use. */
+        uint8_t reserved : 5;
     } flag;
 #ifdef CONFIG_ZBUS_CHANNEL_USER_DATA
     /** User data available to extend zbus features. The channel must be claimed before
@@ -314,17 +313,17 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx);
  * @retval -ETIMEDOUT Waiting period timed out.
  * @retval -EINVAL Some parameter is invalid.
  */
-#define ZBUS_CHAN_PUB(chan, value, timeout)                                              \
-    ({                                                                                   \
-        {                                                                                \
-            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                                \
-            __typeof__(value) value##__aux__;                                            \
-            (void) (&chan##__aux__ == &value##__aux__);                                  \
-        }                                                                                \
-        ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""),   \
-                     __FILE__, __LINE__);                                                \
-        zbus_chan_pub(ZBUS_CHAN_GET(chan), (uint8_t *) &(value), sizeof(value), timeout, \
-                      false);                                                            \
+#define ZBUS_CHAN_PUB(chan, value, timeout)                                            \
+    ({                                                                                 \
+        {                                                                              \
+            __typeof__(ZBUS_MSG_GET(chan)) chan##__aux__;                              \
+            __typeof__(value) value##__aux__;                                          \
+            (void) (&chan##__aux__ == &value##__aux__);                                \
+        }                                                                              \
+        ZBUS_LOG_DBG("[ZBUS] %spub " #chan " at %s:%d", (k_is_in_isr() ? "ISR " : ""), \
+                     __FILE__, __LINE__);                                              \
+        zbus_chan_pub(ZBUS_CHAN_GET(chan), (uint8_t *) &(value), sizeof(value),        \
+                      timeout);                                                        \
     })
 
 /**
@@ -348,7 +347,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx);
         ZBUS_LOG_DBG("[ZBUS] %spub %d at %s:%d", (k_is_in_isr() ? "ISR " : ""), idx, \
                      __FILE__, __LINE__);                                            \
         zbus_chan_pub(zbus_chan_get_by_index(idx), (uint8_t *) &(value),             \
-                      zbus_chan_get_by_index(idx)->message_size, timeout, false);    \
+                      zbus_chan_get_by_index(idx)->message_size, timeout);           \
     })
 
 /**
@@ -369,7 +368,7 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx);
  * @retval -EINVAL Some parameter is invalid.
  */
 int zbus_chan_pub(struct zbus_channel *meta, uint8_t *msg, size_t msg_size,
-                  k_timeout_t timeout, bool from_ext);
+                  k_timeout_t timeout);
 
 
 /**

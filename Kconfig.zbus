@@ -43,22 +43,6 @@ config ZBUS_CHANNEL_USER_DATA_SIZE
     The user data field is an uint8_t array. This configuration enables the developer to choose the field size.
     All the channel will have the same size of user data. Use that carefully to avoid unnecessary memory usage.
 
-config ZBUS_EXT
-  bool "Enable the Zbus extension"
-  default n
-
-if ZBUS_EXT
-
-    config ZBUS_EXT_THREAD_STACK_SIZE
-      int "Size of the monitor thread stack"
-      default 2048
-
-    config ZBUS_EXT_THREAD_PRIORITY
-      int "Size of the monitor thread stack"
-      default 1
-
-endif # ZBUS_EXT
-
 module = ZBUS
 module-str = zbus
 source "subsys/logging/Kconfig.template.log_config"

@@ -34,7 +34,7 @@ def pub_start_measurement(ser, action: bool):
 
 ser = serial.Serial('/tmp/uart')
 pub_start_measurement(ser, True)
-while(1):
+while (1):
     d = ser.read()
     if d == b'$':
         channel_name, msg_size, msg = fetch_sentence(ser)
