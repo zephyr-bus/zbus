@@ -13,11 +13,11 @@ config ZBUS_OFFENSIVE_PROG
   bool "Enable asserts for zbus implementation"
   default n
 
-config ZBUS_MONITOR_THREAD_STACK_SIZE
+config ZBUS_EVENT_DISPATCHER_THREAD_STACK_SIZE
   int "Size of the monitor thread stack"
   default 2048
 
-config ZBUS_MONITOR_THREAD_PRIORITY
+config ZBUS_EVENT_DISPATCHER_THREAD_PRIORITY
   int "Size of the monitor thread stack"
   default 0
 

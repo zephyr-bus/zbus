@@ -406,7 +406,7 @@ int zbus_chan_finish(struct zbus_channel *chan)
 K_MSGQ_DEFINE(_zbus_bridge_queue, sizeof(zbus_chan_idx_t), 16, 2);
 #endif
 
-_Noreturn static void zbus_monitor_thread(void)
+_Noreturn static void zbus_event_dispatcher_thread(void)
 {
     zbus_chan_idx_t idx = 0;
     while (1) {
@@ -464,7 +464,6 @@ _Noreturn static void zbus_monitor_thread(void)
         }
     }
 }
-
-K_THREAD_DEFINE(zbus_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                zbus_monitor_thread, NULL, NULL, NULL,
-                CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
+K_THREAD_DEFINE(zbus_event_dispatcher_thread_id, CONFIG_ZBUS_EVENT_DISPATCHER_THREAD_STACK_SIZE,
+                zbus_event_dispatcher_thread, NULL, NULL, NULL,
+                CONFIG_ZBUS_EVENT_DISPATCHER_THREAD_PRIORITY, 0, 0);
