@@ -15,10 +15,6 @@ LOG_MODULE_REGISTER(zbus, CONFIG_ZBUS_LOG_LEVEL);
 
 K_MSGQ_DEFINE(_zbus_channels_changed_msgq, sizeof(zbus_chan_idx_t), 32, 2);
 
-#if defined(CONFIG_ZBUS_EXT)
-K_MSGQ_DEFINE(_zbus_ext_msgq, sizeof(zbus_chan_idx_t), 32, 2);
-#endif
-
 #ifdef ZBUS_CHAN_DEFINE
 #undef ZBUS_CHAN_DEFINE
 #endif
@@ -436,12 +432,6 @@ _Noreturn static void zbus_monitor_thread(void)
         }                                                                  /* A'*/
 #endif
         if (chan->flag.pend_callback) { /* A'*/
-#if defined(CONFIG_ZBUS_EXT)
-            if (chan->flag.from_ext == false) {                /* A'*/
-                k_msgq_put(&_zbus_ext_msgq, &idx, K_MSEC(50)); /* A'*/
-            }                                                  /* A'*/
-#endif
-
             k_sem_give(chan->semaphore); /* Give control of chan, from lock A
                                                         lifetime */
             for (struct zbus_observer **obs = chan->observers; *obs != NULL; ++obs) {
