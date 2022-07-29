@@ -32,7 +32,7 @@ union zbus_msg_var msg_received = {0};
 void filter_cb(zbus_chan_idx_t idx)
 {
     struct external_data_msg *chan_message = NULL;
-    ZBUS_ASSERT(idx == pkt_channel_chan_idx);
+    __ASSERT_NO_MSG(idx == pkt_channel_chan_idx);
     if (!zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), K_NO_WAIT)) {
         chan_message = (struct external_data_msg *) ZBUS_CHAN_GET(pkt_channel)->message;
         struct pkt *filtered_data = (struct pkt *) chan_message->reference;
@@ -62,7 +62,7 @@ void producer_thread(void)
     int i = 0;
     do {
         msg = k_malloc(i + 1);
-        ZBUS_ASSERT(msg != NULL);
+        __ASSERT_NO_MSG(msg != NULL);
         memset(&msg->body, i, i);
         msg->header.body_size                = i;
         msg->header.filter                   = i % 2;
@@ -81,7 +81,7 @@ void consumer_thread(void)
     struct external_data_msg *chan_message = NULL;
     zbus_chan_idx_t idx                    = ZBUS_CHAN_COUNT;
     while (!k_msgq_get(consumer.queue, &idx, K_FOREVER)) {
-        ZBUS_ASSERT(idx == data_ready_chan_idx);
+        __ASSERT_NO_MSG(idx == data_ready_chan_idx);
         if (!zbus_chan_claim(ZBUS_CHAN_GET(pkt_channel), K_NO_WAIT)) {
             chan_message =
                 (struct external_data_msg *) ZBUS_CHAN_GET(pkt_channel)->message;

@@ -60,7 +60,7 @@ ZBUS_SUBSCRIBER_DECLARE(s16, 4);
             zbus_chan_claim(ZBUS_CHAN_GET(bm_channel), K_NO_WAIT);                      \
             actual_message_data =                                                       \
                 (struct external_data_msg *) ZBUS_CHAN_GET(bm_channel)->message;        \
-            ZBUS_ASSERT(actual_message_data->reference != NULL);                        \
+            __ASSERT_NO_MSG(actual_message_data->reference != NULL);                        \
             memcpy(&msg_received, actual_message_data->reference,                       \
                    sizeof(struct bm_msg));                                              \
             zbus_chan_finish(ZBUS_CHAN_GET(bm_channel));                                \
@@ -157,8 +157,8 @@ void producer_thread(void)
     actual_message_data = (struct external_data_msg *) ZBUS_CHAN_GET(bm_channel)->message;
     actual_message_data->reference = k_malloc(sizeof(struct bm_msg));
     actual_message_data->size      = sizeof(struct bm_msg);
-    ZBUS_ASSERT(actual_message_data->reference != NULL);
-    ZBUS_ASSERT(actual_message_data->size > 0);
+    __ASSERT_NO_MSG(actual_message_data->reference != NULL);
+    __ASSERT_NO_MSG(actual_message_data->size > 0);
     zbus_chan_finish(ZBUS_CHAN_GET(bm_channel));
 
     uint32_t start = k_uptime_get_32();
