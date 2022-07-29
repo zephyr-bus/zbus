@@ -133,17 +133,17 @@ int zbus_observer_set_enable(struct zbus_observer *sub, bool enabled)
     return 0;
 }
 
-struct zbus_messages *zbus_messages_instance()
+inline struct zbus_messages *zbus_messages_instance()
 {
     return &_zbus_messages;
 }
 
-struct zbus_channels *zbus_channels_instance()
+inline struct zbus_channels *zbus_channels_instance()
 {
     return &_zbus_channels;
 }
 
-struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx)
+inline struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx)
 {
     __ASSERT_NO_MSG(idx < ZBUS_CHAN_COUNT);
     return zbus_channels_lookup_table[idx];
