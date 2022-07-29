@@ -9,10 +9,6 @@ config ZBUS_LOG
   depends on LOG
   default n
 
-config ZBUS_OFFENSIVE_PROG
-  bool "Enable asserts for zbus implementation"
-  default n
-
 config ZBUS_EVENT_DISPATCHER_THREAD_STACK_SIZE
   int "Size of the monitor thread stack"
   default 2048
