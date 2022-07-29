@@ -112,7 +112,7 @@ struct zbus_channel *zbus_channels_lookup_table[] = {
 
 static inline int zbus_observer_set_enable_args_check(struct zbus_observer *obs)
 {
-#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+#if defined(CONFIG_ASSERT) && (CONFIG_ASSERT == 1)
     __ASSERT_NO_MSG(obs != NULL);
 #else
     if (obs == NULL) {
@@ -168,7 +168,7 @@ void zbus_info_dump(void)
 static inline int zbus_chan_pub_args_check(struct zbus_channel *chan, uint8_t *msg,
                                            size_t msg_size, k_timeout_t timeout)
 {
-#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+#if defined(CONFIG_ASSERT) && (CONFIG_ASSERT == 1)
     __ASSERT_NO_MSG(chan != NULL);
     __ASSERT_NO_MSG(chan->flag.read_only == 0);
     __ASSERT_NO_MSG(chan->message != NULL);
@@ -247,7 +247,7 @@ int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
 int zbus_chan_read_args_check(struct zbus_channel *chan, const uint8_t *msg,
                               size_t msg_size, k_timeout_t timeout)
 {
-#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+#if defined(CONFIG_ASSERT) && (CONFIG_ASSERT == 1)
     __ASSERT_NO_MSG(chan != NULL);
     __ASSERT_NO_MSG(chan->message != NULL);
     __ASSERT_NO_MSG(msg != NULL);
@@ -303,7 +303,7 @@ int zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
 static inline int zbus_chan_notify_args_check(struct zbus_channel *chan,
                                               k_timeout_t timeout)
 {
-#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+#if defined(CONFIG_ASSERT) && (CONFIG_ASSERT == 1)
     __ASSERT_NO_MSG(chan != NULL);
     __ASSERT_NO_MSG(chan->message != NULL);
     if (k_is_in_isr()) {
@@ -348,7 +348,7 @@ int zbus_chan_notify(struct zbus_channel *chan, k_timeout_t timeout)
 static inline int zbus_chan_claim_args_check(struct zbus_channel *chan,
                                              k_timeout_t timeout)
 {
-#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+#if defined(CONFIG_ASSERT) && (CONFIG_ASSERT == 1)
     __ASSERT_NO_MSG(chan != NULL);
     __ASSERT_NO_MSG(chan->flag.read_only == 0);
     if (k_is_in_isr()) {
@@ -389,7 +389,7 @@ int zbus_chan_claim(struct zbus_channel *chan, k_timeout_t timeout)
 
 int zbus_chan_finish(struct zbus_channel *chan)
 {
-#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+#if defined(CONFIG_ASSERT) && (CONFIG_ASSERT == 1)
     __ASSERT_NO_MSG(chan != NULL);
 #else
     if (chan == NULL) {
