@@ -35,15 +35,15 @@ static void test_hard_channel(void)
     zassert_equal(valid.pointer, current.pointer, "Pointer must be equal");
     struct hard_msg invalid = {.range = 10000, .binary = 1, .pointer = &valid.range};
     int err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid,
-                            sizeof invalid, K_NO_WAIT, false);
+                            sizeof invalid, K_NO_WAIT);
     zassert_true(err == -1, "Err must be -1, the channel message is invalid");
-    invalid = (struct hard_msg) {.range=1, .binary=3, .pointer=&invalid.range};
-    err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid,
-                            sizeof invalid, K_NO_WAIT, false);
+    invalid = (struct hard_msg){.range = 1, .binary = 3, .pointer = &invalid.range};
+    err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid, sizeof invalid,
+                        K_NO_WAIT);
     zassert_true(err == -1, "Err must be -1, the channel message is invalid");
-    invalid = (struct hard_msg) {.range=1, .binary=0, .pointer=NULL};
-    err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid,
-                        sizeof invalid, K_NO_WAIT, false);
+    invalid = (struct hard_msg){.range = 1, .binary = 0, .pointer = NULL};
+    err = zbus_chan_pub(ZBUS_CHAN_GET(hard_channel), (void *) &invalid, sizeof invalid,
+                        K_NO_WAIT);
     zassert_true(err == -1, "Err must be -1, the channel message is invalid");
 }
 
