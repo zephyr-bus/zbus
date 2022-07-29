@@ -11,7 +11,7 @@ clean:
 
 build:
 	@echo "\n *** Build project:"
-	west build -b $(BOARD) $(ARGS)
+	west build -b $(BOARD) $(ARGS) -DZEPHYR_EXTRA_MODULES=`pwd`/../../../zbus
 	cp ./build/compile_commands.json .
 
 build_production:
