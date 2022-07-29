@@ -82,22 +82,21 @@ static struct zbus_channels _zbus_channels = {
 #define ZBUS_USER_DATA_INIT /* No user data */
 #endif
 
-#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers,      \
-                         init_val)                                                     \
-    ._zbus_chan_##name = {                                                             \
-        .flag =                                                                        \
-            {                                                                          \
-                false,      /* Not defined yet */                                      \
-                on_changed, /* Only changes in the channel will propagate  */          \
-                read_only,  /* The channel is only for reading. It must have a initial \
-                               value. */                                               \
-                false       /* ISC source flag */                                      \
-            },              /* ISC source flag */                                      \
-        ZBUS_USER_DATA_INIT name##_chan_idx, /* Lookup table index */                  \
-        sizeof(type),                        /* The channel's size */                  \
-        (uint8_t *) &_zbus_messages.name,    /* The actual channel */                  \
-        validator,         /* The channel's message validator function */              \
-        &_zbus_sem_##name, /* Channel's semaphore */                                   \
+#define ZBUS_CHAN_DEFINE(name, on_changed, read_only, type, validator, observers,       \
+                         init_val)                                                      \
+    ._zbus_chan_##name = {                                                              \
+        .flag =                                                                         \
+            {                                                                           \
+                false,      /* Not defined yet */                                       \
+                on_changed, /* Only changes in the channel will propagate  */           \
+                read_only   /* The channel is only for reading. It must have an initial \
+                                value. */                                               \
+            },                                                                          \
+        ZBUS_USER_DATA_INIT name##_chan_idx, /* Lookup table index */                   \
+        sizeof(type),                        /* The channel's size */                   \
+        (uint8_t *) &_zbus_messages.name,    /* The actual channel */                   \
+        validator,         /* The channel's message validator function */               \
+        &_zbus_sem_##name, /* Channel's semaphore */                                    \
         observers},        /* List of observers queues */
 #include "zbus_channels.h"
 };
@@ -113,8 +112,8 @@ struct zbus_channel *zbus_channels_lookup_table[] = {
 
 static inline int zbus_observer_set_enable_args_check(struct zbus_observer *obs)
 {
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-    ZBUS_ASSERT(obs != NULL);
+#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+    __ASSERT_NO_MSG(obs != NULL);
 #else
     if (obs == NULL) {
         LOG_ERR("Invalid arg, obs is NULL.");
@@ -146,7 +145,7 @@ struct zbus_channels *zbus_channels_instance()
 
 struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx)
 {
-    ZBUS_ASSERT(idx < ZBUS_CHAN_COUNT);
+    __ASSERT_NO_MSG(idx < ZBUS_CHAN_COUNT);
     return zbus_channels_lookup_table[idx];
 }
 
@@ -169,18 +168,18 @@ void zbus_info_dump(void)
 static inline int zbus_chan_pub_args_check(struct zbus_channel *chan, uint8_t *msg,
                                            size_t msg_size, k_timeout_t timeout)
 {
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-    ZBUS_ASSERT(chan != NULL);
-    ZBUS_ASSERT(chan->flag.read_only == 0);
-    ZBUS_ASSERT(chan->message != NULL);
-    ZBUS_ASSERT(msg != NULL);
-    ZBUS_ASSERT(msg_size > 0);
-    ZBUS_ASSERT(chan->message_size == msg_size);
+#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+    __ASSERT_NO_MSG(chan != NULL);
+    __ASSERT_NO_MSG(chan->flag.read_only == 0);
+    __ASSERT_NO_MSG(chan->message != NULL);
+    __ASSERT_NO_MSG(msg != NULL);
+    __ASSERT_NO_MSG(msg_size > 0);
+    __ASSERT_NO_MSG(chan->message_size == msg_size);
     if (chan->validator != NULL) {
-        ZBUS_ASSERT(chan->validator(msg, chan->message_size) == true);
+        __ASSERT_NO_MSG(chan->validator(msg, chan->message_size) == true);
     }
     if (k_is_in_isr()) {
-        ZBUS_ASSERT(timeout.ticks == K_NO_WAIT.ticks);
+        __ASSERT_NO_MSG(timeout.ticks == K_NO_WAIT.ticks);
     }
 #else
     if (chan == NULL) {
@@ -248,14 +247,14 @@ int zbus_chan_pub(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
 int zbus_chan_read_args_check(struct zbus_channel *chan, const uint8_t *msg,
                               size_t msg_size, k_timeout_t timeout)
 {
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-    ZBUS_ASSERT(chan != NULL);
-    ZBUS_ASSERT(chan->message != NULL);
-    ZBUS_ASSERT(msg != NULL);
-    ZBUS_ASSERT(msg_size > 0);
-    ZBUS_ASSERT(chan->message_size == msg_size);
+#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+    __ASSERT_NO_MSG(chan != NULL);
+    __ASSERT_NO_MSG(chan->message != NULL);
+    __ASSERT_NO_MSG(msg != NULL);
+    __ASSERT_NO_MSG(msg_size > 0);
+    __ASSERT_NO_MSG(chan->message_size == msg_size);
     if (k_is_in_isr()) {
-        ZBUS_ASSERT(timeout.ticks == K_NO_WAIT.ticks);
+        __ASSERT_NO_MSG(timeout.ticks == K_NO_WAIT.ticks);
     }
 #else
     if (chan == NULL) {
@@ -304,11 +303,11 @@ int zbus_chan_read(struct zbus_channel *chan, uint8_t *msg, size_t msg_size,
 static inline int zbus_chan_notify_args_check(struct zbus_channel *chan,
                                               k_timeout_t timeout)
 {
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-    ZBUS_ASSERT(chan != NULL);
-    ZBUS_ASSERT(chan->message != NULL);
+#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+    __ASSERT_NO_MSG(chan != NULL);
+    __ASSERT_NO_MSG(chan->message != NULL);
     if (k_is_in_isr()) {
-        ZBUS_ASSERT(timeout.ticks == K_NO_WAIT.ticks);
+        __ASSERT_NO_MSG(timeout.ticks == K_NO_WAIT.ticks);
     }
 #else
     if (chan == NULL) {
@@ -349,11 +348,11 @@ int zbus_chan_notify(struct zbus_channel *chan, k_timeout_t timeout)
 static inline int zbus_chan_claim_args_check(struct zbus_channel *chan,
                                              k_timeout_t timeout)
 {
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-    ZBUS_ASSERT(chan != NULL);
-    ZBUS_ASSERT(chan->flag.read_only == 0);
+#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+    __ASSERT_NO_MSG(chan != NULL);
+    __ASSERT_NO_MSG(chan->flag.read_only == 0);
     if (k_is_in_isr()) {
-        ZBUS_ASSERT(timeout.ticks == K_NO_WAIT.ticks);
+        __ASSERT_NO_MSG(timeout.ticks == K_NO_WAIT.ticks);
     }
 #else
     if (chan == NULL) {
@@ -390,8 +389,8 @@ int zbus_chan_claim(struct zbus_channel *chan, k_timeout_t timeout)
 
 int zbus_chan_finish(struct zbus_channel *chan)
 {
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-    ZBUS_ASSERT(chan != NULL);
+#if defined(CONFIG_ASSERT) && CONFIG_ASSERT == 1
+    __ASSERT_NO_MSG(chan != NULL);
 #else
     if (chan == NULL) {
         LOG_ERR("Invalid arg, chan is NULL.");
@@ -402,16 +401,12 @@ int zbus_chan_finish(struct zbus_channel *chan)
     return 0;
 }
 
-#if defined(CONFIG_ZBUS_SERIAL_IPC)
-K_MSGQ_DEFINE(_zbus_bridge_queue, sizeof(zbus_chan_idx_t), 16, 2);
-#endif
-
-_Noreturn static void zbus_monitor_thread(void)
+_Noreturn static void zbus_event_dispatcher_thread(void)
 {
     zbus_chan_idx_t idx = 0;
     while (1) {
         k_msgq_get(&_zbus_channels_changed_msgq, &idx, K_FOREVER);
-        ZBUS_ASSERT(idx < ZBUS_CHAN_COUNT);
+        __ASSERT_NO_MSG(idx < ZBUS_CHAN_COUNT);
         struct zbus_channel *chan = zbus_channels_lookup_table[idx];
         /*! If there are more than one change of the same channel, only the last one is
          * applied. */
@@ -421,14 +416,11 @@ _Noreturn static void zbus_monitor_thread(void)
             K_MSEC(
                 CONFIG_ZBUS_EVENT_DISPATCHER_SEMAPHORE_TIMEOUT)); /* Take control of chan,
                                                                      lock A lifetime */
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-        ZBUS_ASSERT(err == 0);
-#else
+        __ASSERT_NO_MSG(err == 0);
         if (err) {                                                         /* A'*/
             LOG_ERR("Channel is busy. Lost a change on channel %d.", idx); /* A'*/
             continue;                                                      /* A'*/
         }                                                                  /* A'*/
-#endif
         if (chan->flag.pend_callback) {  /* A'*/
             k_sem_give(chan->semaphore); /* Give control of chan, from lock A
                                                         lifetime */
@@ -449,22 +441,18 @@ _Noreturn static void zbus_monitor_thread(void)
                 K_MSEC(CONFIG_ZBUS_EVENT_DISPATCHER_SEMAPHORE_TIMEOUT)); /* Take control
                                                                             of chan, lock
                                                                             B lifetime */
-#ifdef CONFIG_ZBUS_OFFENSIVE_PROG
-            ZBUS_ASSERT(err == 0);
-#else
+            __ASSERT_NO_MSG(err == 0);
             if (err) {                                                     /* B'*/
                 LOG_ERR("Channel is busy. Maybe the next change in channel %d will be "
                         "not notified.",
                         idx); /* B'*/
                 continue;     /* B'*/
             }                 /* B'*/
-#endif
             chan->flag.pend_callback = false; /* B'*/
             k_sem_give(chan->semaphore); /* Give control of chan, from lock B lifetime */
         }
     }
 }
-
-K_THREAD_DEFINE(zbus_monitor_thread_id, CONFIG_ZBUS_MONITOR_THREAD_STACK_SIZE,
-                zbus_monitor_thread, NULL, NULL, NULL,
-                CONFIG_ZBUS_MONITOR_THREAD_PRIORITY, 0, 0);
+K_THREAD_DEFINE(zbus_event_dispatcher_thread_id, CONFIG_ZBUS_EVENT_DISPATCHER_THREAD_STACK_SIZE,
+                zbus_event_dispatcher_thread, NULL, NULL, NULL,
+                CONFIG_ZBUS_EVENT_DISPATCHER_THREAD_PRIORITY, 0, 0);

@@ -205,24 +205,6 @@ struct zbus_channel *zbus_chan_get_by_index(zbus_chan_idx_t idx);
 
 /**
  *
- * @brief Zbus assert.
- *
- * This macro checks the condition stopping the execution by a k_oops if the condition is
- * not true.
- *
- * @param cond The condition to be checked.
- */
-#define ZBUS_ASSERT(cond)                                                                \
-    do {                                                                                 \
-        if (!(cond)) {                                                                   \
-            printk("Assertion failed %s:%d(%s): %s\n", __FILE__, __LINE__, __FUNCTION__, \
-                   #cond);                                                               \
-            k_oops();                                                                    \
-        }                                                                                \
-    } while (0)
-
-/**
- *
  * @brief Initialize a message.
  *
  * This macro initializes a message by passing the values to initialize the message struct
