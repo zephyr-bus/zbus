@@ -23,6 +23,6 @@ ZBUS_CHAN_DEFINE(
     false,                      /* Read only */
     struct action,              /* Message type */
     NULL,                       /* Validator */
-    ZBUS_OBSERVERS(peripheral), /* observers */
+    ZBUS_OBSERVERS(proxy, peripheral), /* observers */
     ZBUS_MSG_INIT(false)        /* Initial value */
 )
